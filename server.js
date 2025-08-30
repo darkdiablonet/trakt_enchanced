@@ -6,12 +6,16 @@ import session from 'express-session';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
+
 import { DATA_DIR, IMG_DIR, PORT, FULL_REBUILD_PASS, TITLE } from './lib/config.js';
 import { saveToken, deviceToken } from './lib/trakt.js';
 import { buildPageData } from './lib/pageData.js';
 import { makeRefresher } from './lib/util.js';
 import { headers as traktHeaders } from './lib/trakt.js';
 import { loadToken as loadTraktToken, userStats } from './lib/trakt.js';
+import { dailyCounts } from './lib/graph.js';
+import { loadToken } from './lib/trakt.js';
+import { imageProxyRouter } from './lib/sharp.js';
 
 dotenv.config();
 
@@ -55,6 +59,12 @@ app.use('/cache_imgs', express.static(CACHE_IMGS_DIR, {
     res.set('Cache-Control', 'public, max-age=31536000, stale-while-revalidate=86400, immutable');
   }
 }));
+
+app.use('/img', imageProxyRouter({
+  cacheDir: path.resolve(process.cwd(), 'data', 'processed_imgs'),
+  allowedPrefixes: ['/cache_imgs/', 'https://image.tmdb.org/t/p/']
+}));
+
 
 app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets')));
 app.use('/public', express.static(path.join(DATA_DIR, '..', 'public'), { maxAge: '30d' }));
@@ -123,6 +133,23 @@ app.get('/api/stats', async (req, res) => {
     res.status(500).json({ ok:false, err:String(e?.message || e) });
   }
 });
+
+app.get('/api/graph', async (req, res) => {
+  try {
+    const type = String(req.query.type || 'all');          // 'all' | 'movies' | 'shows'
+    const year = Number(req.query.year) || (new Date()).getFullYear();
+
+    const tok = await loadToken();
+    if (!tok?.access_token) return res.status(401).json({ ok:false, error:'not_authed' });
+
+    const data = await dailyCounts({ type, year, token: tok.access_token });
+    res.json({ ok:true, data });
+  } catch (e) {
+    console.error('[graph]', e);
+    res.status(500).json({ ok:false, error:String(e) });
+  }
+});
+
 
 // Main page (static HTML)
 app.get('/', (req, res) => {
