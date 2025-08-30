@@ -1,6 +1,8 @@
 
 #Trakt History (Node.js, modular, HTML séparé)
 
+[![Aperçu de l’UI](docs/img/screenshot-ui.png)](docs/img/screenshot-ui.png)
+
 App web pour parcourir ton historique **Trakt** et ta collection **TMDB**, avec :
 - **UI 100% HTML** modifiable facilement (`public/app.html`)
 - **Tri / recherche** (Séries, Films, Séries à voir, Films à voir)
@@ -59,8 +61,6 @@ PROG_DIR=/data/.cache_trakt/progress
 ```
 
 ---
-
-[![Aperçu de l’UI](docs/img/screenshot-ui.png)](docs/img/screenshot-ui.png)
 
 ## 🗂️ Arborescence (résumé)
 
