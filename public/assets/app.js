@@ -53,7 +53,7 @@ if (state.sort && typeof state.sort.field === 'string' && state.sort.field.inclu
 function saveState(){ localStorage.setItem('trakt_state', JSON.stringify(state)); }
 
 /* Données */
-let DATA = { showsRows:[], moviesRows:[], showsUnseenRows:[], moviesUnseenRows:[], devicePrompt:null, cacheHit:false, cacheAge:0, title:'UNFR — Trakt History', flash:null };
+let DATA = { showsRows:[], moviesRows:[], showsUnseenRows:[], moviesUnseenRows:[], devicePrompt:null, cacheHit:false, cacheAge:0, title:'Trakt History', flash:null };
 
 /* Helpers UI */
 function applyWidth(){

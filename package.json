@@ -1,7 +1,7 @@
 {
   "name": "trakt-history-node",
   "version": "1.4.0",
-  "description": "UNFR — Trakt History (Node.js, modular, HTML separated)",
+  "description": "Trakt History (Node.js, modular, HTML separated)",
   "type": "module",
   "main": "server.js",
   "scripts": {

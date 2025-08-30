@@ -3,12 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UNFR — Trakt History</title>
+  <title>Trakt History</title>
   <link rel="stylesheet" href="/assets/tailwind.css">
   <link rel="stylesheet" href="/assets/fa/css/all.min.css">
   <style>
     :root{ --card-w:220px; }
-    body{ background: radial-gradient(75% 120% at 10% 10%, #0f172a 0%, #020617 60%); }
+    html, body { min-height: 100%; background-color:#020617; }
+    html {
+      background:
+        radial-gradient(75% 120% at 10% 10%, #0f172a 0%, #020617 60%) fixed no-repeat;
+      background-size: cover;
+    }
     .hidden{ display:none; }
   </style>
   <script src="/assets/app.js" defer></script>
