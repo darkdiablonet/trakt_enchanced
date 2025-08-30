@@ -16,6 +16,7 @@ import { loadToken as loadTraktToken, userStats } from './lib/trakt.js';
 import { dailyCounts } from './lib/graph.js';
 import { loadToken } from './lib/trakt.js';
 import { imageProxyRouter } from './lib/sharp.js';
+import { readGraphCache, writeGraphCache } from './lib/graphCache.js';
 
 dotenv.config();
 
@@ -136,17 +137,26 @@ app.get('/api/stats', async (req, res) => {
 
 app.get('/api/graph', async (req, res) => {
   try {
-    const type = String(req.query.type || 'all');          // 'all' | 'movies' | 'shows'
     const year = Number(req.query.year) || (new Date()).getFullYear();
+    const t = String(req.query.type || 'all');
+    const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
 
-    const tok = await loadToken();
-    if (!tok?.access_token) return res.status(401).json({ ok:false, error:'not_authed' });
+    // 1) essaie le cache (TTL 24h)
+    const cached = await readGraphCache(type, year, 24 * 3600 * 1000);
+    if (cached) {
+      return res.json({ ok: true, data: cached, cached: true });
+    }
 
-    const data = await dailyCounts({ type, year, token: tok.access_token });
-    res.json({ ok:true, data });
-  } catch (e) {
-    console.error('[graph]', e);
-    res.status(500).json({ ok:false, error:String(e) });
+    // 2) calcule si pas en cache
+    const data = await dailyCounts({ type, year });
+
+    // 3) mémorise
+    await writeGraphCache(type, year, data);
+
+    return res.json({ ok: true, data, cached: false });
+  } catch (err) {
+    console.error('/api/graph error', err);
+    return res.status(500).json({ ok: false, error: String(err?.message || err) });
   }
 });
 
