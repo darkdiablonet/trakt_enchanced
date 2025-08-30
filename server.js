@@ -10,6 +10,8 @@ import { DATA_DIR, IMG_DIR, PORT, FULL_REBUILD_PASS, TITLE } from './lib/config.
 import { saveToken, deviceToken } from './lib/trakt.js';
 import { buildPageData } from './lib/pageData.js';
 import { makeRefresher } from './lib/util.js';
+import { headers as traktHeaders } from './lib/trakt.js';
+import { loadToken as loadTraktToken, userStats } from './lib/trakt.js';
 
 dotenv.config();
 
@@ -107,6 +109,19 @@ app.get('/api/data', async (req, res) => {
   const pageData = await buildPageData(req, { forceRefreshOnce, allowFull });
   res.setHeader('Cache-Control', 'no-store');
   res.json({ title: TITLE, flash, ...pageData });
+});
+
+app.get('/api/stats', async (req, res) => {
+  try {
+    const tok = await loadTraktToken();
+    if (!tok?.access_token) return res.status(401).json({ ok:false, err:'no_token' });
+    const headers = traktHeaders(tok.access_token);
+    const stats = await userStats(headers, 'me');
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ ok:true, stats });
+  } catch (e) {
+    res.status(500).json({ ok:false, err:String(e?.message || e) });
+  }
 });
 
 // Main page (static HTML)

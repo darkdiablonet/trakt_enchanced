@@ -57,6 +57,9 @@
         <button id="tabBtnMoviesUnseen" data-tab="movies_unseen" title="En collection jamais vus">
           <i class="fa-regular fa-eye-slash mr-2"></i>Films à voir
         </button>
+        <button id="tabBtnStats" data-tab="stats">
+          <i class="fa-solid fa-chart-simple mr-2"></i>Stats
+        </button>
       </div>
     </div>
 
@@ -96,6 +99,7 @@
     <section id="panelMovies" class="hidden"><div id="gridM"  class="grid-default"></div></section>
     <section id="panelShowsUnseen" class="hidden"><div id="gridSU" class="grid-default"></div></section>
     <section id="panelMoviesUnseen" class="hidden"><div id="gridMU" class="grid-default"></div></section>
+    <section id="panelStats" class="hidden"><div id="statsBox" class="grid-default"></div></section>
 
     <footer class="mt-10 mb-8 text-sm text-slate-400"><hr class="border-white/10 mb-4"></footer>
   </main>
@@ -134,12 +138,14 @@ const tabBtns = {
   movies: document.getElementById('tabBtnMovies'),
   shows_unseen: document.getElementById('tabBtnShowsUnseen'),
   movies_unseen: document.getElementById('tabBtnMoviesUnseen'),
+  stats: document.getElementById('tabBtnStats'),
 };
 const panels = {
   shows: document.getElementById('panelShows'),
   movies: document.getElementById('panelMovies'),
   shows_unseen: document.getElementById('panelShowsUnseen'),
   movies_unseen: document.getElementById('panelMoviesUnseen'),
+  stats: document.getElementById('panelStats'),
 };
 const grids = {
   shows: document.getElementById('gridS'),
@@ -332,19 +338,110 @@ function rebuildSortOptions(tab){
 }
 
 /* Tabs */
+const filtersSec = document.querySelector('section.filters');
+
 function setTab(tab){
   state.tab = tab; saveState();
-  Object.entries(tabBtns).forEach(([k,b]) => { if (!b) return; b.classList.toggle('tab-btn-active', k===tab); });
-  Object.entries(panels).forEach(([k,p]) => { if (!p) return; p.classList.toggle('hidden', k!==tab); });
-  rebuildSortOptions(tab);
-  renderCurrent();
+  Object.entries(tabBtns).forEach(([k,b]) => b?.classList.toggle('tab-btn-active', k===tab));
+  Object.entries(panels).forEach(([k,p]) => p?.classList.toggle('hidden', k!==tab));
+
+  const isStats = (tab === 'stats');
+  filtersSec?.classList.toggle('hidden', isStats);
+
+  if (!isStats) {
+    rebuildSortOptions(tab);
+    renderCurrent();
+  }
+}
+/* Data loader */
+
+function humanMinutes(min) {
+  const m = Number(min||0);
+  const d = Math.floor(m / (60*24));
+  const h = Math.floor((m % (60*24)) / 60);
+  const r = m % 60;
+  if (d > 0) return `${d}j ${h}h`;
+  if (h > 0) return `${h}h ${r}m`;
+  return `${m}m`;
 }
 
-/* Data loader */
+function statCard(title, items=[]) {
+  const rows = items
+    .filter(it => it && it.label)
+    .map(it => `<div class="flex justify-between"><span class="text-slate-400">${it.label}</span><span class="font-semibold">${it.value}</span></div>`)
+    .join('');
+  return `
+    <article class="card p-4">
+      <h3 class="text-base font-semibold mb-3">${title}</h3>
+      <div class="space-y-1 text-sm">${rows || '<span class="text-slate-500">—</span>'}</div>
+    </article>
+  `;
+}
+
+function renderStats(stats){
+  const s = stats || {};
+  const movies   = s.movies || {};
+  const shows    = s.shows  || {};
+  const seasons  = s.seasons || {};
+  const episodes = s.episodes || {};
+  const network  = s.network || {};
+  const ratings  = s.ratings || {};
+  const comments = s.comments || {};
+  const lists    = s.lists || {};
+
+  const cards = [];
+
+  cards.push(statCard('🎬 Films', [
+    { label:'Vus',        value: movies.watched ?? 0 },
+    { label:'Lectures',   value: movies.plays ?? 0 },
+    { label:'Collection', value: movies.collected ?? 0 },
+    { label:'Durée',      value: humanMinutes(movies.minutes ?? 0) },
+    { label:'Notes',      value: movies.ratings ?? 0 },
+    { label:'Commentaires', value: movies.comments ?? 0 },
+  ]));
+
+  cards.push(statCard('📺 Séries', [
+    { label:'Vues',       value: shows.watched ?? 0 },
+    { label:'Saisons',    value: shows.seasons ?? seasons.watched ?? 0 },
+    { label:'Épisodes',   value: shows.episodes ?? episodes.watched ?? 0 },
+    { label:'Collection', value: shows.collected ?? 0 },
+    { label:'Notes',      value: shows.ratings ?? 0 },
+    { label:'Commentaires', value: shows.comments ?? 0 },
+  ]));
+
+  cards.push(statCard('📼 Épisodes', [
+    { label:'Vus',      value: episodes.watched ?? 0 },
+    { label:'Lectures', value: episodes.plays ?? 0 },
+    { label:'Durée',    value: humanMinutes(episodes.minutes ?? 0) },
+  ]));
+
+  cards.push(statCard('⭐ Ratings & Listes', [
+    { label:'Notes',         value: ratings.total ?? (movies.ratings ?? 0) + (shows.ratings ?? 0) },
+    { label:'Listes',        value: lists.total ?? 0 },
+    { label:'Commentaires',  value: comments.total ?? 0 },
+    { label:'Amis (Network)',value: network.friends ?? 0 },
+    { label:'Abonnements',   value: network.following ?? 0 },
+    { label:'Abonnés',       value: network.followers ?? 0 },
+  ]));
+
+  document.getElementById('statsBox').innerHTML = cards.join('');
+}
+
+
 async function loadData(){
   const resp = await fetch('/api/data', { cache:'no-store' });
   const js = await resp.json();
   DATA = js;
+  
+  if (js.stats) {
+    renderStats(js.stats);
+  } else {
+    // fallback si tu exposes /api/stats séparément
+    try {
+      const s = await fetch('/api/stats').then(r => r.ok ? r.json() : null);
+      if (s?.ok && s.stats) renderStats(s.stats);
+    } catch {}
+  }
 
   if (js.flash) { flashBox.textContent = js.flash; flashBox.classList.remove('hidden'); }
   else { flashBox.classList.add('hidden'); }
