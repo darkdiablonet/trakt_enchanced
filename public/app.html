@@ -6,16 +6,6 @@
   <title>Trakt History</title>
   <link rel="stylesheet" href="/assets/tailwind.css">
   <link rel="stylesheet" href="/assets/fa/css/all.min.css">
-  <style>
-    :root{ --card-w:220px; }
-    html, body { min-height: 100%; background-color:#020617; }
-    html {
-      background:
-        radial-gradient(75% 120% at 10% 10%, #0f172a 0%, #020617 60%) fixed no-repeat;
-      background-size: cover;
-    }
-    .hidden{ display:none; }
-  </style>
   <script src="/assets/app.js" defer></script>
 </head>
 <body class="min-h-full text-slate-200 selection:bg-sky-500/40 selection:text-white">
@@ -142,7 +132,7 @@
     <div id="ovBackdrop" class="absolute inset-0"></div>
   
     <!-- panneau ancré près du bouton -->
-    <article id="ovPanel" class="ov-panel glass rounded-xl border border-white/10 p-4 shadow-xl">
+    <article id="ovPanel" class="ov-panel glassNoTrans rounded-xl border border-white/10 p-4 shadow-xl">
       <div class="ov-arrow"></div>
       <div class="flex items-start justify-between gap-3">
         <div>

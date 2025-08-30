@@ -11,7 +11,16 @@
 
 /* tes styles custom dans la couche components */
 @layer components {
+  :root{ --card-w:220px; }
+  html, body { min-height: 100%; background-color:#020617; }
+  html {
+    background:
+      radial-gradient(75% 120% at 10% 10%, #0f172a 0%, #020617 60%) fixed no-repeat;
+    background-size: cover;
+  }
+  .hidden{ display:none; }
   .glass{ background:linear-gradient(180deg,rgba(15,23,42,.7),rgba(2,6,23,.7)); backdrop-filter:blur(8px); }
+  .glassNoTrans{ background:linear-gradient(180deg,rgba(15, 23, 42, .9),rgba(2, 6, 23, .9)); backdrop-filter:blur(8px); }
   .btn{ display:inline-flex; align-items:center; gap:.5rem; padding:.45rem .8rem; border-radius:.75rem; background:#0ea5e9; color:#fff; font-weight:600; }
   .btn-outline{ background:transparent; border:1px solid #334155; color:#e2e8f0; }
   .chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .5rem; border-radius:999px; background:#0b1220; border:1px solid #0b2942; color:#8ab4f8; font-size:.75rem; }
@@ -56,7 +65,7 @@
     position: absolute;
     width: 12px; height: 12px;
     transform: rotate(45deg);
-    background: rgba(15,23,42,.85);
+    background: rgba(15, 23, 42, 1);
     border-left: 1px solid #0b2942;
     border-top: 1px solid #0b2942;
     /* left est fixé en JS */

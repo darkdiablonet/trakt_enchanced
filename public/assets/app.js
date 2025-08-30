@@ -545,10 +545,6 @@ const ovBody   = document.getElementById('ovBody');
 const ovText   = document.getElementById('ovText');
 const ovLinks  = document.getElementById('ovLinks');
 
-function escapeAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
-.replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/[\r\n]+/g,' '); }
-
-
 function positionPopover(btn){
   if (!btn || !ovPanel) return;
   // reset classes
