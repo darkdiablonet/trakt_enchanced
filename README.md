@@ -51,6 +51,8 @@ PROG_DIR=/data/.cache_trakt/progress
 
 ---
 
+[![Aperçu de l’UI](docs/img/screenshot-ui.png)](docs/img/screenshot-ui.png)
+
 ## 🗂️ Arborescence (résumé)
 
 ```
