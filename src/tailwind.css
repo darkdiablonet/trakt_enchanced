@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* Dossiers que Tailwind doit scanner (HTML + JS) */
+@source "./public/**/*.html";
+@source "./public/**/*.js";
+@source "./lib/**/*.js";
+@source "./server.js";
+
+/* Safelist des classes uniquement togglées en JS (une seule ligne !) */
+@source inline("hidden max-w-7xl mx-auto w-full max-w-none tab-btn-active text-amber-200 border-amber-400/50");
+
+/* tes styles custom dans la couche components */
+@layer components {
+  .glass{ background:linear-gradient(180deg,rgba(15,23,42,.7),rgba(2,6,23,.7)); backdrop-filter:blur(8px); }
+  .btn{ display:inline-flex; align-items:center; gap:.5rem; padding:.45rem .8rem; border-radius:.75rem; background:#0ea5e9; color:#fff; font-weight:600; }
+  .btn-outline{ background:transparent; border:1px solid #334155; color:#e2e8f0; }
+  .chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .5rem; border-radius:999px; background:#0b1220; border:1px solid #0b2942; color:#8ab4f8; font-size:.75rem; }
+  .poster{ width:100%; padding-top:150%; border-radius:.75rem; background-size:cover; background-position:center; background-color:#0b1220; border:1px solid #0b2942; }
+  .card{ background:linear-gradient(180deg,rgba(15,23,42,.55),rgba(2,6,23,.55)); border:1px solid #0b2942; border-radius:1rem; }
+  .grid-default{ display:grid; grid-template-columns:repeat(auto-fill, minmax(var(--card-w), 1fr)); gap:1rem; }
+  .app-header{ position:sticky; top:0; z-index:20; border-bottom:1px solid rgba(255,255,255,.08); background:rgba(11,18,32,.7); backdrop-filter:blur(6px); }
+  .filters{ position:sticky; top:68px; z-index:10; }
+  .tabs-group{ display:inline-flex; flex-wrap:wrap; gap:.25rem; padding:.25rem; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.05); }
+  .tabs-group button{ padding:.5rem 1rem; border-radius:8px; font-weight:600; font-size:.9rem; color:#cbd5e1; }
+  .tabs-group button:hover{ color:#fff; }
+  .tab-btn-active{ background:#0ea5e9; color:#fff !important; }
+}
+
+/* (facultatif) petit fallback pour line-clamp si tu l’utilises */
+.line-clamp-2{
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}

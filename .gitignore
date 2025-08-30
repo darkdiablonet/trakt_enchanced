@@ -1,0 +1,6 @@
+data
+node_modules
+.env
+package-lock.json
+public/assets/fa
+public/assets/tailwind.css

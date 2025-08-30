@@ -1,0 +1,28 @@
+{
+  "name": "unfr-trakt-history-node",
+  "version": "1.2.0",
+  "description": "UNFR — Trakt History (Node.js, modular, HTML separated)",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev:css": "tailwindcss -i ./src/tailwind.css -o ./public/assets/tailwind.css --watch",
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./public/assets/tailwind.css",
+    "build:fa": "mkdir -p public/assets/fa && cp -R node_modules/@fortawesome/fontawesome-free/css public/assets/fa/css && cp -R node_modules/@fortawesome/fontawesome-free/webfonts public/assets/fa/webfonts",
+    "build": "npm run build:css && npm run build:fa",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.12",
+    "tailwindcss": "^4.1.12"
+  }
+}

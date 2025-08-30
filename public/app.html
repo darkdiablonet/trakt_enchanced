@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UNFR — Trakt History</title>
+  <link rel="stylesheet" href="/assets/tailwind.css">
+  <link rel="stylesheet" href="/assets/fa/css/all.min.css">
+  <style>
+    :root{ --card-w:220px; }
+
+    body{ background: radial-gradient(75% 120% at 10% 10%, #0f172a 0%, #020617 60%); }
+
+
+    .hidden{ display:none; }
+  </style>
+</head>
+<body class="min-h-full text-slate-200 selection:bg-sky-500/40 selection:text-white">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
+      <div class="flex items-center gap-2 text-lg font-semibold tracking-wide">
+        <i class="fa-solid fa-tv-retro text-sky-300"></i>
+        <span><span class="text-sky-300">Trakt</span> History</span>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <form method="post" action="/refresh">
+          <button class="btn btn-outline" type="submit"><i class="fa-solid fa-rotate-right"></i><span>Rafraîchir</span></button>
+        </form>
+        <button id="toggleWidth" class="btn btn-outline" title="Basculer pleine largeur">
+          <i class="fa-solid fa-arrows-left-right-to-line"></i><span>Pleine largeur</span>
+        </button>
+        <button id="openFullModal" class="btn btn-outline"><i class="fa-solid fa-bolt"></i><span>Full rebuild</span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notices / Device flow -->
+  <div id="flashBox"  class="hidden mx-auto max-w-7xl mt-4 px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/60"></div>
+  <div id="deviceBox" class="hidden mx-auto max-w-7xl bg-slate-800/60 border border-slate-700 rounded-xl p-4 mt-6"></div>
+
+  <!-- Main -->
+  <main id="mainContainer" class="mx-auto max-w-7xl px-4 py-6">
+
+    <!-- Tabs (identiques à ton PHP) -->
+    <div class="mb-4">
+      <div class="tabs-group">
+        <button id="tabBtnShows"        class="tab-btn-active" data-tab="shows">
+          <i class="fa-solid fa-clapperboard mr-2"></i>Séries
+        </button>
+        <button id="tabBtnMovies"       data-tab="movies">
+          <i class="fa-solid fa-film mr-2"></i>Films
+        </button>
+        <button id="tabBtnShowsUnseen"  data-tab="shows_unseen"  title="En collection avec épisodes manquants">
+          <i class="fa-regular fa-eye-slash mr-2"></i>Séries à voir
+        </button>
+        <button id="tabBtnMoviesUnseen" data-tab="movies_unseen" title="En collection jamais vus">
+          <i class="fa-regular fa-eye-slash mr-2"></i>Films à voir
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtres (sticky) -->
+    <section class="filters glass rounded-xl px-4 py-3 mb-6">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="w-full sm:w-auto">
+          <label for="qActive" class="block text-xs uppercase tracking-wide text-slate-400 mb-1">
+            <i class="fa fa-search mr-1"></i>Rechercher
+          </label>
+          <input id="qActive" type="search" placeholder="Titre… (Ctrl+/)"
+                 class="w-full sm:w-72 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-sky-400/40 focus:ring-2 focus:ring-sky-400/20"
+                 autocomplete="off">
+        </div>
+        <div>
+          <label for="sortActive" class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Tri</label>
+          <select id="sortActive"
+                  class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-sky-400/40 focus:ring-2 focus:ring-sky-400/20">
+            <option value="watched_at:desc"     data-for="shows,movies">Derniers vus</option>
+            <option value="title:asc"           data-for="shows,movies,shows_unseen,movies_unseen">Titre A→Z</option>
+            <option value="title:desc"          data-for="shows,movies,shows_unseen,movies_unseen">Titre Z→A</option>
+            <option value="year:desc"           data-for="shows,movies,shows_unseen,movies_unseen">Année ↓</option>
+            <option value="year:asc"            data-for="shows,movies,shows_unseen,movies_unseen">Année ↑</option>
+            <option value="episodes:desc"       data-for="shows">Épisodes vus ↓</option>
+            <option value="plays:desc"          data-for="movies">Vus ↓</option>
+            <option value="collected_at:desc"   data-for="shows_unseen,movies_unseen">Ajoutés récemment ↓</option>
+            <option value="collected_at:asc"    data-for="shows_unseen,movies_unseen">Ajoutés anciennement ↑</option>
+            <option value="missing:desc"        data-for="shows_unseen">Épisodes manquants ↓</option>
+            <option value="missing:asc"         data-for="shows_unseen">Épisodes manquants ↑</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grilles -->
+    <section id="panelShows"><div id="gridS"  class="grid-default"></div></section>
+    <section id="panelMovies" class="hidden"><div id="gridM"  class="grid-default"></div></section>
+    <section id="panelShowsUnseen" class="hidden"><div id="gridSU" class="grid-default"></div></section>
+    <section id="panelMoviesUnseen" class="hidden"><div id="gridMU" class="grid-default"></div></section>
+
+    <footer class="mt-10 mb-8 text-sm text-slate-400"><hr class="border-white/10 mb-4"></footer>
+  </main>
+
+  <!-- Full rebuild modal -->
+  <div id="fullModal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="relative mx-auto max-w-md w-full mt-32 px-4">
+      <div class="glass rounded-xl border border-white/10 p-5">
+        <div class="flex items-start justify-between">
+          <h3 class="text-lg font-semibold">Full rebuild</h3>
+          <button id="closeFullModal" class="btn text-xs"><i class="fa-solid fa-xmark"></i><span>Fermer</span></button>
+        </div>
+        <p class="text-slate-400 text-sm mt-2">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
+        <form method="post" action="/full_rebuild" class="mt-4 space-y-3">
+          <label class="block text-xs uppercase tracking-wide text-slate-400">Mot de passe</label>
+          <input type="password" name="pwd" required class="w-full rounded-lg bg-slate-950/60 border border-slate-700 px-3 py-2">
+          <div class="flex justify-end gap-2">
+            <button type="submit" class="btn"><i class="fa-solid fa-bolt"></i><span>Lancer</span></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* DOM */
+const toggleWidth   = document.getElementById('toggleWidth');
+const mainContainer = document.getElementById('mainContainer');
+
+const flashBox  = document.getElementById('flashBox');
+const deviceBox = document.getElementById('deviceBox');
+
+const tabBtns = {
+  shows: document.getElementById('tabBtnShows'),
+  movies: document.getElementById('tabBtnMovies'),
+  shows_unseen: document.getElementById('tabBtnShowsUnseen'),
+  movies_unseen: document.getElementById('tabBtnMoviesUnseen'),
+};
+const panels = {
+  shows: document.getElementById('panelShows'),
+  movies: document.getElementById('panelMovies'),
+  shows_unseen: document.getElementById('panelShowsUnseen'),
+  movies_unseen: document.getElementById('panelMoviesUnseen'),
+};
+const grids = {
+  shows: document.getElementById('gridS'),
+  movies: document.getElementById('gridM'),
+  shows_unseen: document.getElementById('gridSU'),
+  movies_unseen: document.getElementById('gridMU'),
+};
+
+const sortActive = document.getElementById('sortActive');
+const SORT_ALL = Array.from(sortActive.querySelectorAll('option')).map(o => ({
+  value: o.value,
+  label: o.textContent,
+  for: (o.getAttribute('data-for') || '')
+}));
+const qActive    = document.getElementById('qActive');
+
+const openFullModal  = document.getElementById('openFullModal');
+const closeFullModal = document.getElementById('closeFullModal');
+const fullModal      = document.getElementById('fullModal');
+
+/* State */
+let state = JSON.parse(localStorage.getItem('trakt_state') || '{}');
+state.tab   = state.tab   || 'shows';
+state.sort  = state.sort  || { field:'watched_at', dir:'desc' };
+state.q     = (typeof state.q === 'string') ? state.q : '';
+state.width = state.width || 'limited';
+// normaliser anciens "field:dir"
+if (state.sort && typeof state.sort.field === 'string' && state.sort.field.includes(':')) {
+  const [f, d] = state.sort.field.split(':');
+  state.sort = { field:f, dir:d || state.sort.dir || 'desc' };
+}
+function saveState(){ localStorage.setItem('trakt_state', JSON.stringify(state)); }
+
+/* Données */
+let DATA = { showsRows:[], moviesRows:[], showsUnseenRows:[], moviesUnseenRows:[], devicePrompt:null, cacheHit:false, cacheAge:0, title:'UNFR — Trakt History', flash:null };
+
+/* Helpers UI */
+function applyWidth(){
+  const full = state.width === 'full';
+  if (full) {
+    mainContainer.classList.remove('max-w-7xl','mx-auto');
+    mainContainer.classList.add('w-full','max-w-none');
+    toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode('Largeur limitée'));
+  } else {
+    mainContainer.classList.add('max-w-7xl','mx-auto');
+    mainContainer.classList.remove('w-full','max-w-none');
+    toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode('Pleine largeur'));
+  }
+}
+function focusSearchShortcut(e){
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') { e.preventDefault(); qActive?.focus(); }
+}
+
+/* Rendu */
+// Remplace intégralement la fonction card(...) par ceci :
+function card(r, kind){
+  const poster = String(r.poster||'').replace(/'/g,"%27");
+  const y = r.year || '';
+  const url = r.trakt_url || '#';
+  const tmdburl = r.tmdb_url || null;
+
+  const isUnseen = (state.tab === 'shows_unseen' || state.tab === 'movies_unseen');
+
+  // === METRICS (exactement comme ton PHP) ===
+  let metrics = '';
+  if (isUnseen){
+    if (kind === 'show') {
+      const missing = Number(r.missing ?? 0);
+      const next = r.next || '';
+      metrics = [
+        (missing > 0)
+          ? `<span class="chip"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
+          : `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`,
+        next ? `<span class="chip"><i class="fa-solid fa-forward-step mr-1"></i>${next}</span>` : ''
+      ].filter(Boolean).join('');
+    } else {
+      // films — à voir : jamais vu
+      metrics = `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
+    }
+  } else if (kind === 'show') {
+    const w0 = Number(r.episodes ?? 0);
+    const t  = Number(r.episodes_total ?? 0);
+    const w  = t > 0 ? Math.min(w0, t) : w0;       // borne si le total est connu
+    const hasT = t > 0;
+    const diff = hasT && w !== t;                  // reste des épisodes à voir ?
+    const cls  = diff ? 'border-amber-400/50 text-amber-200' : '';
+    const text = hasT ? `${w}/${t}` : `${w}`;
+    metrics = `<span class="chip ${cls}"><i class="fa-solid fa-film mr-1"></i>${text}</span>`;
+  } else {
+    // films — normal : nombre de lectures
+    metrics = `<span class="chip"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</span>`;
+  }
+
+  return `
+    <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
+      <div class="poster mb-3" style="background-image:url('${poster}')"></div>
+      <h3 class="text-base font-semibold leading-tight line-clamp-2">${r.title||''}</h3>
+
+      <div class="mt-2 flex items-center gap-2 text-sm">
+        <span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
+        ${metrics}
+      </div>
+
+      <div class="mt-2 flex items-center gap-2 text-sm">
+        <a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
+        ${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
+      </div>
+    </article>`;
+}
+
+function renderInto(el, rows, kind){ el.innerHTML = rows.map(r => card(r, kind)).join(''); }
+function filterItems(items, q){
+  const s = (q||'').trim().toLowerCase();
+  if (!s) return items;
+  return items.filter(it => String(it.title||'').toLowerCase().includes(s));
+}
+function sortItems(items, field, dir){
+  return items.slice().sort((a,b)=>{
+    if (field==='title'){
+      return dir==='asc'
+        ? String(a.title||'').localeCompare(String(b.title||''))
+        : String(b.title||'').localeCompare(String(a.title||''));
+    }
+    if (field==='watched_at' || field==='collected_at'){
+      const taRaw = field==='collected_at'
+        ? (a.collected_at_ts ?? Date.parse(a.collected_at ?? ''))
+        : Date.parse(a.watched_at ?? '');
+      const tbRaw = field==='collected_at'
+        ? (b.collected_at_ts ?? Date.parse(b.collected_at ?? ''))
+        : Date.parse(b.watched_at ?? '');
+      const ta = Number.isFinite(taRaw) ? taRaw : (dir==='asc' ? -Infinity : Infinity);
+      const tb = Number.isFinite(tbRaw) ? tbRaw : (dir==='asc' ? -Infinity : Infinity);
+      return dir==='asc' ? (ta-tb) : (tb-ta);
+    }
+    if (field==='missing'){
+      const na = Number(a.missing||0), nb = Number(b.missing||0);
+      return dir==='asc' ? na-nb : nb-na;
+    }
+    if (field==='episodes' || field==='plays' || field==='year'){
+      const na = Number(a[field]||0), nb = Number(b[field]||0);
+      return dir==='asc' ? na-nb : nb-na;
+    }
+    return 0;
+  });
+}
+function dataForTab(tab){
+  if (tab==='shows') return { arr:DATA.showsRows, kind:'show' };
+  if (tab==='movies') return { arr:DATA.moviesRows, kind:'movie' };
+  if (tab==='shows_unseen') return { arr:DATA.showsUnseenRows, kind:'show' };
+  if (tab==='movies_unseen') return { arr:DATA.moviesUnseenRows, kind:'movie' };
+  return { arr:[], kind:'show' };
+}
+function renderCurrent(){
+  const { arr, kind } = dataForTab(state.tab);
+  const filtered = filterItems(arr, state.q);
+  const sorted   = sortItems(filtered, state.sort.field, state.sort.dir);
+  if (state.tab==='shows') renderInto(grids.shows, sorted, kind);
+  if (state.tab==='movies') renderInto(grids.movies, sorted, kind);
+  if (state.tab==='shows_unseen') renderInto(grids.shows_unseen, sorted, kind);
+  if (state.tab==='movies_unseen') renderInto(grids.movies_unseen, sorted, kind);
+}
+
+/* Tri par onglet (identique au PHP via data-for) */
+function rebuildSortOptions(tab){
+  // Filtrer dans le snapshot complet (sans jamais perdre d’options)
+  const allowed = SORT_ALL.filter(opt =>
+    opt.for.split(',').map(s => s.trim()).includes(tab)
+  );
+
+  // Valeur par défaut par onglet (comme ton PHP)
+  const defaultByTab = {
+    shows: 'watched_at:desc',
+    movies: 'watched_at:desc',
+    shows_unseen: 'collected_at:desc',
+    movies_unseen: 'collected_at:desc'
+  };
+
+  const currentKey = `${state.sort.field}:${state.sort.dir}`;
+  const selectedKey = allowed.some(o => o.value === currentKey) ? currentKey : defaultByTab[tab];
+
+  // Reconstruire la liste à partir du snapshot autorisé pour cet onglet
+  sortActive.innerHTML = allowed
+    .map(o => `<option value="${o.value}" data-for="${o.for}">${o.label}</option>`)
+    .join('');
+  sortActive.value = selectedKey;
+
+  const [f, d] = selectedKey.split(':');
+  state.sort = { field: f, dir: d };
+  saveState();
+}
+
+/* Tabs */
+function setTab(tab){
+  state.tab = tab; saveState();
+  Object.entries(tabBtns).forEach(([k,b]) => { if (!b) return; b.classList.toggle('tab-btn-active', k===tab); });
+  Object.entries(panels).forEach(([k,p]) => { if (!p) return; p.classList.toggle('hidden', k!==tab); });
+  rebuildSortOptions(tab);
+  renderCurrent();
+}
+
+/* Data loader */
+async function loadData(){
+  const resp = await fetch('/api/data', { cache:'no-store' });
+  const js = await resp.json();
+  DATA = js;
+
+  if (js.flash) { flashBox.textContent = js.flash; flashBox.classList.remove('hidden'); }
+  else { flashBox.classList.add('hidden'); }
+
+  if (js.devicePrompt && js.devicePrompt.user_code) {
+    deviceBox.innerHTML = `
+      <h2 class="text-lg font-semibold mb-2">Connecter votre compte Trakt</h2>
+      <p class="text-slate-300 text-sm mb-2">Rendez-vous sur <a class="text-sky-400 underline" href="${js.devicePrompt.verification_url}" target="_blank">${js.devicePrompt.verification_url}</a> et entrez le code :</p>
+      <div class="text-2xl font-bold tracking-widest bg-black/40 inline-block px-3 py-2 rounded">${js.devicePrompt.user_code}</div>
+      <div class="text-xs text-slate-400 mt-2">Ce code expire le ${new Date(js.devicePrompt.expires_in*1000 + Date.now()).toLocaleString()}.</div>
+      <div class="mt-3 flex items-center gap-2">
+        <button id="pollBtn" class="btn"><i class="fa-solid fa-arrows-rotate mr-1"></i>J'ai validé, vérifier</button>
+        <a href="/oauth/new" class="btn"><i class="fa-solid fa-qrcode"></i>Nouveau code</a>
+      </div>
+      <div id="pollMsg" class="text-sm mt-2 text-slate-400"></div>
+    `;
+    deviceBox.classList.remove('hidden');
+    const pollBtn = deviceBox.querySelector('#pollBtn');
+    const pollMsg = deviceBox.querySelector('#pollMsg');
+    pollBtn?.addEventListener('click', async () => {
+      pollMsg.textContent = 'Vérification en cours...';
+      try {
+        const r = await fetch('/oauth/poll').then(x=>x.json());
+        if (r.ok) { pollMsg.textContent = 'Connecté ! Rechargement...'; setTimeout(()=>location.reload(), 800); }
+        else { pollMsg.textContent = r.fatal ? ('Erreur : '+r.err) : 'Toujours en attente, réessayez.'; }
+      } catch { pollMsg.textContent = 'Erreur réseau.'; }
+    });
+  } else {
+    deviceBox.classList.add('hidden');
+  }
+
+  applyWidth();
+  setTab(state.tab);
+  qActive.value = state.q || '';
+}
+
+/* Events */
+toggleWidth?.addEventListener('click', () => { state.width = (state.width==='full') ? 'limited' : 'full'; saveState(); applyWidth(); });
+Object.values(tabBtns).forEach(btn => btn?.addEventListener('click', () => setTab(btn.dataset.tab)));
+document.getElementById('sortActive').addEventListener('change', () => {
+  const [f,d] = String(document.getElementById('sortActive').value).split(':'); state.sort = { field:f, dir:d||'asc' }; saveState(); renderCurrent();
+});
+qActive.addEventListener('input', () => { state.q = qActive.value || ''; saveState(); renderCurrent(); });
+document.addEventListener('keydown', e => { if ((e.ctrlKey||e.metaKey) && e.key==='/'){ e.preventDefault(); qActive?.focus(); } });
+openFullModal?.addEventListener('click', ()=>{ fullModal.classList.remove('hidden'); });
+closeFullModal?.addEventListener('click', ()=>{ fullModal.classList.add('hidden'); });
+
+/* Go */
+applyWidth();
+loadData();
+</script>
+</body>
+</html>
