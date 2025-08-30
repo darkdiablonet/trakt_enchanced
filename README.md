@@ -1,7 +1,7 @@
 
 #Trakt History (Node.js, modular, HTML séparé)
 
-[![Aperçu de l’UI](docs/img/screenshot-ui.png)](docs/img/screenshot-ui.png)
+[![Aperçu de l’UI](docs/img/screenshot.webp)](docs/img/screenshot.webp)
 
 App web pour parcourir ton historique **Trakt** avec :
 - **UI 100% HTML** modifiable facilement (`public/app.html`)

@@ -1,6 +1,6 @@
 {
   "name": "trakt-history-node",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Trakt History (Node.js, modular, HTML separated)",
   "type": "module",
   "main": "server.js",
