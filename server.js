@@ -17,6 +17,8 @@ import { dailyCounts } from './lib/graph.js';
 import { loadToken } from './lib/trakt.js';
 import { imageProxyRouter } from './lib/sharp.js';
 import { readGraphCache, writeGraphCache } from './lib/graphCache.js';
+import { computeStatsPro } from './lib/statsPro.js';
+import { readStatsCache, writeStatsCache } from './lib/statsCache.js';
 
 dotenv.config();
 
@@ -157,6 +159,30 @@ app.get('/api/graph', async (req, res) => {
   } catch (err) {
     console.error('/api/graph error', err);
     return res.status(500).json({ ok: false, error: String(err?.message || err) });
+  }
+});
+
+app.get('/api/stats/pro', async (req, res) => {
+  try {
+    const range = String(req.query.range || 'lastDays');
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const lastDays = req.query.lastDays ? Number(req.query.lastDays) : 365;
+    const t = String(req.query.type || 'all');
+    const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
+
+    const key = range === 'year'
+      ? `pro-year-${year}-${type}`
+      : `pro-last-${lastDays}-${type}`;
+
+    const cached = await readStatsCache(key, 12 * 3600 * 1000);
+    if (cached) return res.json({ ok:true, data: cached, cached:true });
+
+    const data = await computeStatsPro({ range, year, lastDays, type });
+    await writeStatsCache(key, data);
+    return res.json({ ok:true, data, cached:false });
+  } catch (err) {
+    console.error('/api/stats/pro error', err);
+    res.status(500).json({ ok:false, error: String(err?.message || err) });
   }
 });
 

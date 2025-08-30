@@ -102,6 +102,61 @@
       </div>
       <div id="graphContainer" class="overflow-x-auto"></div>
       <p id="graphMeta" class="mt-3 text-sm text-slate-400"></p>
+      <!-- Stats Pro — contrôles -->
+      <div class="glass rounded-xl p-3 mt-6 mb-4 flex flex-wrap items-center gap-3">
+        <label class="text-sm">Type
+          <select id="proType" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
+            <option value="all">Tout</option>
+            <option value="movies">Films</option>
+            <option value="shows">Séries</option>
+          </select>
+        </label>
+        <label class="text-sm">Période
+          <select id="proRange" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
+            <option value="year">Année</option>
+            <option value="lastDays">Derniers jours</option>
+          </select>
+        </label>
+        <label class="text-sm" id="proYearWrap">Année
+          <select id="proYear" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm"></select>
+        </label>
+        <label class="text-sm hidden" id="proDaysWrap">Jours
+          <input id="proDays" type="number" min="7" max="1095" value="365"
+                 class="ml-2 w-24 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
+        </label>
+        <button id="proReload" class="btn btn-outline"><i class="fa-solid fa-rotate-right"></i><span>Actualiser</span></button>
+      </div>
+      
+      <!-- Stats Pro — résumé -->
+      <div id="proSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      
+      <!-- Stats Pro — graphiques -->
+      <div id="proCharts" class="mt-6 grid gap-6">
+        <div>
+          <h4 class="text-sm text-slate-400 mb-2">Heures (Europe/Paris)</h4>
+          <div id="proChartHours" class="overflow-x-auto"></div>
+        </div>
+        <div>
+          <h4 class="text-sm text-slate-400 mb-2">Jours de la semaine (L→D)</h4>
+          <div id="proChartWeek" class="overflow-x-auto"></div>
+        </div>
+        <div>
+          <h4 class="text-sm text-slate-400 mb-2">Par mois</h4>
+          <div id="proChartMonths" class="overflow-x-auto"></div>
+        </div>
+      </div>
+      
+      <!-- Stats Pro — Tops -->
+      <div id="proTops" class="mt-6 grid md:grid-cols-3 gap-6">
+        <div><h4 class="text-sm text-slate-400 mb-2">Genres (min)</h4><div id="proTopGenres"></div></div>
+        <div><h4 class="text-sm text-slate-400 mb-2">Réseaux TV (min)</h4><div id="proTopNetworks"></div></div>
+        <div><h4 class="text-sm text-slate-400 mb-2">Studios (min)</h4><div id="proTopStudios"></div></div>
+      </div>
+      
+      <div class="mt-6">
+        <h4 class="text-sm text-slate-400 mb-2">Titres (top durée)</h4>
+        <div id="proTopTitles"></div>
+      </div>
     </section>
 
     <footer class="mt-10 mb-8 text-sm text-slate-400"><hr class="border-white/10 mb-4"></hr></footer>
