@@ -3,7 +3,7 @@
 
 [![Aperçu de l’UI](docs/img/screenshot-ui.png)](docs/img/screenshot-ui.png)
 
-App web pour parcourir ton historique **Trakt** et ta collection **TMDB**, avec :
+App web pour parcourir ton historique **Trakt** avec :
 - **UI 100% HTML** modifiable facilement (`public/app.html`)
 - **Tri / recherche** (Séries, Films, Séries à voir, Films à voir)
 - **Cartes** avec posters TMDB mis en cache local
