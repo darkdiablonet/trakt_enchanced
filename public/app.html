@@ -131,5 +131,30 @@
       </div>
     </div>
   </div>
+  <!-- Overview modal -->
+  <div id="ovModal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+    <div class="relative mx-auto max-w-xl w-full mt-24 px-4">
+      <article class="glass rounded-xl border border-white/10 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 id="ovTitle" class="text-lg font-semibold"></h3>
+            <div id="ovChips" class="mt-1 flex items-center gap-2 text-sm"></div>
+          </div>
+          <button id="ovClose" class="btn btn-outline text-xs">
+            <i class="fa-solid fa-xmark"></i><span>Fermer</span>
+          </button>
+        </div>
+  
+        <div id="ovBody" class="mt-3 text-slate-200 text-[15px] leading-relaxed">
+          <p id="ovText"></p>
+        </div>
+
+  
+        <div id="ovLinks" class="mt-4 flex flex-wrap gap-2 text-sm"></div>
+      </article>
+    </div>
+  </div>
+
 </body>
 </html>

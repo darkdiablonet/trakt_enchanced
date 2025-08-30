@@ -79,58 +79,33 @@ function posterURL(u) {
 }
 
 /* Rendu */
+function escapeAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/[\r\n]+/g,' '); }
+
 function card(r, kind){
-  //const poster = String(r.poster||'').replace(/'/g,"%27");
-  const posterRaw = String(r.poster || '');
-  const poster = posterURL(posterRaw, 342);
+  const posterRaw = String(r.poster||'');
+  const poster = (typeof posterURL === 'function') ? posterURL(posterRaw) : posterRaw; // garde ton proxy si présent
   const y = r.year || '';
   const url = r.trakt_url || '#';
-  const tmdburl = r.tmdb_url || null;
+  const tmdburl = r.tmdb_url || '';
   const next = r.next || '';
-
   const isUnseen = (state.tab === 'shows_unseen' || state.tab === 'movies_unseen');
 
+  // === METRICS (identiques à ton rendu actuel)
+  let metrics = '';
   if (isUnseen){
 	if (kind === 'show') {
 	  const missing = Number(r.missing ?? 0);
-	  return `
-		<article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
-		  <div class="poster-wrap mb-3">
-			<div class="poster" style="background-image:url('${poster}')"></div>
-			${ next ? `<span class="badge-next"><i class="fa-solid fa-forward-step"></i>${next}</span>` : '' }
-		  </div>
-		  <h3 class="text-base font-semibold leading-tight line-clamp-2">${r.title||''}</h3>
-		  <div class="mt-2 chips text-sm">
-			<span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
-			${ missing > 0
-				? `<span class="chip chip--warn"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
-				: `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>` }
-		  </div>
-		  <div class="mt-2 flex items-center gap-2 text-sm">
-			<a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
-			${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
-		  </div>
-		</article>`;
+	  metrics = [
+		(missing > 0)
+		  ? `<span class="chip"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
+		  : `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`,
+		next ? `<span class="chip"><i class="fa-solid fa-forward-step mr-1"></i>${next}</span>` : ''
+	  ].filter(Boolean).join('');
 	} else {
-	  return `
-		<article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
-		  <div class="poster mb-3" style="background-image:url('${poster}')"></div>
-		  <h3 class="text-base font-semibold leading-tight line-clamp-2">${r.title||''}</h3>
-		  <div class="mt-2 chips text-sm">
-			<span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
-			<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>
-		  </div>
-		  <div class="mt-2 flex items-center gap-2 text-sm">
-			<a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
-			${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
-		  </div>
-		</article>`;
+	  metrics = `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
 	}
-  }
-
-  // onglets non "à voir" : métriques identiques à ta version
-  let metrics = '';
-  if (kind === 'show') {
+  } else if (kind === 'show') {
 	const w0 = Number(r.episodes ?? 0);
 	const t  = Number(r.episodes_total ?? 0);
 	const w  = t > 0 ? Math.min(w0, t) : w0;
@@ -143,13 +118,27 @@ function card(r, kind){
 	metrics = `<span class="chip"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</span>`;
   }
 
+  const ov = escapeAttr(r.overview || '');
+  const title = escapeAttr(r.title || '');
+
   return `
 	<article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
 	  <div class="poster-wrap mb-3">
 		<div class="poster" style="background-image:url('${poster}')"></div>
+		<button class="ov-btn js-ov"
+		  data-title="${title}"
+		  data-year="${escapeAttr(y)}"
+		  data-overview="${ov}"
+		  data-poster="${escapeAttr(poster)}"
+		  data-trakt="${escapeAttr(url)}"
+		  data-tmdb="${escapeAttr(tmdburl)}"
+		  data-kind="${escapeAttr(kind)}"
+		  title="Synopsis">
+		  <i class="fa-solid fa-circle-info"></i><span>Synopsis</span>
+		</button>
 		${ next ? `<span class="badge-next"><i class="fa-solid fa-forward-step"></i>${next}</span>` : '' }
 	  </div>
-	  <h3 class="text-base font-semibold leading-tight line-clamp-2">${r.title||''}</h3>
+	  <h3 class="text-base font-semibold leading-tight line-clamp-2">${title}</h3>
 	  <div class="mt-2 flex items-center gap-2 text-sm">
 		<span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
 		${metrics}
@@ -160,6 +149,7 @@ function card(r, kind){
 	  </div>
 	</article>`;
 }
+
 
 function renderInto(el, rows, kind){ el.innerHTML = rows.map(r => card(r, kind)).join(''); }
 function filterItems(items, q){
@@ -543,6 +533,45 @@ async function loadAndRenderGraph() {
 }
 graphTypeSel?.addEventListener('change', loadAndRenderGraph);
 graphYearSel?.addEventListener('change', loadAndRenderGraph);
+
+// --- Overview modal logic ---
+const ovModal  = document.getElementById('ovModal');
+const ovClose  = document.getElementById('ovClose');
+const ovTitle  = document.getElementById('ovTitle');
+const ovChips  = document.getElementById('ovChips');
+const ovBody   = document.getElementById('ovBody');
+const ovText   = document.getElementById('ovText');
+const ovLinks  = document.getElementById('ovLinks');
+
+function openOverview(d){
+  ovTitle.textContent = d.title || '';
+  ovChips.innerHTML = `
+	${d.year ? `<span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${d.year}</span>` : ''}
+	${d.kind ? `<span class="chip"><i class="fa-solid ${d.kind==='show'?'fa-tv':'fa-film'} mr-1"></i>${d.kind==='show'?'Série':'Film'}</span>` : ''}
+  `;
+  ovText.textContent = d.overview || '—';
+  ovLinks.innerHTML = `
+	${d.trakt ? `<a class="chip" href="${d.trakt}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>` : ''}
+	${d.tmdb  ? `<a class="chip" href="${d.tmdb}"  target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
+  `;
+
+  ovModal.classList.remove('hidden');
+}
+
+function closeOverview(){ ovModal.classList.add('hidden'); }
+
+
+ovClose?.addEventListener('click', closeOverview);
+ovModal?.addEventListener('click', (e)=>{ if (e.target === ovModal) closeOverview(); });
+document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && !ovModal.classList.contains('hidden')) closeOverview(); });
+
+// délégation : bouton Synopsis sur les cartes
+document.addEventListener('click', (e)=>{
+  const b = e.target.closest('.js-ov');
+  if (!b) return;
+  openOverview(b.dataset);
+});
+
 
 /* Go */
 applyWidth();
