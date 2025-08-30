@@ -536,6 +536,8 @@ graphYearSel?.addEventListener('change', loadAndRenderGraph);
 
 // --- Overview modal logic ---
 const ovModal  = document.getElementById('ovModal');
+const ovBackdrop = document.getElementById('ovBackdrop');
+const ovPanel  = document.getElementById('ovPanel');
 const ovClose  = document.getElementById('ovClose');
 const ovTitle  = document.getElementById('ovTitle');
 const ovChips  = document.getElementById('ovChips');
@@ -543,34 +545,110 @@ const ovBody   = document.getElementById('ovBody');
 const ovText   = document.getElementById('ovText');
 const ovLinks  = document.getElementById('ovLinks');
 
-function openOverview(d){
+function escapeAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+.replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/[\r\n]+/g,' '); }
+
+
+function positionPopover(btn){
+  if (!btn || !ovPanel) return;
+  // reset classes
+  ovPanel.classList.remove('ov-at-top','ov-at-bottom');
+
+  const rect = btn.getBoundingClientRect();
+  // d’abord rendre visible pour mesurer
+  ovPanel.style.visibility = 'hidden';
+  ovPanel.classList.add('block');
+  ovModal.classList.remove('hidden');
+
+  // forcer un layout pour récupérer taille
+  const panelW = ovPanel.offsetWidth;
+  const panelH = ovPanel.offsetHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const margin = 10;
+
+  // horizontal : centrer sur le bouton, clamp aux bords
+  let left = Math.round(rect.left + rect.width/2 - panelW/2);
+  left = Math.max(margin, Math.min(left, vw - panelW - margin));
+
+  // vertical : au-dessus si possible, sinon en dessous
+  let placeTop = rect.top >= panelH + 24;
+  let top;
+  if (placeTop){
+    top = Math.round(rect.top - panelH - 10);
+    ovPanel.classList.add('ov-at-top');
+  } else {
+    top = Math.round(rect.bottom + 10);
+    // si déborde bas, on tente au-dessus
+    if (top + panelH > vh - margin && rect.top - 10 - panelH >= margin){
+      top = Math.round(rect.top - panelH - 10);
+      ovPanel.classList.add('ov-at-top');
+    } else {
+      ovPanel.classList.add('ov-at-bottom');
+    }
+  }
+
+  ovPanel.style.left = `${left}px`;
+  ovPanel.style.top  = `${top}px`;
+
+  // position de la flèche selon le centre du bouton
+  const arrow = ovPanel.querySelector('.ov-arrow');
+  if (arrow){
+    const centerX = rect.left + rect.width/2;
+    let ax = Math.round(centerX - left - 6); // 6 = half of 12px
+    ax = Math.max(12, Math.min(ax, panelW - 12));
+    arrow.style.left = `${ax}px`;
+  }
+
+  ovPanel.style.visibility = ''; // visible
+}
+
+
+let ovAnchorBtn = null;
+let onReposition = null;
+
+function openOverviewFromBtn(btn){
+  const d = btn.dataset || {};
   ovTitle.textContent = d.title || '';
   ovChips.innerHTML = `
-	${d.year ? `<span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${d.year}</span>` : ''}
-	${d.kind ? `<span class="chip"><i class="fa-solid ${d.kind==='show'?'fa-tv':'fa-film'} mr-1"></i>${d.kind==='show'?'Série':'Film'}</span>` : ''}
+    ${d.year ? `<span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${d.year}</span>` : ''}
+    ${d.kind ? `<span class="chip"><i class="fa-solid ${d.kind==='show'?'fa-tv':'fa-film'} mr-1"></i>${d.kind==='show'?'Série':'Film'}</span>` : ''}
   `;
   ovText.textContent = d.overview || '—';
   ovLinks.innerHTML = `
-	${d.trakt ? `<a class="chip" href="${d.trakt}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>` : ''}
-	${d.tmdb  ? `<a class="chip" href="${d.tmdb}"  target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
+    ${d.trakt ? `<a class="chip" href="${d.trakt}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>` : ''}
+    ${d.tmdb  ? `<a class="chip" href="${d.tmdb}"  target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
   `;
 
-  ovModal.classList.remove('hidden');
+  ovAnchorBtn = btn;
+  positionPopover(btn);
+
+  // reposition si on scroll/resize
+  onReposition = ()=> positionPopover(ovAnchorBtn);
+  window.addEventListener('resize', onReposition);
+  window.addEventListener('scroll', onReposition, true);
 }
 
-function closeOverview(){ ovModal.classList.add('hidden'); }
+function closeOverview(){
+  ovModal.classList.add('hidden');
+  ovAnchorBtn = null;
+  if (onReposition){
+    window.removeEventListener('resize', onReposition);
+    window.removeEventListener('scroll', onReposition, true);
+    onReposition = null;
+  }
+}
 
-
-ovClose?.addEventListener('click', closeOverview);
-ovModal?.addEventListener('click', (e)=>{ if (e.target === ovModal) closeOverview(); });
-document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && !ovModal.classList.contains('hidden')) closeOverview(); });
-
-// délégation : bouton Synopsis sur les cartes
+// délégation : clicks sur boutons Synopsis
 document.addEventListener('click', (e)=>{
   const b = e.target.closest('.js-ov');
-  if (!b) return;
-  openOverview(b.dataset);
+  if (b) { e.preventDefault(); openOverviewFromBtn(b); return; }
+
+  // clic dehors -> fermeture
+  if (e.target === ovBackdrop) { closeOverview(); }
 });
+
+ovClose?.addEventListener('click', closeOverview);
+document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && !ovModal.classList.contains('hidden')) closeOverview(); });
 
 
 /* Go */
