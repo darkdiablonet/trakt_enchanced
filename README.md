@@ -29,6 +29,8 @@ npm start
 Crée une application sur **Trakt → Settings → Your API Apps** et récupère **Client ID** / **Client Secret** pour les variables d’environnement.  
 Utilise le **Device Code Flow** (pas besoin d’URL de redirection).
 
+![Trakt api](docs/img/trakt-api.png)
+
 Ajuster ce paramètres dans les réglages :
   
 ![Trakt settings](docs/img/trakt-setting.png)
