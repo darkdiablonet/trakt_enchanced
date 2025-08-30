@@ -24,6 +24,18 @@
   .tabs-group button{ padding:.5rem 1rem; border-radius:8px; font-weight:600; font-size:.9rem; color:#cbd5e1; }
   .tabs-group button:hover{ color:#fff; }
   .tab-btn-active{ background:#0ea5e9; color:#fff !important; }
+  /* --- Uniquement pour "À voir" --- */
+  .poster-wrap{ position:relative; }
+  .badge-next{
+    position:absolute; top:.5rem; right:.5rem;
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.25rem .5rem; border-radius:.6rem;
+    background:#0ea5e9; color:#06121f; font-weight:700; font-size:.75rem;
+    box-shadow:0 6px 18px rgba(14,165,233,.25);
+    border:1px solid rgba(255,255,255,.15);
+  }
+  .chips{ display:flex; flex-wrap:wrap; gap:.4rem; }
+  .chip--warn{ border-color:rgba(251,191,36,.5); color:#fde68a; background:rgba(2,6,23,.65); }
 }
 
 /* (facultatif) petit fallback pour line-clamp si tu l’utilises */

@@ -206,6 +206,7 @@ function card(r, kind){
   const y = r.year || '';
   const url = r.trakt_url || '#';
   const tmdburl = r.tmdb_url || null;
+  const next = r.next || '';
 
   const isUnseen = (state.tab === 'shows_unseen' || state.tab === 'movies_unseen');
 
@@ -214,34 +215,56 @@ function card(r, kind){
   if (isUnseen){
     if (kind === 'show') {
       const missing = Number(r.missing ?? 0);
-      const next = r.next || '';
-      metrics = [
-        (missing > 0)
-          ? `<span class="chip"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
-          : `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`,
-        next ? `<span class="chip"><i class="fa-solid fa-forward-step mr-1"></i>${next}</span>` : ''
-      ].filter(Boolean).join('');
+      
+  
+      // Affiche/poster avec badge du prochain épisode (SxxExx) en overlay
+      return `
+        <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
+          <div class="poster-wrap mb-3">
+            <div class="poster" style="background-image:url('${poster}')"></div>
+            ${ next ? `<span class="badge-next"><i class="fa-solid fa-forward-step"></i>${next}</span>` : '' }
+          </div>
+  
+          <h3 class="text-base font-semibold leading-tight line-clamp-2">${r.title||''}</h3>
+  
+          <div class="mt-2 chips text-sm">
+            <span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
+            ${
+              missing > 0
+                ? `<span class="chip chip--warn"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
+                : `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`
+            }
+          </div>
+  
+          <div class="mt-2 flex items-center gap-2 text-sm">
+            <a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
+            ${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
+          </div>
+        </article>`;
     } else {
-      // films — à voir : jamais vu
-      metrics = `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
+      // Films — à voir : simple
+      return `
+        <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
+          <div class="poster mb-3" style="background-image:url('${poster}')"></div>
+          <h3 class="text-base font-semibold leading-tight line-clamp-2">${r.title||''}</h3>
+          <div class="mt-2 chips text-sm">
+            <span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
+            <span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>
+          </div>
+          <div class="mt-2 flex items-center gap-2 text-sm">
+            <a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
+            ${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
+          </div>
+        </article>`;
     }
-  } else if (kind === 'show') {
-    const w0 = Number(r.episodes ?? 0);
-    const t  = Number(r.episodes_total ?? 0);
-    const w  = t > 0 ? Math.min(w0, t) : w0;       // borne si le total est connu
-    const hasT = t > 0;
-    const diff = hasT && w !== t;                  // reste des épisodes à voir ?
-    const cls  = diff ? 'border-amber-400/50 text-amber-200' : '';
-    const text = hasT ? `${w}/${t}` : `${w}`;
-    metrics = `<span class="chip ${cls}"><i class="fa-solid fa-film mr-1"></i>${text}</span>`;
-  } else {
-    // films — normal : nombre de lectures
-    metrics = `<span class="chip"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</span>`;
   }
 
   return `
     <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
-      <div class="poster mb-3" style="background-image:url('${poster}')"></div>
+      <div class="poster-wrap mb-3">
+        <div class="poster" style="background-image:url('${poster}')"></div>
+        ${ next ? `<span class="badge-next"><i class="fa-solid fa-forward-step"></i>${next}</span>` : '' }
+      </div>
       <h3 class="text-base font-semibold leading-tight line-clamp-2">${r.title||''}</h3>
 
       <div class="mt-2 flex items-center gap-2 text-sm">
