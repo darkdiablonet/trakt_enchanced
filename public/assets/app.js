@@ -241,10 +241,16 @@ function renderTopTitles(arr){
 // renderInto(): helper to render rows into a container
 function renderInto(el, rows, kind){ 
   el.innerHTML = rows.map(r => card(r, kind)).join(''); 
+  
   // Observer les nouvelles images lazy-loading et prefetch
   if (window.lazyManager) {
     window.lazyManager.observeAll('.poster[data-bg-src]');
     window.lazyManager.observeAll('article[data-prefetch]');
+  }
+  
+  // Animer les nouvelles cartes
+  if (window.animationManager) {
+    window.animationManager.observeCards();
   }
 }
 function filterItems(items, q){

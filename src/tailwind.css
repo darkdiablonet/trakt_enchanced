@@ -122,14 +122,56 @@
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
-  .card{ background: var(--bg-card); border:1px solid var(--border-primary); border-radius:1rem; color: var(--text-primary); }
+  .card{ 
+    background: var(--bg-card); 
+    border:1px solid var(--border-primary); 
+    border-radius:1rem; 
+    color: var(--text-primary);
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
+  }
   .grid-default{ display:grid; grid-template-columns:repeat(auto-fill, minmax(var(--card-w), 1fr)); gap:1rem; }
   .app-header{ position:sticky; top:0; z-index:20; border-bottom:1px solid var(--border-secondary); background: var(--bg-glass); backdrop-filter:blur(6px); }
   .filters{ position:sticky; top:68px; z-index:10; }
   .tabs-group{ display:inline-flex; flex-wrap:wrap; gap:.25rem; padding:.25rem; border-radius:12px; border:1px solid var(--border-secondary); background: var(--bg-glass); }
-  .tabs-group button{ padding:.5rem 1rem; border-radius:8px; font-weight:600; font-size:.9rem; color: var(--text-secondary); }
-  .tabs-group button:hover{ color: var(--text-primary); }
-  .tab-btn-active{ background: var(--accent-primary); color:#fff !important; }
+  .tabs-group button{ 
+    padding:.5rem 1rem; 
+    border-radius:8px; 
+    font-weight:600; 
+    font-size:.9rem; 
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .tabs-group button:hover{ 
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.05);
+    transform: translateY(-1px);
+  }
+  .tabs-group button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s ease;
+  }
+  .tabs-group button:hover::before {
+    left: 100%;
+  }
+  .tab-btn-active{ 
+    background: var(--accent-primary); 
+    color:#fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+  }
   /* --- Uniquement pour "À voir" --- */
   .poster-wrap{ position:relative; }
   .badge-next{
@@ -254,10 +296,66 @@
     }
   }
   
-  /* Transitions douces pour les changements de thème */
+  /* Animations fluides et transitions */
   *, *::before, *::after {
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+  
+  /* Animation d'apparition pour les cartes */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  
+  /* Classes d'animation */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+  
+  .animate-slide-in-right {
+    animation: slideInRight 0.5s ease-out forwards;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 2s infinite;
+  }
+  
+  /* Délais d'animation pour effet cascade */
+  .animate-delay-100 { animation-delay: 0.1s; }
+  .animate-delay-200 { animation-delay: 0.2s; }
+  .animate-delay-300 { animation-delay: 0.3s; }
+  .animate-delay-400 { animation-delay: 0.4s; }
 }
 
 /* (facultatif) petit fallback pour line-clamp si tu l’utilises */
