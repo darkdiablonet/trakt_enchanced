@@ -35,14 +35,26 @@ export async function loadStatsPro() {
 }
 
 export function renderStatsPro(data){
-  // Résumé
+  // Résumé avec animations
   const sumEl = document.getElementById('proSummary');
   const T = data.totals || {};
   sumEl.innerHTML = `
-    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Vus</div><div class="text-2xl font-semibold">${(T.plays||0).toLocaleString('fr-FR')}</div></div>
-    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Films</div><div class="text-2xl font-semibold">${(T.movies||0).toLocaleString('fr-FR')}</div></div>
-    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Épisodes</div><div class="text-2xl font-semibold">${(T.episodes||0).toLocaleString('fr-FR')}</div></div>
-    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Heures</div><div class="text-2xl font-semibold">${(T.hours||0).toLocaleString('fr-FR')}</div></div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 100ms;">
+      <div class="text-xs text-muted">Vus</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 400ms;">${(T.plays||0).toLocaleString('fr-FR')}</div>
+    </div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 200ms;">
+      <div class="text-xs text-muted">Films</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 500ms;">${(T.movies||0).toLocaleString('fr-FR')}</div>
+    </div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 300ms;">
+      <div class="text-xs text-muted">Épisodes</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 600ms;">${(T.episodes||0).toLocaleString('fr-FR')}</div>
+    </div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 400ms;">
+      <div class="text-xs text-muted">Heures</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 700ms;">${(T.hours||0).toLocaleString('fr-FR')}</div>
+    </div>
   `;
 
   // Graphiques

@@ -356,6 +356,69 @@
   .animate-delay-200 { animation-delay: 0.2s; }
   .animate-delay-300 { animation-delay: 0.3s; }
   .animate-delay-400 { animation-delay: 0.4s; }
+  
+  /* Animations pour les stats */
+  @keyframes progressBar {
+    from { width: 0%; }
+    to { width: var(--w); }
+  }
+  
+  @keyframes countUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .animate-progress {
+    animation: progressBar 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .animate-count-up {
+    animation: countUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  /* Hover effects pour les topcard */
+  .topcard .row {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 8px;
+    margin: 2px 0;
+  }
+  
+  .topcard .row:hover {
+    background: rgba(14, 165, 233, 0.1);
+    transform: translateX(4px);
+  }
+  
+  .topcard .bar span {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .topcard .row:hover .bar span {
+    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(90deg, #16a34a, #15803d);
+  }
+  
+  .topcard .rank {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+  
+  .topcard .row:hover .rank {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
+  }
 }
 
 /* (facultatif) petit fallback pour line-clamp si tu l’utilises */

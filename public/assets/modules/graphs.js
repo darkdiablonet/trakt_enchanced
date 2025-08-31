@@ -114,7 +114,13 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
     const lvl = levelFor(count, max);
     const fill = colorFor(lvl);
     const title = `${key} · ${count} visionnage${count>1?'s':''}`;
-    svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" fill="${fill}"><title>${title}</title></rect>`;
+    svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" 
+             fill="${fill}" 
+             style="cursor:pointer; transition: all 0.2s ease;"
+             onmouseover="this.style.transform='scale(1.2)'; this.style.stroke='#0ea5e9'; this.style.strokeWidth='1'"
+             onmouseout="this.style.transform='scale(1)'; this.style.stroke='none'">
+      <title>${title}</title>
+    </rect>`;
   }
   svg += `</g>`;
 
@@ -161,27 +167,51 @@ export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, 
   const barW = cw - gap;
   const ih = h - pad*2;
 
-  let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img">`;
+  let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" class="animate-fade-in">`;
+  
+  // Gradient definitions
+  svg += `<defs>
+    <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#16a34a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>`;
+  
   svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#0b1220" rx="8"/>`;
 
-  // Axes Y
+  // Axes Y avec style amélioré
   for (let i=0;i<=yTicks;i++){
     const y = pad + ih - Math.round(ih * (i/yTicks));
     const val = Math.round(vmax * (i/yTicks));
-    svg += `<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#1e293b" stroke-width="1"/>`;
-    svg += `<text x="${pad-6}" y="${y+3}" fill="#94a3b8" font-size="10" text-anchor="end">${titleFormatter(val)}</text>`;
+    svg += `<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#1e293b" stroke-width="1" opacity="0.7"/>`;
+    svg += `<text x="${pad-6}" y="${y+3}" fill="#94a3b8" font-size="10" text-anchor="end" font-family="ui-sans-serif">${titleFormatter(val)}</text>`;
   }
 
-  // Barres
+  // Barres avec effets hover
   for (let i=0;i<n;i++){
     const v = values[i];
     const bh = Math.round(ih * (v / vmax));
     const x = pad + i*cw + gap/2;
     const y = pad + ih - bh;
-    svg += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" fill="#22c55e"><title>${labels[i] ?? i}: ${titleFormatter(v)}</title></rect>`;
+    
+    svg += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="url(#barGradient)" 
+             style="cursor:pointer; transition: all 0.3s ease;"
+             onmouseover="this.style.filter='url(#glow)'; this.style.transform='scaleY(1.05)'"
+             onmouseout="this.style.filter='none'; this.style.transform='scaleY(1)'">
+      <title>${labels[i] ?? i}: ${titleFormatter(v)}</title>
+    </rect>`;
+    
     if (labels[i] != null){
       const lbl = String(labels[i]);
-      svg += `<text x="${x + barW/2}" y="${h-6}" fill="#94a3b8" font-size="9" text-anchor="middle">${lbl}</text>`;
+      svg += `<text x="${x + barW/2}" y="${h-6}" fill="#94a3b8" font-size="9" text-anchor="middle" 
+               font-family="ui-sans-serif">${lbl}</text>`;
     }
   }
 
