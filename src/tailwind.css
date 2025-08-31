@@ -144,6 +144,56 @@
   .text-disabled { color: var(--text-disabled) !important; }
   .text-adaptive { color: var(--text-primary) !important; }
   
+  /* Responsive mobile header */
+  @media (max-width: 768px) {
+    .app-header .mx-auto {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    
+    .app-header .text-lg {
+      font-size: 1rem;
+      justify-content: center;
+    }
+    
+    .app-header .ml-auto {
+      margin-left: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    
+    .theme-selector {
+      grid-column: 1 / -1;
+      order: -1;
+    }
+    
+    .theme-selector .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .app-header form,
+    .app-header #toggleWidth,
+    .app-header #openFullModal {
+      width: 100%;
+    }
+    
+    .app-header .btn {
+      width: 100%;
+      justify-content: center;
+      min-height: 44px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .app-header .ml-auto {
+      grid-template-columns: 1fr;
+    }
+  }
+  
   /* Transitions douces pour les changements de thème */
   *, *::before, *::after {
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
