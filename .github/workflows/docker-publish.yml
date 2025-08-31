@@ -1,16 +1,10 @@
 name: Docker
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 on:
   schedule:
     - cron: '44 0 * * *'
   push:
     branches: [ "main" ]
-    # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
@@ -21,7 +15,7 @@ on:
         required: false
         default: 'true'
       registry:
-        description: 'Registry to use (e.g. ghcr.io or docker.io). Leave empty to use default.'
+        description: 'Registry to use (e.g. ghcr.io or docker.io). Leave empty to use default ghcr.io.'
         required: false
         default: ''
       image_name:
@@ -29,62 +23,85 @@ on:
         required: false
         default: ''
 
-env:
-  # coalesce returns the first non-null argument
-  REGISTRY: ${{ coalesce(github.event.inputs.registry, 'ghcr.io') }}
-  IMAGE_NAME: ${{ coalesce(github.event.inputs.image_name, github.repository) }}
-  # Decide if we should push:
-  # - Always push on a real push event
-  # - For manual runs, push only if input push == 'true' (default)
-  SHOULD_PUSH: ${{ (github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && coalesce(github.event.inputs.push, 'true') == 'true') }}
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Install the cosign tool except when we won't push/sign
+      - name: Prepare runtime variables
+        id: prepare
+        run: |
+          # Expand inputs (empty string if not provided)
+          REGISTRY_INPUT="${{ github.event.inputs.registry }}"
+          IMAGE_INPUT="${{ github.event.inputs.image_name }}"
+          PUSH_INPUT="${{ github.event.inputs.push }}"
+
+          # Defaults
+          if [ -z "$REGISTRY_INPUT" ]; then
+            REGISTRY="ghcr.io"
+          else
+            REGISTRY="$REGISTRY_INPUT"
+          fi
+
+          if [ -z "$IMAGE_INPUT" ]; then
+            IMAGE_NAME="${{ github.repository }}"
+          else
+            IMAGE_NAME="$IMAGE_INPUT"
+          fi
+
+          # Decide whether to push:
+          # - always push for real push events
+          # - for manual dispatch, use the 'push' input (default true)
+          if [ "${{ github.event_name }}" = "push" ]; then
+            SHOULD_PUSH="true"
+          else
+            # For non-push events (workflow_dispatch / schedule / pull_request), respect PUSH_INPUT (default 'true' for manual)
+            if [ -z "$PUSH_INPUT" ] || [ "$PUSH_INPUT" = "true" ]; then
+              SHOULD_PUSH="true"
+            else
+              SHOULD_PUSH="false"
+            fi
+          fi
+
+          echo "REGISTRY=$REGISTRY" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          echo "SHOULD_PUSH=$SHOULD_PUSH" >> $GITHUB_ENV
+
+      # Install cosign only if we will push/sign
       - name: Install cosign
         if: env.SHOULD_PUSH == 'true'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20
         with:
           cosign-release: 'v2.2.4'
 
-      # Set up BuildKit Docker container builder to be able to build
-      # multi-platform images and export cache
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226
 
-      # Login against a Docker registry only when we plan to push (skip on PR or manual dry-run)
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Log into registry
         if: env.SHOULD_PUSH == 'true'
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      # Build and push Docker image with Buildx
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: ${{ env.SHOULD_PUSH == 'true' }}
@@ -93,7 +110,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Sign the resulting Docker image digest only when we pushed (not on PR or dry-run).
       - name: Sign the published Docker image
         if: env.SHOULD_PUSH == 'true'
         env:
