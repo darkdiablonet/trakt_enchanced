@@ -131,31 +131,76 @@
       <div id="proSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
       
       <!-- Stats Pro — graphiques -->
-      <div id="proCharts" class="mt-6 grid gap-6">
-        <div>
-          <h4 class="text-sm text-slate-400 mb-2">Heures (Europe/Paris)</h4>
-          <div id="proChartHours" class="overflow-x-auto"></div>
+      <div id="proCharts" class="mt-6 space-y-6">
+        <!-- Graphiques temporels principaux -->
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-clock text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Heures</h4>
+              <span class="text-xs text-slate-500">Europe/Paris</span>
+            </div>
+            <div id="proChartHours" class="overflow-x-auto"></div>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-calendar-week text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Jours de la semaine</h4>
+              <span class="text-xs text-slate-500">L→D</span>
+            </div>
+            <div id="proChartWeek" class="overflow-x-auto"></div>
+          </div>
         </div>
-        <div>
-          <h4 class="text-sm text-slate-400 mb-2">Jours de la semaine (L→D)</h4>
-          <div id="proChartWeek" class="overflow-x-auto"></div>
-        </div>
-        <div>
-          <h4 class="text-sm text-slate-400 mb-2">Par mois</h4>
+        
+        <!-- Graphique mensuel (plus large) -->
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-chart-line text-sky-400"></i>
+            <h4 class="font-semibold text-sm">Évolution par mois</h4>
+          </div>
           <div id="proChartMonths" class="overflow-x-auto"></div>
         </div>
       </div>
       
       <!-- Stats Pro — Tops -->
-      <div id="proTops" class="mt-6 grid md:grid-cols-3 gap-6">
-        <div><h4 class="text-sm text-slate-400 mb-2">Genres (min)</h4><div id="proTopGenres"></div></div>
-        <div><h4 class="text-sm text-slate-400 mb-2">Réseaux TV (min)</h4><div id="proTopNetworks"></div></div>
-        <div><h4 class="text-sm text-slate-400 mb-2">Studios (min)</h4><div id="proTopStudios"></div></div>
-      </div>
-      
-      <div class="mt-6">
-        <h4 class="text-sm text-slate-400 mb-2">Titres (top durée)</h4>
-        <div id="proTopTitles"></div>
+      <div id="proTops" class="mt-6 space-y-6">
+        <!-- Top listes en grille -->
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-masks-theater text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Genres</h4>
+              <span class="text-xs text-slate-500">minutes</span>
+            </div>
+            <div id="proTopGenres"></div>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-tower-broadcast text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Réseaux TV</h4>
+              <span class="text-xs text-slate-500">minutes</span>
+            </div>
+            <div id="proTopNetworks"></div>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-building text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Studios</h4>
+              <span class="text-xs text-slate-500">minutes</span>
+            </div>
+            <div id="proTopStudios"></div>
+          </div>
+        </div>
+        
+        <!-- Top titres (plus large) -->
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-trophy text-sky-400"></i>
+            <h4 class="font-semibold text-sm">Top titres</h4>
+            <span class="text-xs text-slate-500">durée totale</span>
+          </div>
+          <div id="proTopTitles"></div>
+        </div>
       </div>
     </section>
 
