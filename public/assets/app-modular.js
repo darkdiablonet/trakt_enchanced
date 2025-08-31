@@ -10,6 +10,8 @@ import { applyWidth } from './modules/utils.js';
 import { renderCurrent } from './modules/rendering.js';
 import { setTab } from './modules/tabs.js';
 import { loadData } from './modules/data.js';
+import { lazyManager, initializeLazyLoading, fallbackImageLoading } from './modules/lazy-loading.js';
+import { animationManager, initializeAnimations } from './modules/animations.js';
 import './modules/modals.js';
 import './modules/pro-stats.js';
 import './modules/theme-ui.js';
@@ -55,3 +57,18 @@ elements.closeFullModal?.addEventListener('click', () => {
 
 // Initialisation
 loadData();
+
+// Initialize lazy loading and animations
+initializeLazyLoading();
+initializeAnimations();
+
+// Fallback for browsers without Intersection Observer
+if (!('IntersectionObserver' in window)) {
+  fallbackImageLoading();
+}
+
+// Make managers available globally for other scripts
+window.lazyManager = lazyManager;
+window.animationManager = animationManager;
+
+console.log('[App] Modular application initialized with lazy loading and animations');

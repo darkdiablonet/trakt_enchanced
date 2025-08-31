@@ -1,5 +1,9 @@
-// Animation system for smooth UI interactions
-class AnimationManager {
+/**
+ * Animation Module
+ * Système d'animations fluides pour interactions UI
+ */
+
+export class AnimationManager {
   constructor() {
     this.observeElements();
     this.setupIntersectionObserver();
@@ -184,14 +188,14 @@ particleStyle.textContent = `
 `;
 document.head.appendChild(particleStyle);
 
-// Instance globale
-const animationManager = new AnimationManager();
+// Export instance for use by other modules
+export const animationManager = new AnimationManager();
 
 // Export pour usage manuel
 window.animationManager = animationManager;
 
-// Hook pour l'app principale
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize animations - called by app-modular.js
+export function initializeAnimations() {
   // Animation d'entrée pour l'header
   const header = document.querySelector('.app-header');
   if (header) {
@@ -211,4 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
       animationManager.createParticleEffect(x, y);
     }
   });
-});
+  
+  console.log('[Animations] Initialized successfully');
+}

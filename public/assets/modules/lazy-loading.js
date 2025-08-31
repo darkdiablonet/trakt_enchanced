@@ -1,5 +1,9 @@
-// Lazy loading system for background images and data prefetching
-class LazyLoadManager {
+/**
+ * Lazy Loading Module
+ * Système de chargement différé pour images et préchargement
+ */
+
+export class LazyLoadManager {
   constructor() {
     this.imageObserver = null;
     this.prefetchObserver = null;
@@ -110,12 +114,11 @@ class LazyLoadManager {
   }
 }
 
-// Initialize when DOM is ready
-const lazyManager = new LazyLoadManager();
+// Initialize when DOM is ready (will be exported below)
 
 // Auto-initialize when DOM is loaded
 
-function initializeLazyLoading() {
+export function initializeLazyLoading() {
   lazyManager.convertExistingImages();
   
   // Watch for dynamically added images
@@ -147,14 +150,8 @@ function initializeLazyLoading() {
   });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeLazyLoading);
-} else {
-  initializeLazyLoading();
-}
-
-// Fallback: load all images immediately if no Intersection Observer
-if (!('IntersectionObserver' in window)) {
+// Fallback function for browsers without Intersection Observer
+export function fallbackImageLoading() {
   setTimeout(() => {
     document.querySelectorAll('.poster[data-bg-src]').forEach(element => {
       const bgUrl = element.dataset.bgSrc;
@@ -165,5 +162,6 @@ if (!('IntersectionObserver' in window)) {
   }, 100);
 }
 
-// Export for manual usage
+// Export instance for use by other modules
+export const lazyManager = new LazyLoadManager();
 window.lazyManager = lazyManager;
