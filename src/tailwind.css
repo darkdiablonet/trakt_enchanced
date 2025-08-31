@@ -185,6 +185,19 @@
       width: 100%;
       justify-content: center;
       min-height: 44px;
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .app-header .btn span {
+      display: none;
+    }
+    
+    .app-header .btn i {
+      margin-right: 0;
     }
   }
   
