@@ -6,6 +6,10 @@ import session from 'express-session';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
+// Import du système de monitoring
+import { logger } from './lib/logger.js';
+import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddleware, rateLimitMiddleware, asyncHandler } from './lib/middleware.js';
+
 
 import { DATA_DIR, IMG_DIR, PORT, FULL_REBUILD_PASS, TITLE } from './lib/config.js';
 import { saveToken, deviceToken } from './lib/trakt.js';
@@ -23,7 +27,19 @@ import { readStatsCache, writeStatsCache } from './lib/statsCache.js';
 dotenv.config();
 
 const app = express();
-app.use(morgan('tiny'));
+
+// Trust proxy pour obtenir les vraies IPs derrière un reverse proxy
+app.set('trust proxy', 1);
+
+// Middleware de monitoring
+app.use(requestLoggingMiddleware);
+app.use(rateLimitMiddleware);
+
+// Remplacer Morgan par notre système de logging (Morgan reste pour le développement)
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('tiny'));
+}
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
@@ -79,8 +95,40 @@ app.get('/favicon.ico', (req, res) => {
   return res.status(204).end(); // fallback silencieux
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  const healthStatus = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    version: process.env.npm_package_version || '1.5.0',
+    node: process.version,
+    environment: process.env.NODE_ENV || 'development'
+  };
+  
+  // Vérifier l'état des services critiques
+  const checks = {
+    filesystem: fs.existsSync(DATA_DIR),
+    logs: fs.existsSync(path.join(process.cwd(), 'data', 'logs'))
+  };
+  
+  const allChecksPass = Object.values(checks).every(check => check === true);
+  
+  if (allChecksPass) {
+    healthStatus.checks = checks;
+    logger.debug('Health check passed');
+    res.status(200).json(healthStatus);
+  } else {
+    healthStatus.status = 'unhealthy';
+    healthStatus.checks = checks;
+    logger.warn('Health check failed', { checks });
+    res.status(503).json(healthStatus);
+  }
+});
+
 // OAuth helper routes
-app.get('/oauth/poll', async (req, res) => {
+app.get('/oauth/poll', asyncHandler(async (req, res) => {
   const dc = req.session.device_code;
   if (!dc?.device_code) return res.json({ ok:false, err:'no_device_code' });
   const tok = await deviceToken(dc.device_code, dc._client_id, dc._client_secret);
@@ -95,7 +143,7 @@ app.get('/oauth/poll', async (req, res) => {
     return res.json({ ok:false, err, fatal });
   }
   return res.json({ ok:false, err:'network_or_empty_response', fatal:false });
-});
+}));
 
 app.get('/oauth/new', (req, res) => { delete req.session.device_code; res.redirect('/'); });
 
@@ -110,7 +158,7 @@ app.post('/full_rebuild', (req, res) => {
 });
 
 // API: Page data JSON
-app.get('/api/data', async (req, res) => {
+app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async (req, res) => {
   const flash = req.session.flash || null;
   delete req.session.flash;
 
@@ -122,69 +170,55 @@ app.get('/api/data', async (req, res) => {
   const pageData = await buildPageData(req, { forceRefreshOnce, allowFull });
   res.setHeader('Cache-Control', 'no-store');
   res.json({ title: TITLE, flash, ...pageData });
-});
+}));
 
-app.get('/api/stats', async (req, res) => {
-  try {
-    const tok = await loadTraktToken();
-    if (!tok?.access_token) return res.status(401).json({ ok:false, err:'no_token' });
-    const headers = traktHeaders(tok.access_token);
-    const stats = await userStats(headers, 'me');
-    res.setHeader('Cache-Control', 'no-store');
-    res.json({ ok:true, stats });
-  } catch (e) {
-    res.status(500).json({ ok:false, err:String(e?.message || e) });
+app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
+  const tok = await loadTraktToken();
+  if (!tok?.access_token) return res.status(401).json({ ok:false, err:'no_token' });
+  const headers = traktHeaders(tok.access_token);
+  const stats = await userStats(headers, 'me');
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ ok:true, stats });
+}));
+
+app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (req, res) => {
+  const year = Number(req.query.year) || (new Date()).getFullYear();
+  const t = String(req.query.type || 'all');
+  const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
+
+  // 1) essaie le cache (TTL 24h)
+  const cached = await readGraphCache(type, year, 24 * 3600 * 1000);
+  if (cached) {
+    return res.json({ ok: true, data: cached, cached: true });
   }
-});
 
-app.get('/api/graph', async (req, res) => {
-  try {
-    const year = Number(req.query.year) || (new Date()).getFullYear();
-    const t = String(req.query.type || 'all');
-    const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
+  // 2) calcule si pas en cache
+  const data = await dailyCounts({ type, year });
 
-    // 1) essaie le cache (TTL 24h)
-    const cached = await readGraphCache(type, year, 24 * 3600 * 1000);
-    if (cached) {
-      return res.json({ ok: true, data: cached, cached: true });
-    }
+  // 3) mémorise
+  await writeGraphCache(type, year, data);
 
-    // 2) calcule si pas en cache
-    const data = await dailyCounts({ type, year });
+  return res.json({ ok: true, data, cached: false });
+}));
 
-    // 3) mémorise
-    await writeGraphCache(type, year, data);
+app.get('/api/stats/pro', performanceMiddleware('proStats'), asyncHandler(async (req, res) => {
+  const range = String(req.query.range || 'lastDays');
+  const year = req.query.year ? Number(req.query.year) : undefined;
+  const lastDays = req.query.lastDays ? Number(req.query.lastDays) : 365;
+  const t = String(req.query.type || 'all');
+  const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
 
-    return res.json({ ok: true, data, cached: false });
-  } catch (err) {
-    console.error('/api/graph error', err);
-    return res.status(500).json({ ok: false, error: String(err?.message || err) });
-  }
-});
+  const key = range === 'year'
+    ? `pro-year-${year}-${type}`
+    : `pro-last-${lastDays}-${type}`;
 
-app.get('/api/stats/pro', async (req, res) => {
-  try {
-    const range = String(req.query.range || 'lastDays');
-    const year = req.query.year ? Number(req.query.year) : undefined;
-    const lastDays = req.query.lastDays ? Number(req.query.lastDays) : 365;
-    const t = String(req.query.type || 'all');
-    const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
+  const cached = await readStatsCache(key, 12 * 3600 * 1000);
+  if (cached) return res.json({ ok:true, data: cached, cached:true });
 
-    const key = range === 'year'
-      ? `pro-year-${year}-${type}`
-      : `pro-last-${lastDays}-${type}`;
-
-    const cached = await readStatsCache(key, 12 * 3600 * 1000);
-    if (cached) return res.json({ ok:true, data: cached, cached:true });
-
-    const data = await computeStatsPro({ range, year, lastDays, type });
-    await writeStatsCache(key, data);
-    return res.json({ ok:true, data, cached:false });
-  } catch (err) {
-    console.error('/api/stats/pro error', err);
-    res.status(500).json({ ok:false, error: String(err?.message || err) });
-  }
-});
+  const data = await computeStatsPro({ range, year, lastDays, type });
+  await writeStatsCache(key, data);
+  return res.json({ ok:true, data, cached:false });
+}));
 
 
 // Main page (static HTML)
@@ -192,7 +226,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.resolve('public/app.html'));
 });
 
+// Middleware de gestion d'erreurs (doit être le dernier)
+app.use(errorHandlingMiddleware);
+
 app.listen(PORT, () => {
+  logger.info(`Server started successfully`, {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    nodeVersion: process.version,
+    timestamp: new Date().toISOString()
+  });
   console.log(`→ http://localhost:${PORT}`);
 
   // Crée le refresher (utilise la même logique que /refresh)
@@ -212,8 +255,9 @@ app.listen(PORT, () => {
   refresher.schedule({ intervalMs: EVERY, initialDelayMs: JITTER });
 
   // (optionnel) endpoint manuel pour tester en live
-  app.post('/_debug/refresh', async (_req, res) => {
+  app.post('/_debug/refresh', asyncHandler(async (_req, res) => {
+    logger.info('Manual refresh triggered via debug endpoint');
     await refresher.refreshNow('manual');
-    res.json({ ok: true });
-  });
+    res.json({ ok: true, timestamp: new Date().toISOString() });
+  }));
 });

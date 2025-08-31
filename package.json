@@ -19,7 +19,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.12",
