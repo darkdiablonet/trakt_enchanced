@@ -12,6 +12,7 @@ import { setTab } from './modules/tabs.js';
 import { loadData } from './modules/data.js';
 import './modules/modals.js';
 import './modules/pro-stats.js';
+import './modules/theme-ui.js';
 
 // Event listeners principaux
 elements.toggleWidth?.addEventListener('click', () => { 
