@@ -1,0 +1,10 @@
+name: ping
+on:
+  workflow_dispatch:
+  push:
+	branches: ['**']
+jobs:
+  hello:
+	runs-on: ubuntu-22.04
+	steps:
+	  - run: echo "Runner OK"
