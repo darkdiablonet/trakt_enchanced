@@ -77,17 +77,17 @@ export function renderTopSimple(arr) {
   const rows = arr.slice(0,10).map((it,i)=>{
     const minutes = Number(it.minutes||0);
     const pct = Math.round(minutes * 100 / max);
-    const delay = i * 100;
+    const delay = i * 150; // Plus lent pour effet plus doux
     return `<div class="row animate-fade-in-up" style="animation-delay: ${delay}ms;">
       <span class="rank">${i+1}</span>
       <div class="flex-1">
         <div class="name font-medium">${esc(it.name||'—')}</div>
         <div class="bar mt-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-          <span class="block h-full animate-progress" style="--w:${pct}%; animation-delay: ${delay + 300}ms;"></span>
+          <span class="block h-full animate-progress" style="--w:${pct}%; animation-delay: ${delay + 500}ms;"></span>
         </div>
       </div>
       <div class="flex items-center gap-2 ml-4">
-        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 600}ms;">
+        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 800}ms;">
           <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString('fr-FR')} min
         </span>
       </div>
@@ -105,23 +105,23 @@ export function renderTopTitles(arr) {
     const pct = Math.round(minutes * 100 / max);
     const icon = it.type === 'show' ? 'fa-tv' : 'fa-film';
     const typeLbl = it.type === 'show' ? 'Série' : 'Film';
-    const delay = i * 80;
+    const delay = i * 120; // Plus lent pour top titres plus long
     return `<div class="row animate-fade-in-up" style="animation-delay: ${delay}ms;">
       <span class="rank">${i+1}</span>
       <div class="flex-1">
         <div class="name font-medium text-sm">${esc(it.title||'—')}</div>
         <div class="bar mt-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-          <span class="block h-full animate-progress" style="--w:${pct}%; animation-delay: ${delay + 300}ms;"></span>
+          <span class="block h-full animate-progress" style="--w:${pct}%; animation-delay: ${delay + 400}ms;"></span>
         </div>
       </div>
       <div class="flex items-center gap-2 ml-4">
-        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 400}ms;">
+        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 600}ms;">
           <i class="fa-solid ${icon} mr-1"></i>${typeLbl}
         </span>
-        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 500}ms;">
+        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 700}ms;">
           <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString('fr-FR')} min
         </span>
-        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 600}ms;">
+        <span class="chip chip-xs animate-count-up" style="animation-delay: ${delay + 800}ms;">
           <i class="fa-solid fa-play mr-1"></i>${plays}
         </span>
       </div>

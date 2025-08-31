@@ -39,21 +39,21 @@ export function renderStatsPro(data){
   const sumEl = document.getElementById('proSummary');
   const T = data.totals || {};
   sumEl.innerHTML = `
-    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 100ms;">
-      <div class="text-xs text-muted">Vus</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 400ms;">${(T.plays||0).toLocaleString('fr-FR')}</div>
-    </div>
     <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 200ms;">
-      <div class="text-xs text-muted">Films</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 500ms;">${(T.movies||0).toLocaleString('fr-FR')}</div>
-    </div>
-    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 300ms;">
-      <div class="text-xs text-muted">Épisodes</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 600ms;">${(T.episodes||0).toLocaleString('fr-FR')}</div>
+      <div class="text-xs text-muted">Vus</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 600ms;">${(T.plays||0).toLocaleString('fr-FR')}</div>
     </div>
     <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 400ms;">
+      <div class="text-xs text-muted">Films</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 800ms;">${(T.movies||0).toLocaleString('fr-FR')}</div>
+    </div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 600ms;">
+      <div class="text-xs text-muted">Épisodes</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 1000ms;">${(T.episodes||0).toLocaleString('fr-FR')}</div>
+    </div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 800ms;">
       <div class="text-xs text-muted">Heures</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 700ms;">${(T.hours||0).toLocaleString('fr-FR')}</div>
+      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 1200ms;">${(T.hours||0).toLocaleString('fr-FR')}</div>
     </div>
   `;
 

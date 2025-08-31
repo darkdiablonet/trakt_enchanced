@@ -114,12 +114,14 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
     const lvl = levelFor(count, max);
     const fill = colorFor(lvl);
     const title = `${key} · ${count} visionnage${count>1?'s':''}`;
+    const delay = (ci * 7 + ri) * 8; // Animation progressive ligne par ligne
     svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" 
-             fill="${fill}" 
+             fill="${fill}" opacity="0"
              style="cursor:pointer; transition: all 0.2s ease;"
              onmouseover="this.style.transform='scale(1.2)'; this.style.stroke='#0ea5e9'; this.style.strokeWidth='1'"
              onmouseout="this.style.transform='scale(1)'; this.style.stroke='none'">
       <title>${title}</title>
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="${delay}ms" fill="freeze"/>
     </rect>`;
   }
   svg += `</g>`;
@@ -194,24 +196,31 @@ export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, 
     svg += `<text x="${pad-6}" y="${y+3}" fill="#94a3b8" font-size="10" text-anchor="end" font-family="ui-sans-serif">${titleFormatter(val)}</text>`;
   }
 
-  // Barres avec effets hover
+  // Barres avec animations et effets hover
   for (let i=0;i<n;i++){
     const v = values[i];
     const bh = Math.round(ih * (v / vmax));
     const x = pad + i*cw + gap/2;
     const y = pad + ih - bh;
+    const delay = i * 100;
     
-    svg += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="url(#barGradient)" 
+    // Barre avec animation d'apparition depuis le bas
+    svg += `<rect x="${x}" y="${pad + ih}" width="${barW}" height="0" rx="3" fill="url(#barGradient)" 
              style="cursor:pointer; transition: all 0.3s ease;"
              onmouseover="this.style.filter='url(#glow)'; this.style.transform='scaleY(1.05)'"
              onmouseout="this.style.filter='none'; this.style.transform='scaleY(1)'">
       <title>${labels[i] ?? i}: ${titleFormatter(v)}</title>
+      <animate attributeName="height" from="0" to="${bh}" dur="0.8s" begin="${delay}ms" fill="freeze"/>
+      <animate attributeName="y" from="${pad + ih}" to="${y}" dur="0.8s" begin="${delay}ms" fill="freeze"/>
     </rect>`;
     
     if (labels[i] != null){
       const lbl = String(labels[i]);
       svg += `<text x="${x + barW/2}" y="${h-6}" fill="#94a3b8" font-size="9" text-anchor="middle" 
-               font-family="ui-sans-serif">${lbl}</text>`;
+               font-family="ui-sans-serif" opacity="0">
+        <animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="${delay + 600}ms" fill="freeze"/>
+        ${lbl}
+      </text>`;
     }
   }
 
