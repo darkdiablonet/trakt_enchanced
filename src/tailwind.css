@@ -44,13 +44,13 @@
   .theme-light {
     --bg-primary: #f1f5f9;
     --bg-secondary: #e2e8f0;
-    --bg-card: linear-gradient(180deg,rgba(241,245,249,.9),rgba(226,232,240,.9));
+    --bg-card: linear-gradient(180deg,rgba(255,255,255,.95),rgba(248,250,252,.95));
     --bg-glass: linear-gradient(180deg,rgba(248,250,252,.85),rgba(241,245,249,.85));
     --bg-glass-solid: linear-gradient(180deg,rgba(248,250,252,.95),rgba(241,245,249,.95));
     --border-primary: #cbd5e1;
     --border-secondary: rgba(0,0,0,.12);
-    --text-primary: #0f172a;
-    --text-secondary: #1e293b;
+    --text-primary: #1e293b;
+    --text-secondary: #334155;
     --text-muted: #475569;
     --text-disabled: #64748b;
     --accent-primary: #0ea5e9;
@@ -75,7 +75,7 @@
   .btn-outline{ background:transparent; border:1px solid var(--border-primary); color: var(--text-primary); }
   .chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .5rem; border-radius:999px; background: var(--chip-bg); border:1px solid var(--border-primary); color: var(--accent-secondary); font-size:.75rem; }
   .poster{ width:100%; padding-top:150%; border-radius:.75rem; background-size:cover; background-position:center; background-color: var(--poster-bg); border:1px solid var(--border-primary); }
-  .card{ background: var(--bg-card); border:1px solid var(--border-primary); border-radius:1rem; }
+  .card{ background: var(--bg-card); border:1px solid var(--border-primary); border-radius:1rem; color: var(--text-primary); }
   .grid-default{ display:grid; grid-template-columns:repeat(auto-fill, minmax(var(--card-w), 1fr)); gap:1rem; }
   .app-header{ position:sticky; top:0; z-index:20; border-bottom:1px solid var(--border-secondary); background: var(--bg-glass); backdrop-filter:blur(6px); }
   .filters{ position:sticky; top:68px; z-index:10; }
