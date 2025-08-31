@@ -38,6 +38,7 @@
           </div>
         </div>
         <form method="post" action="/refresh">
+          <input type="hidden" name="csrf" value="<!-- CSRF_TOKEN -->">
           <button class="btn btn-outline" type="submit"><i class="fa-solid fa-rotate-right"></i><span>Rafraîchir</span></button>
         </form>
         <button id="toggleWidth" class="btn btn-outline" title="Basculer pleine largeur">
@@ -238,6 +239,7 @@
         </div>
         <p class="text-muted text-sm mt-2">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
         <form method="post" action="/full_rebuild" class="mt-4 space-y-3">
+          <input type="hidden" name="csrf" value="<!-- CSRF_TOKEN -->">
           <label class="block text-xs uppercase tracking-wide text-muted">Mot de passe</label>
           <input type="password" name="pwd" required class="w-full rounded-lg bg-slate-950/60 border border-slate-700 px-3 py-2">
           <div class="flex justify-end gap-2">

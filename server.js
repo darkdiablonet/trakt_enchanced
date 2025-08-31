@@ -6,9 +6,10 @@ import session from 'express-session';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
-// Import du système de monitoring
+// Import du système de monitoring et sécurité
 import { logger } from './lib/logger.js';
 import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddleware, asyncHandler } from './lib/middleware.js';
+import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection, rateLimitByIP } from './lib/security.js';
 
 
 import { DATA_DIR, IMG_DIR, PORT, FULL_REBUILD_PASS, TITLE } from './lib/config.js';
@@ -23,6 +24,7 @@ import { imageProxyRouter } from './lib/sharp.js';
 import { readGraphCache, writeGraphCache } from './lib/graphCache.js';
 import { computeStatsPro } from './lib/statsPro.js';
 import { readStatsCache, writeStatsCache } from './lib/statsCache.js';
+import { renderTemplate } from './lib/template.js';
 
 dotenv.config();
 
@@ -30,6 +32,11 @@ const app = express();
 
 // Trust proxy pour obtenir les vraies IPs derrière un reverse proxy
 app.set('trust proxy', 1);
+
+// Middleware de sécurité (en premier)
+app.use(securityHeaders);
+app.use(attackDetection);
+app.use(rateLimitByIP);
 
 // Middleware de monitoring
 app.use(requestLoggingMiddleware);
@@ -39,14 +46,26 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('tiny'));
 }
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '10mb' }));
+
+// Session sécurisée
 app.use(session({
   secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
   resave: false,
-  saveUninitialized: true,
-  cookie: { maxAge: 7*24*3600*1000 }
+  saveUninitialized: false,
+  rolling: true,
+  cookie: { 
+    maxAge: 24*60*60*1000, // 24h au lieu de 7 jours
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  },
+  name: 'trakt.sid' // Nom personnalisé pour masquer Express
 }));
+
+// Middleware CSRF après les sessions
+app.use(csrfTokenMiddleware);
 
 // --- Chemin du cache images
 const ABS_CACHE_DIR   = '/data/cache_imgs';
@@ -147,8 +166,8 @@ app.get('/oauth/poll', asyncHandler(async (req, res) => {
 app.get('/oauth/new', (req, res) => { delete req.session.device_code; res.redirect('/'); });
 
 // Refresh / Full rebuild
-app.post('/refresh', (req, res) => { req.session.forceRefreshOnce = true; res.redirect('/'); });
-app.post('/full_rebuild', (req, res) => {
+app.post('/refresh', csrfProtection, (req, res) => { req.session.forceRefreshOnce = true; res.redirect('/'); });
+app.post('/full_rebuild', csrfProtection, (req, res) => {
   const pwd = String(req.body.pwd || '');
   if (!FULL_REBUILD_PASS) req.session.flash = 'Mot de passe de full rebuild non configuré côté serveur.';
   else if (pwd !== FULL_REBUILD_PASS) req.session.flash = 'Mot de passe incorrect.';
@@ -221,9 +240,13 @@ app.get('/api/stats/pro', performanceMiddleware('proStats'), asyncHandler(async 
 
 
 // Main page (static HTML)
-app.get('/', (req, res) => {
-  res.sendFile(path.resolve('public/app.html'));
-});
+app.get('/', asyncHandler(async (req, res) => {
+  const templatePath = path.resolve('public/app.html');
+  const html = await renderTemplate(templatePath, {
+    csrf_token: req.session.csrfToken || ''
+  });
+  res.send(html);
+}));
 
 // Middleware de gestion d'erreurs (doit être le dernier)
 app.use(errorHandlingMiddleware);
