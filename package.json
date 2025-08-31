@@ -1,6 +1,6 @@
 {
   "name": "trakt-history-node",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Trakt History (Node.js, modular, HTML separated)",
   "type": "module",
   "main": "server.js",
@@ -20,6 +20,7 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "morgan": "^1.10.0",
+    "sharp": "^0.34.3",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
