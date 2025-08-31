@@ -20,12 +20,9 @@ export function card(r, kind) {
   if (isUnseen) {
     if (kind === 'show') {
       const missing = Number(r.missing ?? 0);
-      metrics = [
-        (missing > 0)
-          ? `<span class="chip"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
-          : `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`,
-        next ? `<span class="chip"><i class="fa-solid fa-forward-step mr-1"></i>${next}</span>` : ''
-      ].filter(Boolean).join('');
+      metrics = (missing > 0)
+        ? `<span class="chip"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
+        : `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
     } else {
       metrics = `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
     }
