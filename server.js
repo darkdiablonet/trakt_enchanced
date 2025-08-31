@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 
 // Import du système de monitoring
 import { logger } from './lib/logger.js';
-import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddleware, rateLimitMiddleware, asyncHandler } from './lib/middleware.js';
+import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddleware, asyncHandler } from './lib/middleware.js';
 
 
 import { DATA_DIR, IMG_DIR, PORT, FULL_REBUILD_PASS, TITLE } from './lib/config.js';
@@ -33,7 +33,6 @@ app.set('trust proxy', 1);
 
 // Middleware de monitoring
 app.use(requestLoggingMiddleware);
-app.use(rateLimitMiddleware);
 
 // Remplacer Morgan par notre système de logging (Morgan reste pour le développement)
 if (process.env.NODE_ENV !== 'production') {
