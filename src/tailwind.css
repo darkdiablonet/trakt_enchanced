@@ -138,6 +138,12 @@
   .theme-selector button:hover{ background-color: rgba(255,255,255,.05); }
   .theme-selector .dropdown-active{ background-color: rgba(14,165,233,.1); }
   
+  /* Classes de texte adaptatives */
+  .text-muted { color: var(--text-muted) !important; }
+  .text-secondary { color: var(--text-secondary) !important; }
+  .text-disabled { color: var(--text-disabled) !important; }
+  .text-adaptive { color: var(--text-primary) !important; }
+  
   /* Transitions douces pour les changements de thème */
   *, *::before, *::after {
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;

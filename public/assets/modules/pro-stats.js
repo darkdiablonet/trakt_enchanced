@@ -8,7 +8,7 @@ import { barChartSVG } from './graphs.js';
 
 export function listTable(rows, {cols=[['name','Nom'],['minutes','Min'],['plays','Vus']], limit=10} = {}){
   const toNum = (x)=> typeof x === 'number' ? x : Number(x||0);
-  const head = cols.map(([k,lab])=>`<th class="text-left py-1 pr-3 text-slate-400">${lab}</th>`).join('');
+  const head = cols.map(([k,lab])=>`<th class="text-left py-1 pr-3 text-muted">${lab}</th>`).join('');
   const body = rows.slice(0, limit).map(r=>{
     return `<tr class="border-b border-white/5">
       ${cols.map(([k])=>`<td class="py-1 pr-3">${(k in r)?(typeof r[k]==='number'?r[k].toLocaleString('fr-FR'):String(r[k])):''}</td>`).join('')}
@@ -39,10 +39,10 @@ export function renderStatsPro(data){
   const sumEl = document.getElementById('proSummary');
   const T = data.totals || {};
   sumEl.innerHTML = `
-    <div class="glass rounded-xl p-3"><div class="text-xs text-slate-400">Vus</div><div class="text-2xl font-semibold">${(T.plays||0).toLocaleString('fr-FR')}</div></div>
-    <div class="glass rounded-xl p-3"><div class="text-xs text-slate-400">Films</div><div class="text-2xl font-semibold">${(T.movies||0).toLocaleString('fr-FR')}</div></div>
-    <div class="glass rounded-xl p-3"><div class="text-xs text-slate-400">Épisodes</div><div class="text-2xl font-semibold">${(T.episodes||0).toLocaleString('fr-FR')}</div></div>
-    <div class="glass rounded-xl p-3"><div class="text-xs text-slate-400">Heures</div><div class="text-2xl font-semibold">${(T.hours||0).toLocaleString('fr-FR')}</div></div>
+    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Vus</div><div class="text-2xl font-semibold">${(T.plays||0).toLocaleString('fr-FR')}</div></div>
+    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Films</div><div class="text-2xl font-semibold">${(T.movies||0).toLocaleString('fr-FR')}</div></div>
+    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Épisodes</div><div class="text-2xl font-semibold">${(T.episodes||0).toLocaleString('fr-FR')}</div></div>
+    <div class="glass rounded-xl p-3"><div class="text-xs text-muted">Heures</div><div class="text-2xl font-semibold">${(T.hours||0).toLocaleString('fr-FR')}</div></div>
   `;
 
   // Graphiques

@@ -75,7 +75,7 @@ export function card(r, kind) {
 }
 
 export function renderTopSimple(arr) {
-  if (!Array.isArray(arr) || arr.length === 0) return '<div class="text-slate-500 text-sm">—</div>';
+  if (!Array.isArray(arr) || arr.length === 0) return '<div class="text-disabled text-sm">—</div>';
   const max = Math.max(1, ...arr.map(x => Number(x.minutes||0)));
   const rows = arr.slice(0,10).map((it,i)=>{
     const minutes = Number(it.minutes||0);
@@ -95,7 +95,7 @@ export function renderTopSimple(arr) {
 }
 
 export function renderTopTitles(arr) {
-  if (!Array.isArray(arr) || arr.length === 0) return '<div class="text-slate-500 text-sm">—</div>';
+  if (!Array.isArray(arr) || arr.length === 0) return '<div class="text-disabled text-sm">—</div>';
   const max = Math.max(1, ...arr.map(x => Number(x.minutes||0)));
   const rows = arr.slice(0,20).map((it,i)=>{
     const minutes = Number(it.minutes||0);

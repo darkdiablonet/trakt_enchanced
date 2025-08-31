@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/assets/fa/css/all.min.css">
   <script src="/assets/app-modular.js" type="module" defer></script>
 </head>
-<body class="min-h-full text-slate-200 selection:bg-sky-500/40 selection:text-white">
+<body class="min-h-full text-adaptive selection:bg-sky-500/40 selection:text-white">
   <header class="app-header">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
       <div class="flex items-center gap-2 text-lg font-semibold tracking-wide">
@@ -75,13 +75,13 @@
     <section class="filters glass rounded-xl px-4 py-3 mb-6">
       <div class="flex flex-wrap items-end gap-4">
         <div class="w-full sm:w-auto">
-          <label for="qActive" class="block text-xs uppercase tracking-wide text-slate-400 mb-1"><i class="fa fa-search mr-1"></i>Rechercher</label>
+          <label for="qActive" class="block text-xs uppercase tracking-wide text-muted mb-1"><i class="fa fa-search mr-1"></i>Rechercher</label>
           <input id="qActive" type="search" placeholder="Titre… (Ctrl+/)"
                  class="w-full sm:w-72 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-sky-400/40 focus:ring-2 focus:ring-sky-400/20"
                  autocomplete="off">
         </div>
         <div>
-          <label for="sortActive" class="block text-xs uppercase tracking-wide text-slate-400 mb-1">Tri</label>
+          <label for="sortActive" class="block text-xs uppercase tracking-wide text-muted mb-1">Tri</label>
           <select id="sortActive"
                   class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-sky-400/40 focus:ring-2 focus:ring-sky-400/20">
             <option value="watched_at:desc"     data-for="shows,movies">Derniers vus</option>
@@ -122,7 +122,7 @@
         </label>
       </div>
       <div id="graphContainer" class="overflow-x-auto"></div>
-      <p id="graphMeta" class="mt-3 text-sm text-slate-400"></p>
+      <p id="graphMeta" class="mt-3 text-sm text-muted"></p>
       <!-- Stats Pro — contrôles -->
       <div class="glass rounded-xl p-3 mt-6 mb-4 flex flex-wrap items-center gap-3">
         <label class="text-sm">Type
@@ -159,7 +159,7 @@
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-clock text-sky-400"></i>
               <h4 class="font-semibold text-sm">Heures</h4>
-              <span class="text-xs text-slate-500">Europe/Paris</span>
+              <span class="text-xs text-disabled">Europe/Paris</span>
             </div>
             <div id="proChartHours" class="overflow-x-auto"></div>
           </div>
@@ -167,7 +167,7 @@
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-calendar-week text-sky-400"></i>
               <h4 class="font-semibold text-sm">Jours de la semaine</h4>
-              <span class="text-xs text-slate-500">L→D</span>
+              <span class="text-xs text-disabled">L→D</span>
             </div>
             <div id="proChartWeek" class="overflow-x-auto"></div>
           </div>
@@ -191,7 +191,7 @@
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-masks-theater text-sky-400"></i>
               <h4 class="font-semibold text-sm">Genres</h4>
-              <span class="text-xs text-slate-500">minutes</span>
+              <span class="text-xs text-disabled">minutes</span>
             </div>
             <div id="proTopGenres"></div>
           </div>
@@ -199,7 +199,7 @@
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-tower-broadcast text-sky-400"></i>
               <h4 class="font-semibold text-sm">Réseaux TV</h4>
-              <span class="text-xs text-slate-500">minutes</span>
+              <span class="text-xs text-disabled">minutes</span>
             </div>
             <div id="proTopNetworks"></div>
           </div>
@@ -207,7 +207,7 @@
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-building text-sky-400"></i>
               <h4 class="font-semibold text-sm">Studios</h4>
-              <span class="text-xs text-slate-500">minutes</span>
+              <span class="text-xs text-disabled">minutes</span>
             </div>
             <div id="proTopStudios"></div>
           </div>
@@ -218,14 +218,14 @@
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-trophy text-sky-400"></i>
             <h4 class="font-semibold text-sm">Top titres</h4>
-            <span class="text-xs text-slate-500">durée totale</span>
+            <span class="text-xs text-disabled">durée totale</span>
           </div>
           <div id="proTopTitles"></div>
         </div>
       </div>
     </section>
 
-    <footer class="mt-10 mb-8 text-sm text-slate-400"><hr class="border-white/10 mb-4"></hr></footer>
+    <footer class="mt-10 mb-8 text-sm text-muted"><hr class="border-white/10 mb-4"></hr></footer>
   </main>
 
   <div id="fullModal" class="hidden fixed inset-0 z-50">
@@ -236,9 +236,9 @@
           <h3 class="text-lg font-semibold">Full rebuild</h3>
           <button id="closeFullModal" class="btn text-xs"><i class="fa-solid fa-xmark"></i><span>Fermer</span></button>
         </div>
-        <p class="text-slate-400 text-sm mt-2">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
+        <p class="text-muted text-sm mt-2">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
         <form method="post" action="/full_rebuild" class="mt-4 space-y-3">
-          <label class="block text-xs uppercase tracking-wide text-slate-400">Mot de passe</label>
+          <label class="block text-xs uppercase tracking-wide text-muted">Mot de passe</label>
           <input type="password" name="pwd" required class="w-full rounded-lg bg-slate-950/60 border border-slate-700 px-3 py-2">
           <div class="flex justify-end gap-2">
             <button type="submit" class="btn"><i class="fa-solid fa-bolt"></i><span>Lancer</span></button>
@@ -265,7 +265,7 @@
         </button>
       </div>
   
-      <div id="ovBody" class="mt-3 text-slate-200 text-[15px] leading-relaxed max-h-[60vh] overflow-auto">
+      <div id="ovBody" class="mt-3 text-adaptive text-[15px] leading-relaxed max-h-[60vh] overflow-auto">
         <p id="ovText"></p>
       </div>
   

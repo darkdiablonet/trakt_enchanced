@@ -8,9 +8,9 @@ import { humanMinutes } from './utils.js';
 export function statCard(title, items=[]) {
   const rows = items
     .filter(it => it && it.label)
-    .map(it => `<div class="flex justify-between"><span class="text-slate-400">${it.label}</span><span class="font-semibold">${it.value}</span></div>`)
+    .map(it => `<div class="flex justify-between"><span class="text-muted">${it.label}</span><span class="font-semibold">${it.value}</span></div>`)
     .join('');
-  return `<article class="card p-4"><h3 class="text-base font-semibold mb-3">${title}</h3><div class="space-y-1 text-sm">${rows || '<span class="text-slate-500">—</span>'}</div></article>`;
+  return `<article class="card p-4"><h3 class="text-base font-semibold mb-3">${title}</h3><div class="space-y-1 text-sm">${rows || '<span class="text-disabled">—</span>'}</div></article>`;
 }
 
 export function renderStats(stats) {
