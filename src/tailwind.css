@@ -42,21 +42,21 @@
   
   /* Variables CSS pour thème clair */
   .theme-light {
-    --bg-primary: #f8fafc;
-    --bg-secondary: #f1f5f9;
-    --bg-card: linear-gradient(180deg,rgba(248,250,252,.85),rgba(241,245,249,.85));
-    --bg-glass: linear-gradient(180deg,rgba(255,255,255,.8),rgba(248,250,252,.8));
-    --bg-glass-solid: linear-gradient(180deg,rgba(255,255,255,.95),rgba(248,250,252,.95));
-    --border-primary: #e2e8f0;
-    --border-secondary: rgba(0,0,0,.08);
-    --text-primary: #1e293b;
-    --text-secondary: #334155;
-    --text-muted: #64748b;
-    --text-disabled: #94a3b8;
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #e2e8f0;
+    --bg-card: linear-gradient(180deg,rgba(241,245,249,.9),rgba(226,232,240,.9));
+    --bg-glass: linear-gradient(180deg,rgba(248,250,252,.85),rgba(241,245,249,.85));
+    --bg-glass-solid: linear-gradient(180deg,rgba(248,250,252,.95),rgba(241,245,249,.95));
+    --border-primary: #cbd5e1;
+    --border-secondary: rgba(0,0,0,.12);
+    --text-primary: #0f172a;
+    --text-secondary: #1e293b;
+    --text-muted: #475569;
+    --text-disabled: #64748b;
     --accent-primary: #0ea5e9;
     --accent-secondary: #3b82f6;
-    --chip-bg: #f1f5f9;
-    --poster-bg: #e2e8f0;
+    --chip-bg: #e2e8f0;
+    --poster-bg: #cbd5e1;
   }
   
   /* Styles adaptatifs selon le thème */
@@ -65,7 +65,7 @@
     color: var(--text-primary);
   }
   html.theme-light {
-    background: radial-gradient(75% 120% at 10% 10%, #f1f5f9 0%, #f8fafc 60%) fixed no-repeat;
+    background: radial-gradient(75% 120% at 10% 10%, #e2e8f0 0%, #f1f5f9 60%) fixed no-repeat;
     background-size: cover;
   }
   .hidden{ display:none; }
