@@ -109,15 +109,16 @@
     position: fixed;        /* ancré au viewport */
     max-width: 420px;
     width: min(92vw, 420px);
+    color: var(--text-primary);
     /* la "glass" existe déjà chez toi */
   }
   .ov-panel .ov-arrow{
     position: absolute;
     width: 12px; height: 12px;
     transform: rotate(45deg);
-    background: rgba(15, 23, 42, 1);
-    border-left: 1px solid #0b2942;
-    border-top: 1px solid #0b2942;
+    background: var(--bg-glass-solid);
+    border-left: 1px solid var(--border-primary);
+    border-top: 1px solid var(--border-primary);
     /* left est fixé en JS */
   }
   .ov-panel.ov-at-bottom .ov-arrow{ top: -6px; }
