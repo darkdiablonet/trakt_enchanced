@@ -9,8 +9,16 @@ WORKDIR /src
 
 # copy package files first for caching
 COPY package*.json ./
-# if you have package-lock / pnpm / yarn change accordingly
-RUN npm ci --legacy-peer-deps
+# install deps: prefer npm ci, fallback to npm install if ci fails
+RUN set -eux; \
+	if [ -f package-lock.json ]; then \
+	  echo "[build] running npm ci (with legacy-peer-deps)"; \
+	  npm ci --legacy-peer-deps || (echo "[build] npm ci failed, falling back to npm install" && npm install --legacy-peer-deps --no-audit --progress=false); \
+	else \
+	  echo "[build] no package-lock.json, running npm install"; \
+	  npm install --legacy-peer-deps --no-audit --progress=false; \
+	fi
+
 
 # copy full repo
 COPY . .
