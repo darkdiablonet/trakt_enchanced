@@ -419,6 +419,71 @@
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
   }
+  
+  /* Animations pour le popover synopsis */
+  .ov-panel {
+    transform: scale(0.85) translateY(-20px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+  }
+  
+  .ov-panel.ov-show {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .ov-panel.ov-hide {
+    transform: scale(0.9) translateY(-10px);
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(0.4, 0, 1, 1);
+  }
+  
+  .ov-arrow {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    z-index: -1;
+  }
+  
+  .ov-panel.ov-at-top .ov-arrow {
+    bottom: -6px;
+    border-top: none;
+    border-left: none;
+  }
+  
+  .ov-panel.ov-at-bottom .ov-arrow {
+    top: -6px;
+    border-bottom: none;
+    border-right: none;
+  }
+  
+  /* Backdrop avec blur */
+  .ov-backdrop {
+    backdrop-filter: blur(0px);
+    background: rgba(0, 0, 0, 0);
+    transition: all 0.4s ease-out;
+  }
+  
+  .ov-backdrop.ov-show {
+    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Animation du contenu interne */
+  .ov-panel .ov-content {
+    transform: translateY(10px);
+    opacity: 0;
+    transition: all 0.3s ease-out 0.1s;
+  }
+  
+  .ov-panel.ov-show .ov-content {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* (facultatif) petit fallback pour line-clamp si tu l’utilises */
