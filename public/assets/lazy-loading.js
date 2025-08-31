@@ -40,20 +40,15 @@ class LazyLoadManager {
     const bgUrl = element.dataset.bgSrc;
     if (!bgUrl) return;
 
-    // Create a new Image to preload
-    const img = new Image();
-    img.onload = () => {
-      element.style.backgroundImage = `url('${bgUrl}')`;
-      element.classList.add('loaded');
-      element.classList.remove('loading');
-    };
-    img.onerror = () => {
-      element.classList.add('error');
-      element.classList.remove('loading');
-    };
+    // If image is already loaded, skip
+    if (element.classList.contains('loaded')) {
+      return;
+    }
     
-    element.classList.add('loading');
-    img.src = bgUrl;
+    // Set the background immediately
+    element.style.backgroundImage = `url('${bgUrl}')`;
+    element.classList.add('loaded');
+    element.classList.remove('loading');
   }
 
   prefetchData(element) {
@@ -85,6 +80,7 @@ class LazyLoadManager {
 
   // Update existing grids to use lazy loading
   convertExistingImages() {
+    // Handle old-style background-image posters
     document.querySelectorAll('.poster[style*="background-image"]').forEach(poster => {
       const style = poster.getAttribute('style');
       const match = style.match(/background-image:\s*url\(['"](.+?)['"]\)/);
@@ -96,6 +92,21 @@ class LazyLoadManager {
         this.observe(poster);
       }
     });
+    
+    // Handle new-style data-bg-src posters
+    const posters = document.querySelectorAll('.poster[data-bg-src]');
+    
+    posters.forEach(poster => {
+      if (!poster.classList.contains('lazy-bg')) {
+        poster.classList.add('lazy-bg');
+      }
+      this.observe(poster);
+    });
+    
+    // If no intersection observer, load all immediately
+    if (!this.imageObserver) {
+      posters.forEach(poster => this.loadImage(poster));
+    }
   }
 }
 
@@ -103,12 +114,55 @@ class LazyLoadManager {
 const lazyManager = new LazyLoadManager();
 
 // Auto-initialize when DOM is loaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    lazyManager.convertExistingImages();
-  });
-} else {
+
+function initializeLazyLoading() {
   lazyManager.convertExistingImages();
+  
+  // Watch for dynamically added images
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) { // Element node
+          // Check if it's a poster itself
+          if (node.matches && node.matches('.poster[data-bg-src]')) {
+            node.classList.add('lazy-bg');
+            lazyManager.observe(node);
+          }
+          // Check children for posters
+          const posters = node.querySelectorAll && node.querySelectorAll('.poster[data-bg-src]');
+          if (posters) {
+            posters.forEach(poster => {
+              poster.classList.add('lazy-bg');
+              lazyManager.observe(poster);
+            });
+          }
+        }
+      });
+    });
+  });
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeLazyLoading);
+} else {
+  initializeLazyLoading();
+}
+
+// Fallback: load all images immediately if no Intersection Observer
+if (!('IntersectionObserver' in window)) {
+  setTimeout(() => {
+    document.querySelectorAll('.poster[data-bg-src]').forEach(element => {
+      const bgUrl = element.dataset.bgSrc;
+      if (bgUrl) {
+        element.style.backgroundImage = `url('${bgUrl}')`;
+      }
+    });
+  }, 100);
 }
 
 // Export for manual usage

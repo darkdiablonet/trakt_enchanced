@@ -79,7 +79,7 @@
   /* Lazy Loading States */
   .poster.lazy-bg {
     position: relative;
-    background-image: none !important;
+    /* Don't force background-image to none, let JS handle it */
   }
   
   .poster.lazy-bg::before {
@@ -112,7 +112,7 @@
   }
   
   .poster.lazy-bg.loaded {
-    background-image: var(--bg-image) !important;
+    /* Background image is set directly by JavaScript */
   }
   
   .poster.lazy-bg.loaded::before {
