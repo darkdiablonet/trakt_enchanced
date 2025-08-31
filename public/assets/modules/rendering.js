@@ -43,9 +43,9 @@ export function card(r, kind) {
   const title = escapeAttr(r.title || '');
 
   return `
-  <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
+  <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow" data-prefetch="${escapeAttr(url)}">
     <div class="poster-wrap mb-3">
-    <div class="poster" style="background-image:url('${poster}')"></div>
+    <div class="poster lazy-bg" data-bg-src="${poster}"></div>
     <button class="ov-btn js-ov"
       data-title="${title}"
       data-year="${escapeAttr(y)}"

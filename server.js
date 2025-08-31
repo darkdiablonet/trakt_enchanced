@@ -4,6 +4,7 @@ import path from 'node:path';
 import express from 'express';
 import session from 'express-session';
 import morgan from 'morgan';
+import compression from 'compression';
 import dotenv from 'dotenv';
 
 // Import du système de monitoring et sécurité
@@ -32,6 +33,16 @@ const app = express();
 
 // Trust proxy pour obtenir les vraies IPs derrière un reverse proxy
 app.set('trust proxy', 1);
+
+// Compression Brotli/Gzip (en premier pour tout comprimer)
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  },
+  level: 6, // Balance compression/CPU
+  threshold: 1024 // Compress files > 1KB
+}));
 
 // Middleware de sécurité (en premier)
 app.use(securityHeaders);

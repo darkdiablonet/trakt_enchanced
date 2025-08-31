@@ -6,6 +6,7 @@
   <title>Trakt History</title>
   <link rel="stylesheet" href="/assets/tailwind.css">
   <link rel="stylesheet" href="/assets/fa/css/all.min.css">
+  <script src="/assets/lazy-loading.js" defer></script>
   <script src="/assets/app-modular.js" type="module" defer></script>
 </head>
 <body class="min-h-full text-adaptive selection:bg-sky-500/40 selection:text-white">
@@ -73,7 +74,12 @@
       </div>
     </div>
 
-    <section class="filters glass rounded-xl px-4 py-3 mb-6">
+    <!-- Bouton filtres mobile -->
+    <button class="sm:hidden mb-4 px-3 py-2 bg-white/5 rounded-lg border border-white/10 flex items-center" onclick="document.getElementById('mobileFilters').classList.toggle('hidden')">
+      <i class="fa fa-filter mr-2"></i>Filtres
+    </button>
+
+    <section id="mobileFilters" class="filters glass rounded-xl px-4 py-3 mb-6 hidden sm:block">
       <div class="flex flex-wrap items-end gap-4">
         <div class="w-full sm:w-auto">
           <label for="qActive" class="block text-xs uppercase tracking-wide text-muted mb-1"><i class="fa fa-search mr-1"></i>Rechercher</label>
