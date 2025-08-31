@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 // Import du système de monitoring et sécurité
 import { logger } from './lib/logger.js';
 import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddleware, asyncHandler } from './lib/middleware.js';
-import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection, rateLimitByIP } from './lib/security.js';
+import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection } from './lib/security.js';
 
 
 import { DATA_DIR, IMG_DIR, PORT, FULL_REBUILD_PASS, TITLE } from './lib/config.js';
@@ -36,7 +36,6 @@ app.set('trust proxy', 1);
 // Middleware de sécurité (en premier)
 app.use(securityHeaders);
 app.use(attackDetection);
-app.use(rateLimitByIP);
 
 // Middleware de monitoring
 app.use(requestLoggingMiddleware);
