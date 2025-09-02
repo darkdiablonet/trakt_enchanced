@@ -3,6 +3,8 @@
  * Graphiques responsives avec Chart.js
  */
 
+import { UNIFIED_PALETTE } from './graphs.js';
+
 // Configuration par défaut pour tous les graphiques
 const defaultConfig = {
   responsive: true,
@@ -14,10 +16,10 @@ const defaultConfig = {
       display: false
     },
     tooltip: {
-      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+      backgroundColor: UNIFIED_PALETTE.background + 'e6',  // 90% opacity
       titleColor: '#e2e8f0',
       bodyColor: '#cbd5e1',
-      borderColor: '#334155',
+      borderColor: UNIFIED_PALETTE.border,
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: false
@@ -26,8 +28,8 @@ const defaultConfig = {
   scales: {
     x: {
       grid: {
-        color: 'rgba(255, 255, 255, 0.05)',
-        borderColor: 'rgba(255, 255, 255, 0.1)'
+        color: UNIFIED_PALETTE.border + '0d',  // 5% opacity
+        borderColor: UNIFIED_PALETTE.border + '1a'  // 10% opacity
       },
       ticks: {
         color: '#64748b',
@@ -38,8 +40,8 @@ const defaultConfig = {
     },
     y: {
       grid: {
-        color: 'rgba(255, 255, 255, 0.05)',
-        borderColor: 'rgba(255, 255, 255, 0.1)'
+        color: UNIFIED_PALETTE.border + '0d',  // 5% opacity
+        borderColor: UNIFIED_PALETTE.border + '1a'  // 10% opacity
       },
       ticks: {
         color: '#64748b',
@@ -96,8 +98,8 @@ export function createHoursChart(data) {
       labels: labels,
       datasets: [{
         data: data || Array(24).fill(0),
-        backgroundColor: '#22c55e',
-        borderColor: '#16a34a',
+        backgroundColor: UNIFIED_PALETTE.colors[3],  // Vert vif de la heatmap
+        borderColor: UNIFIED_PALETTE.colors[2],      // Bleu moyen
         borderWidth: 1,
         borderRadius: 2,
         borderSkipped: false
@@ -138,8 +140,8 @@ export function createWeekChart(data) {
       labels: labels,
       datasets: [{
         data: data || Array(7).fill(0),
-        backgroundColor: '#22c55e',
-        borderColor: '#16a34a',
+        backgroundColor: UNIFIED_PALETTE.colors[3],  // Vert vif de la heatmap
+        borderColor: UNIFIED_PALETTE.colors[2],      // Bleu moyen
         borderWidth: 1,
         borderRadius: 2,
         borderSkipped: false
@@ -182,13 +184,13 @@ export function createMonthsChart(monthsObj) {
       labels: labels,
       datasets: [{
         data: data,
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        borderColor: '#22c55e',
+        backgroundColor: UNIFIED_PALETTE.colors[3] + '1a',  // Vert vif + 10% opacity
+        borderColor: UNIFIED_PALETTE.colors[3],              // Vert vif
         borderWidth: 2,
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: '#22c55e',
-        pointBorderColor: '#16a34a',
+        pointBackgroundColor: UNIFIED_PALETTE.colors[4],  // Orange
+        pointBorderColor: UNIFIED_PALETTE.colors[1],       // Bleu sombre
         pointBorderWidth: 2,
         pointRadius: 4,
         pointHoverRadius: 6

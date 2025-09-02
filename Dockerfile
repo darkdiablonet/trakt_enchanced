@@ -4,7 +4,7 @@ FROM node:20-bookworm AS build
 # Build metadata
 LABEL org.opencontainers.image.title="Trakt Enhanced"
 LABEL org.opencontainers.image.description="Trakt Enhanced Node.js application"
-LABEL org.opencontainers.image.version="2.2.27"
+LABEL org.opencontainers.image.version="2.2.28"
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/diabolino/trakt_enhanced"
 LABEL org.opencontainers.image.documentation="https://github.com/diabolino/trakt-enhanced/blob/main/README.md"
 LABEL org.opencontainers.image.source="https://github.com/diabolino/trakt-enhanced"
@@ -69,6 +69,9 @@ RUN mkdir -p /app/data && chown -R app:app /app/data
 
 # ensure app user can write config files in /app directory
 RUN chown -R app:app /app
+
+# Declare volumes for persistent data
+VOLUME ["/app/data", "/app/.env"]
 
 # small entrypoint that will drop privileges; we provide the script inline for simplicity
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

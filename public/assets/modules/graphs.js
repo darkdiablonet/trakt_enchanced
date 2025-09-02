@@ -18,15 +18,28 @@ export function fillYearsSelect(selectEl, minYear = 2010) {
   }
 }
 
-export function colorFor(level) {
-  const palette = [
+// Palette de couleurs unifiée pour toute l'application
+export const UNIFIED_PALETTE = {
+  colors: [
     '#0b1220',  // 0: empty (très sombre)
     '#1e3a5f',  // 1: bleu sombre 
     '#2563eb',  // 2: bleu moyen
     '#22c55e',  // 3: vert vif
     '#f59e0b'   // 4: orange/amber (max activité)
-  ];
-  return palette[level] || palette[0];
+  ],
+  // Couleurs supplémentaires pour cohérence
+  background: '#0b1220',
+  text: '#94a3b8',
+  textMuted: '#64748b',
+  border: '#1e293b',
+  primary: '#22c55e',     // Vert principal
+  primaryDark: '#16a34a',  // Vert sombre
+  secondary: '#2563eb',    // Bleu
+  accent: '#f59e0b'        // Orange
+};
+
+export function colorFor(level) {
+  return UNIFIED_PALETTE.colors[level] || UNIFIED_PALETTE.colors[0];
 }
 
 export function levelFor(count, max) {
@@ -71,7 +84,7 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
   const H = top + monthsRow + 7*(cell+gap) + legendH;
 
   const txt = (x,y,s,anchor='start') =>
-    `<text x="${x}" y="${y}" fill="#94a3b8" font-size="${s}" text-anchor="${anchor}" font-family="ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial">`;
+    `<text x="${x}" y="${y}" fill="${UNIFIED_PALETTE.text}" font-size="${s}" text-anchor="${anchor}" font-family="ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial">`;
 
   const mois = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
   const monthCols = [];
@@ -83,7 +96,7 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
   const jours = ['L','M','M','J','V','S','D'];
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trakt heatmap ${year}" class="heatmap-svg">
-  <rect x="0" y="0" width="${W}" height="${H}" fill="#0b1220" rx="8" />`;
+  <rect x="0" y="0" width="${W}" height="${H}" fill="${UNIFIED_PALETTE.background}" rx="8" />`;
 
   // Ligne des mois
   svg += `<g transform="translate(${left},${top})">`;
@@ -165,8 +178,10 @@ export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, 
   // Gradient definitions (sans styles inline pour CSP)
   svg += `<defs>
     <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#22c55e"/>
-      <stop offset="100%" stop-color="#16a34a"/>
+      <stop offset="0%" stop-color="${UNIFIED_PALETTE.colors[4]}"/>
+      <stop offset="33%" stop-color="${UNIFIED_PALETTE.colors[3]}"/>
+      <stop offset="66%" stop-color="${UNIFIED_PALETTE.colors[2]}"/>
+      <stop offset="100%" stop-color="${UNIFIED_PALETTE.colors[1]}"/>
     </linearGradient>
     <filter id="glow">
       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -177,14 +192,14 @@ export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, 
     </filter>
   </defs>`;
   
-  svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#0b1220" rx="8"/>`;
+  svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="${UNIFIED_PALETTE.background}" rx="8"/>`;
 
   // Axes Y avec style amélioré
   for (let i=0;i<=yTicks;i++){
     const y = pad + ih - Math.round(ih * (i/yTicks));
     const val = Math.round(vmax * (i/yTicks));
-    svg += `<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#1e293b" stroke-width="1" opacity="0.7"/>`;
-    svg += `<text x="${pad-6}" y="${y+3}" fill="#94a3b8" font-size="10" text-anchor="end" font-family="ui-sans-serif">${titleFormatter(val)}</text>`;
+    svg += `<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="${UNIFIED_PALETTE.border}" stroke-width="1" opacity="0.7"/>`;
+    svg += `<text x="${pad-6}" y="${y+3}" fill="${UNIFIED_PALETTE.text}" font-size="10" text-anchor="end" font-family="ui-sans-serif">${titleFormatter(val)}</text>`;
   }
 
   // Barres avec animations et effets hover
@@ -203,7 +218,7 @@ export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, 
     
     if (labels[i] != null){
       const lbl = String(labels[i]);
-      svg += `<text x="${x + barW/2}" y="${h-6}" fill="#94a3b8" font-size="9" text-anchor="middle" 
+      svg += `<text x="${x + barW/2}" y="${h-6}" fill="${UNIFIED_PALETTE.text}" font-size="9" text-anchor="middle" 
                font-family="ui-sans-serif">
         ${lbl}
       </text>`;
