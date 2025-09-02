@@ -16,7 +16,7 @@
 <body class="min-h-full text-adaptive selection:bg-sky-500/40 selection:text-white">
   <header class="app-header">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" id="app-title" title="Cliquer pour recharger les données">
         <img src="/assets/favicon.svg" alt="Trakt Enhanced" class="w-7 h-7 flex-shrink-0">
         <div>
           <div class="text-lg font-semibold tracking-wide">
@@ -170,8 +170,8 @@
       <!-- Stats Pro — graphiques -->
       <div id="proCharts" class="mt-6 space-y-6">
         <!-- Graphiques temporels principaux -->
-        <div class="grid lg:grid-cols-2 gap-6">
-          <div class="card p-4">
+        <div class="pro-stats-charts-grid">
+          <div class="glass rounded-xl p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-clock text-sky-400"></i>
               <h4 class="font-semibold text-sm">Heures</h4>
@@ -179,7 +179,7 @@
             </div>
             <div id="proChartHours" class="overflow-x-auto"></div>
           </div>
-          <div class="card p-4">
+          <div class="glass rounded-xl p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-calendar-week text-sky-400"></i>
               <h4 class="font-semibold text-sm">Jours de la semaine</h4>
@@ -190,7 +190,7 @@
         </div>
         
         <!-- Graphique mensuel (plus large) -->
-        <div class="card p-4">
+        <div class="glass rounded-xl p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-chart-line text-sky-400"></i>
             <h4 class="font-semibold text-sm">Évolution par mois</h4>
@@ -202,8 +202,8 @@
       <!-- Stats Pro — Tops -->
       <div id="proTops" class="mt-6 space-y-6">
         <!-- Top listes en grille -->
-        <div class="grid md:grid-cols-3 gap-6">
-          <div class="card p-4">
+        <div class="pro-stats-top-lists">
+          <div class="glass rounded-xl p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-masks-theater text-sky-400"></i>
               <h4 class="font-semibold text-sm">Genres</h4>
@@ -211,7 +211,7 @@
             </div>
             <div id="proTopGenres"></div>
           </div>
-          <div class="card p-4">
+          <div class="glass rounded-xl p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-tower-broadcast text-sky-400"></i>
               <h4 class="font-semibold text-sm">Réseaux TV</h4>
@@ -219,7 +219,7 @@
             </div>
             <div id="proTopNetworks"></div>
           </div>
-          <div class="card p-4">
+          <div class="glass rounded-xl p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-building text-sky-400"></i>
               <h4 class="font-semibold text-sm">Studios</h4>
@@ -230,7 +230,7 @@
         </div>
         
         <!-- Top titres (plus large) -->
-        <div class="card p-4">
+        <div class="glass rounded-xl p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-trophy text-sky-400"></i>
             <h4 class="font-semibold text-sm">Top titres</h4>
@@ -292,6 +292,11 @@
     </article>
   </div>
 
+  <!-- Bouton scroll-to-top -->
+  <button id="scroll-to-top" class="scroll-to-top-btn" title="Remonter en haut" aria-label="Remonter en haut de la page">
+    <i class="fa-solid fa-chevron-up"></i>
+  </button>
 
+  <script src="/assets/app-modular.js" type="module" defer></script>
 </body>
 </html>

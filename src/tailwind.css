@@ -481,6 +481,145 @@
     overflow: hidden;
   }
   
+  /* Bouton scroll-to-top */
+  .scroll-to-top-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+    background: #0ea5e9;
+    color: white;
+    border-radius: 50%;
+    box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+    transition: all 0.3s ease-out;
+    z-index: 50;
+    transform: translateY(4rem);
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scroll-to-top-btn:hover {
+    background: #0284c7;
+    box-shadow: 0 20px 35px rgba(14, 165, 233, 0.4);
+    transform: translateY(4rem) scale(1.1);
+  }
+
+  .scroll-to-top-btn.visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .scroll-to-top-btn.visible:hover {
+    transform: translateY(0) scale(1.1);
+  }
+  
+  /* Layout optimisé pour les statistiques */
+  .stats-grid-optimized {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+  
+  /* En pleine largeur, optimiser pour plus de colonnes */
+  .full-width .stats-grid-optimized {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    max-width: none;
+  }
+  
+  /* Sur grands écrans, limiter à 3 colonnes max en mode normal */
+  @media (min-width: 1200px) {
+    .stats-grid-optimized {
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* En pleine largeur, permettre jusqu'à 4 colonnes */
+    .full-width .stats-grid-optimized {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      max-width: none;
+    }
+  }
+  
+  /* Layout optimisé pour Pro Stats */
+  .pro-stats-charts-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  }
+  
+  /* En mode pleine largeur, mieux répartir les graphiques */
+  .full-width .pro-stats-charts-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+  
+  /* Sur moyens écrans */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .pro-stats-charts-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+  
+  /* Sur grands écrans */
+  @media (min-width: 1024px) {
+    .pro-stats-charts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* En pleine largeur, permettre 3 colonnes sur très grands écrans */
+    .full-width .pro-stats-charts-grid {
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+  }
+  
+  /* Sur très grands écrans en pleine largeur (1600px+) */
+  @media (min-width: 1600px) {
+    .full-width .pro-stats-charts-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+  }
+  
+  /* Layout pour les top lists du Pro Stats */
+  .pro-stats-top-lists {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .full-width .pro-stats-top-lists {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  @media (min-width: 1200px) {
+    .pro-stats-top-lists {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .full-width .pro-stats-top-lists {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+  }
+  
+  @media (min-width: 1600px) {
+    .full-width .pro-stats-top-lists {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  /* Sur très grands écrans en pleine largeur */
+  @media (min-width: 1600px) {
+    .full-width .stats-grid-optimized {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
   /* Hover effects pour les topcard */
   .topcard .row {
     transition: all 0.3s ease;

@@ -16,6 +16,7 @@ import './modules/modals.js';
 import './modules/pro-stats.js';
 import './modules/theme-ui.js';
 import './modules/markWatched.js';
+import { initScrollToTop } from './modules/scroll-to-top.js';
 
 // Charger la version de l'application
 async function loadAppVersion() {
@@ -31,6 +32,7 @@ async function loadAppVersion() {
   }
 }
 
+
 // Event listeners principaux
 elements.toggleWidth?.addEventListener('click', () => { 
   state.width = (state.width==='full') ? 'limited' : 'full'; 
@@ -41,6 +43,11 @@ elements.toggleWidth?.addEventListener('click', () => {
 Object.values(elements.tabBtns).forEach(btn => 
   btn?.addEventListener('click', () => setTab(btn.dataset.tab))
 );
+
+// Reload des données au clic sur le titre
+document.getElementById('app-title')?.addEventListener('click', () => {
+  loadData();
+});
 
 // Event listener pour le bouton de basculement des filtres mobile
 const mobileFiltersToggle = document.getElementById('mobileFiltersToggle');
@@ -97,6 +104,7 @@ if (!('IntersectionObserver' in window)) {
 window.lazyManager = lazyManager;
 window.animationManager = animationManager;
 
-// Charger la version au démarrage
+// Initialiser les fonctionnalités au démarrage
 loadAppVersion();
+initScrollToTop();
 
