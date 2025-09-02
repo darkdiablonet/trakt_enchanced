@@ -17,7 +17,7 @@ App web pour parcourir ton historique **Trakt** avec :
 ### Installation classique (Node.js)
 
 ```bash
-git clone https://github.com/diabolino/trakt_enchanced
+git clone https://github.com/diabolino/trakt_enhanced
 cd trakt
 cp .env.example .env
 npm install
@@ -31,12 +31,12 @@ npm start
 
 ```bash
 docker run -d \
-    --name=trakt_enchanced \
+    --name=trakt_enhanced \
     -p 3000:3000 \
     -v ~/trakt/.env:/app/.env:ro \
     -v trakt_data:/app/data \
     --restart unless-stopped \
-    docker.io/diabolino/trakt_enchanced:latest
+    docker.io/diabolino/trakt_enhanced:latest
 ```
 
 ---

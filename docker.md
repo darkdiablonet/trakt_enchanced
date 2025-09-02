@@ -6,7 +6,7 @@ Ce guide explique comment utiliser **Trakt Enhanced** avec Docker.
 
 L'image Docker officielle est disponible sur Docker Hub :
 ```
-docker.io/diabolino/trakt_enchanced:latest
+docker.io/diabolino/trakt_enhanced:latest
 ```
 
 ## 🚀 Démarrage rapide
@@ -16,11 +16,11 @@ docker.io/diabolino/trakt_enchanced:latest
 1. **Lancer le conteneur** :
 ```bash
 docker run -d \
-    --name=trakt_enchanced \
+    --name=trakt_enhanced \
     -p 30009:30009 \
     -v trakt_data:/app/data \
     --restart unless-stopped \
-    docker.io/diabolino/trakt_enchanced:latest
+    docker.io/diabolino/trakt_enhanced:latest
 ```
 
 2. **Ouvrir votre navigateur** sur `http://localhost:30009`
@@ -98,8 +98,8 @@ Créez un fichier `docker-compose.yml` :
 version: '3.8'
 services:
   trakt:
-    image: docker.io/diabolino/trakt_enchanced:latest
-    container_name: trakt_enchanced
+    image: docker.io/diabolino/trakt_enhanced:latest
+    container_name: trakt_enhanced
     restart: unless-stopped
     ports:
       - "30009:30009"
@@ -129,25 +129,25 @@ docker ps  # Vérifie l'état "healthy"
 
 ### Logs
 ```bash
-docker logs -f trakt_enchanced
+docker logs -f trakt_enhanced
 ```
 
 ### Accès au conteneur
 ```bash
-docker exec -it trakt_enchanced sh
+docker exec -it trakt_enhanced sh
 ```
 
 ## ⚡ Mise à jour
 
 1. **Arrêter le conteneur** :
 ```bash
-docker stop trakt_enchanced
-docker rm trakt_enchanced
+docker stop trakt_enhanced
+docker rm trakt_enhanced
 ```
 
 2. **Télécharger la nouvelle image** :
 ```bash
-docker pull docker.io/diabolino/trakt_enchanced:latest
+docker pull docker.io/diabolino/trakt_enhanced:latest
 ```
 
 3. **Relancer** avec la même commande qu'avant
@@ -155,7 +155,7 @@ docker pull docker.io/diabolino/trakt_enchanced:latest
 ## 🛠️ Dépannage
 
 ### L'application ne démarre pas
-- Vérifiez les logs : `docker logs trakt_enchanced`
+- Vérifiez les logs : `docker logs trakt_enhanced`
 - Vérifiez que le port 30009 n'est pas déjà utilisé
 - Si vous montez un .env manuel, vérifiez qu'il contient les variables obligatoires
 
@@ -165,14 +165,14 @@ docker pull docker.io/diabolino/trakt_enchanced:latest
 
 ### Réinitialisation complète
 ```bash
-docker stop trakt_enchanced
-docker rm trakt_enchanced
+docker stop trakt_enhanced
+docker rm trakt_enhanced
 docker volume rm trakt_data
 # Puis relancer normalement
 ```
 
 ## 🔗 Liens utiles
 
-- [Docker Hub](https://hub.docker.com/r/diabolino/trakt_enchanced)
+- [Docker Hub](https://hub.docker.com/r/diabolino/trakt_enhanced)
 - [Documentation Trakt API](https://trakt.docs.apiary.io/)
 - [Clé API TMDB](https://www.themoviedb.org/settings/api)

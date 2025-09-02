@@ -5,7 +5,7 @@ FROM node:20-bookworm AS build
 LABEL org.opencontainers.image.title="Trakt Enhanced"
 LABEL org.opencontainers.image.description="Trakt Enhanced Node.js application"
 LABEL org.opencontainers.image.version="2.2.23"
-LABEL org.opencontainers.image.url="https://hub.docker.com/r/diabolino/trakt_enchanced"
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/diabolino/trakt_enhanced"
 LABEL org.opencontainers.image.documentation="https://github.com/diabolino/trakt-enhanced/blob/main/README.md"
 LABEL org.opencontainers.image.source="https://github.com/diabolino/trakt-enhanced"
 LABEL org.opencontainers.image.vendor="Trakt Enhanced"
