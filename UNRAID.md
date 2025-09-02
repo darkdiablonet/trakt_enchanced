@@ -72,7 +72,7 @@ chmod -R 755 /mnt/user/appdata/trakt-enhanced/
 ### Backup recommandé  
 ```bash
 # Sauvegarder la configuration
-cp /mnt/user/appdata/trakt-enhanced/.env /mnt/user/appdata/trakt-enhanced/.env.backup
+cp /mnt/user/appdata/trakt-enhanced/config/.env /mnt/user/appdata/trakt-enhanced/config/.env.backup
 
 # Sauvegarder les données
 tar -czf trakt-enhanced-backup.tar.gz /mnt/user/appdata/trakt-enhanced/

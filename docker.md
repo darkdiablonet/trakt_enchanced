@@ -76,11 +76,11 @@ Stocke :
 - Logs de l'application
 - Cache des images et métadonnées
 
-### Fichier de configuration (optionnel)
+### Dossier de configuration (optionnel)
 ```bash
--v ~/trakt/.env:/app/.env:ro
+-v ~/trakt/config:/app/config
 ```
-Monte votre fichier `.env` local dans le conteneur. **Non nécessaire** si vous utilisez la configuration via l'interface web.
+Monte votre dossier de configuration local dans le conteneur. Le fichier `.env` y sera créé automatiquement. **Non nécessaire** si vous utilisez la configuration via l'interface web.
 
 ## 🌐 Ports
 
@@ -104,8 +104,8 @@ services:
     ports:
       - "30009:30009"
     volumes:
-      # Le volume .env est optionnel avec la configuration web
-      # - ./trakt.env:/app/.env:ro
+      # Le volume config est optionnel avec la configuration web
+      # - ./trakt/config:/app/config
       - trakt_data:/app/data
     environment:
       - TZ=Europe/Paris
@@ -157,7 +157,7 @@ docker pull docker.io/diabolino/trakt_enhanced:latest
 ### L'application ne démarre pas
 - Vérifiez les logs : `docker logs trakt_enhanced`
 - Vérifiez que le port 30009 n'est pas déjà utilisé
-- Si vous montez un .env manuel, vérifiez qu'il contient les variables obligatoires
+- Si vous montez un dossier config manuel, le fichier .env y sera créé automatiquement
 
 ### Problèmes de permissions
 - Le conteneur utilise l'utilisateur `app` (UID 1000)
