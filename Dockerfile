@@ -54,7 +54,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 	&& rm -rf /var/lib/apt/lists/*
 
 # create app user with Unraid compatible UID/GID (99:100)
-RUN groupadd -g 100 app && useradd -u 99 -g 100 app
+# Note: GID 100 (users) already exists in Debian, so we use it directly
+RUN useradd -u 99 -g 100 -m -s /bin/sh app
 
 WORKDIR /app
 
