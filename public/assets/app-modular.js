@@ -18,6 +18,7 @@ import './modules/charts.js';
 import './modules/theme-ui.js';
 import './modules/markWatched.js';
 import { initScrollToTop } from './modules/scroll-to-top.js';
+import { initHeatmapInteractions } from './modules/heatmap-interactions.js';
 
 // Charger la version de l'application
 async function loadAppVersion() {
@@ -108,4 +109,5 @@ window.animationManager = animationManager;
 // Initialiser les fonctionnalités au démarrage
 loadAppVersion();
 initScrollToTop();
+initHeatmapInteractions();
 

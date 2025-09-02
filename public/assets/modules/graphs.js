@@ -128,7 +128,7 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
     const title = `${key} · ${count} visionnage${count>1?'s':''}`;
     const delay = (ci * 7 + ri) * 20; // Animation progressive plus lente
     svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" 
-             fill="${fill}" class="svg-interactive heatmap-cell" data-delay="${delay}">
+             fill="${fill}" class="svg-interactive heatmap-cell" data-delay="${delay}" data-date="${key}" data-count="${count}">
       <title>${title}</title>
     </rect>`;
   }

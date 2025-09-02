@@ -32,12 +32,24 @@ export async function loadStatsPro() {
   }
   const r = await fetch(`/api/stats/pro?${params.toString()}`, { cache:'no-store' }).then(x=>x.json());
   if (!r.ok) throw new Error(r.error || 'stats error');
-  renderStatsPro(r.data);
+  await renderStatsPro(r.data);
 }
 
-export function renderStatsPro(data){
-  // Générer les données heatmap pour calculer les métriques supplémentaires
-  const heatmapData = generateHeatmapFromProData(data);
+export async function renderStatsPro(data){
+  // Récupérer les vraies données heatmap depuis l'API
+  const year = Number(document.getElementById('proYear')?.value || new Date().getFullYear());
+  const type = document.getElementById('proType')?.value || 'all';
+  
+  let heatmapData = { daysWithCount: 0, max: 0 };
+  try {
+    const response = await fetch(`/api/graph?year=${year}&type=${type}`);
+    const result = await response.json();
+    if (result.ok && result.data) {
+      heatmapData = result.data;
+    }
+  } catch (err) {
+    console.error('Erreur lors du chargement des données heatmap:', err);
+  }
   
   // Résumé avec animations (6 tuiles maintenant)
   const sumEl = document.getElementById('proSummary');
@@ -61,11 +73,11 @@ export function renderStatsPro(data){
     </div>
     <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-1000">
       <div class="text-xs text-muted">Jours actifs</div>
-      <div class="text-2xl font-semibold animate-count-up delay-1400">${heatmapData.daysWithCount}</div>
+      <div class="text-2xl font-semibold animate-count-up delay-1400">${heatmapData.daysWithCount || 0}</div>
     </div>
     <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-1200">
       <div class="text-xs text-muted">Max/jour</div>
-      <div class="text-2xl font-semibold animate-count-up delay-1600">${heatmapData.max}</div>
+      <div class="text-2xl font-semibold animate-count-up delay-1600">${heatmapData.max || 0}</div>
     </div>
   `;
 
@@ -74,7 +86,7 @@ export function renderStatsPro(data){
   createWeekChart(data.distributions.weekday || []);
   createMonthsChart(data.distributions.months || {});
   
-  // Afficher la heatmap (déjà généré plus haut pour les métriques)
+  // Afficher la heatmap avec les vraies données
   const heatmapContainer = document.getElementById('graphContainer');
   if (heatmapContainer && heatmapData) {
     const svg = renderHeatmapSVG(heatmapData, {});
@@ -91,62 +103,6 @@ export function renderStatsPro(data){
   setTimeout(() => applyProgressBars(), 10);
 }
 
-// Générer une heatmap simulée depuis les données Pro Stats
-function generateHeatmapFromProData(proData) {
-  const graphMeta = document.getElementById('graphMeta');
-  
-  if (!proData.distributions) return { daysWithCount: 0, max: 0 };
-  
-  // Récupérer l'année depuis le sélecteur
-  const year = Number(document.getElementById('proYear')?.value || new Date().getFullYear());
-  const type = document.getElementById('proType')?.value || 'all';
-  
-  // Utiliser les données mensuelles pour créer une heatmap approximative
-  const monthsData = proData.distributions.months || {};
-  const weekdayData = proData.distributions.weekday || [];
-  
-  // Créer des données simulées pour chaque jour de l'année
-  const yearDates = datesOfYear(year);
-  const simulatedData = {
-    year: year,
-    sum: proData.totals?.plays || 0,
-    max: 0,
-    daysWithCount: 0,
-    days: []
-  };
-  
-  yearDates.forEach(date => {
-    const monthKey = `${year}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
-    const monthMinutes = monthsData[monthKey]?.minutes || 0;
-    const weekday = date.getUTCDay(); // 0=dimanche, 1=lundi...
-    
-    // Simuler une valeur basée sur les données mensuelles et hebdomadaires
-    const weekdayFactor = weekdayData[weekday === 0 ? 6 : weekday - 1] || 0; // Ajuster index
-    const monthFactor = monthMinutes / 60; // Convertir minutes en "plays" approximatifs
-    
-    // Si pas de données ce mois-là OU ce jour de semaine, alors 0 activité
-    let count = 0;
-    if (monthFactor > 0 && weekdayFactor > 0) {
-      // Seulement 30% de chance d'avoir une activité même avec des données
-      const activityChance = Math.random();
-      if (activityChance > 0.7) {
-        const randomFactor = Math.random() * 0.5 + 0.5; // 0.5 à 1.0
-        count = Math.round((monthFactor * weekdayFactor * randomFactor) / 300);
-      }
-    }
-    
-    simulatedData.days.push({
-      date: date.toISOString().split('T')[0],
-      count: Math.max(0, count)
-    });
-    
-    if (count > 0) simulatedData.daysWithCount++;
-    simulatedData.max = Math.max(simulatedData.max, count);
-  });
-  
-  // Retourner les données pour utilisation dans le résumé
-  return simulatedData;
-}
 
 // Initialisation du sélecteur d'année
 (function initProYear(){

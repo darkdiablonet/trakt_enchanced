@@ -23,6 +23,8 @@ import { imageProxyRouter } from './lib/sharp.js';
 import { readGraphCache, writeGraphCache } from './lib/graphCache.js';
 import { computeStatsPro } from './lib/statsPro.js';
 import { readStatsCache, writeStatsCache } from './lib/statsCache.js';
+import { getWatchingsByDate, getCacheStats } from './lib/watchingsByDate.js';
+import { generateRealHeatmapData } from './lib/heatmapData.js';
 import { renderTemplate } from './lib/template.js';
 import { checkEnvFile, generateEnvFile } from './lib/setup.js';
 import { addProgressConnection, sendProgress, sendCompletion } from './lib/progressTracker.js';
@@ -359,8 +361,8 @@ app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (re
     return res.json({ ok: true, data: cached, cached: true });
   }
 
-  // 2) calcule si pas en cache
-  const data = await dailyCounts({ type, year });
+  // 2) calcule avec les vraies données depuis les fichiers progress
+  const data = await generateRealHeatmapData(year, type);
 
   // 3) mémorise
   await writeGraphCache(type, year, data);
@@ -477,6 +479,43 @@ app.get('/loading', asyncHandler(async (req, res) => {
   });
   res.send(html);
 }));
+
+// API pour récupérer les visionnages d'une date
+app.get('/api/watchings-by-date/:date', performanceMiddleware('watchingsByDate'), asyncHandler(async (req, res) => {
+  const { date } = req.params;
+  
+  // Validation format date YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ 
+      error: 'Format de date invalide. Utilisez YYYY-MM-DD' 
+    });
+  }
+  
+  try {
+    const watchings = await getWatchingsByDate(date);
+    
+    res.json({
+      date,
+      count: watchings.length,
+      watchings
+    });
+    
+  } catch (err) {
+    logger.error('Erreur API watchings-by-date:', err);
+    res.status(500).json({ 
+      error: 'Erreur interne du serveur' 
+    });
+  }
+}));
+
+// Debug cache stats (développement uniquement)
+app.get('/api/watchings-cache-stats', (req, res) => {
+  if (process.env.NODE_ENV !== 'production') {
+    res.json(getCacheStats());
+  } else {
+    res.status(404).json({ error: 'Non disponible en production' });
+  }
+});
 
 // Server-Sent Events pour le progrès de chargement
 app.get('/api/loading-progress', (req, res) => {
