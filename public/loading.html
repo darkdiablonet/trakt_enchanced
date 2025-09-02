@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chargement initial - Trakt Enhanced</title>
+  <link rel="stylesheet" href="/assets/tailwind.css">
+  <link rel="stylesheet" href="/assets/fa/css/all.min.css">
+</head>
+<body class="loading-body">
+  <div class="container mx-auto max-w-2xl p-6">
+    <div class="glass rounded-2xl p-8 shadow-2xl">
+      <!-- En-tête -->
+      <div class="text-center mb-8">
+        <div class="flex items-center justify-center gap-3 mb-4">
+          <img src="/assets/favicon.svg" alt="Trakt Enhanced" class="w-7 h-7 loading-animation flex-shrink-0">
+          <h1 class="text-3xl font-bold text-white">
+            <span class="text-sky-300">Trakt</span> Enhanced
+          </h1>
+        </div>
+        <p class="text-gray-300 text-lg">Chargement initial en cours</p>
+        <p class="text-gray-400 text-sm mt-2">Récupération de vos données depuis Trakt.tv...</p>
+      </div>
+
+      <!-- Barre de progrès globale -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm text-gray-300">Progrès global</span>
+          <span id="progress-percent" class="text-sm text-sky-400 font-semibold">0%</span>
+        </div>
+        <div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
+          <div id="progress-bar" class="progress-bar h-full bg-gradient-to-r from-sky-500 to-blue-600 rounded-full w-0"></div>
+        </div>
+      </div>
+
+      <!-- Étapes détaillées -->
+      <div class="space-y-4">
+        <div id="step-auth" class="step-item flex items-center gap-3 p-3 rounded-lg bg-gray-800/30">
+          <i class="fa-solid fa-key w-5 h-5 text-green-400"></i>
+          <div class="flex-1">
+            <div class="font-medium text-white">Authentification</div>
+            <div class="text-sm text-gray-400">Vérification du token Trakt</div>
+          </div>
+          <div class="status-icon">
+            <i class="fa-solid fa-check text-green-400"></i>
+          </div>
+        </div>
+
+        <div id="step-shows" class="step-item flex items-center gap-3 p-3 rounded-lg bg-gray-800/30">
+          <i class="fa-solid fa-tv w-5 h-5 text-sky-400"></i>
+          <div class="flex-1">
+            <div class="font-medium text-white">Séries visionnées</div>
+            <div class="text-sm text-gray-400 step-detail">Récupération de l'historique...</div>
+          </div>
+          <div class="status-icon">
+            <i class="fa-solid fa-spinner fa-spin text-sky-400"></i>
+          </div>
+        </div>
+
+        <div id="step-movies" class="step-item flex items-center gap-3 p-3 rounded-lg bg-gray-800/30">
+          <i class="fa-solid fa-film w-5 h-5 text-purple-400"></i>
+          <div class="flex-1">
+            <div class="font-medium text-white">Films visionnés</div>
+            <div class="text-sm text-gray-400 step-detail">En attente...</div>
+          </div>
+          <div class="status-icon">
+            <i class="fa-regular fa-clock text-gray-500"></i>
+          </div>
+        </div>
+
+        <div id="step-progress" class="step-item flex items-center gap-3 p-3 rounded-lg bg-gray-800/30">
+          <i class="fa-solid fa-chart-line w-5 h-5 text-orange-400"></i>
+          <div class="flex-1">
+            <div class="font-medium text-white">Progression des séries</div>
+            <div class="text-sm text-gray-400 step-detail">En attente...</div>
+          </div>
+          <div class="status-icon">
+            <i class="fa-regular fa-clock text-gray-500"></i>
+          </div>
+        </div>
+
+        <div id="step-collection" class="step-item flex items-center gap-3 p-3 rounded-lg bg-gray-800/30">
+          <i class="fa-solid fa-bookmark w-5 h-5 text-yellow-400"></i>
+          <div class="flex-1">
+            <div class="font-medium text-white">Collection</div>
+            <div class="text-sm text-gray-400 step-detail">En attente...</div>
+          </div>
+          <div class="status-icon">
+            <i class="fa-regular fa-clock text-gray-500"></i>
+          </div>
+        </div>
+
+        <div id="step-final" class="step-item flex items-center gap-3 p-3 rounded-lg bg-gray-800/30">
+          <i class="fa-solid fa-rocket w-5 h-5 text-green-400"></i>
+          <div class="flex-1">
+            <div class="font-medium text-white">Finalisation</div>
+            <div class="text-sm text-gray-400 step-detail">En attente...</div>
+          </div>
+          <div class="status-icon">
+            <i class="fa-regular fa-clock text-gray-500"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message d'info -->
+      <div class="mt-8 p-4 bg-blue-900/30 border border-blue-600/30 rounded-lg">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-info-circle text-blue-400 mt-1"></i>
+          <div class="text-sm text-blue-200">
+            <strong>Première synchronisation :</strong> Cette opération peut prendre quelques minutes selon la taille de votre collection Trakt. 
+            Les prochains chargements seront beaucoup plus rapides grâce au cache.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/loading.js"></script>
+</body>
+</html>

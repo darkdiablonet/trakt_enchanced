@@ -1,0 +1,38 @@
+{
+  "name": "trakt_enhanced",
+  "version": "2.2.23",
+  "description": "Trakt Enhanced (Node.js, modular, HTML separated)",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "dev:css": "tailwindcss -i ./src/tailwind.css -o ./public/assets/tailwind.css --watch",
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./public/assets/tailwind.css",
+    "build:fa": "mkdir -p public/assets/fa && cp -R node_modules/@fortawesome/fontawesome-free/css public/assets/fa/css && cp -R node_modules/@fortawesome/fontawesome-free/webfonts public/assets/fa/webfonts",
+    "build": "npm run build:css && npm run build:fa",
+    "start": "node server.js",
+    "version:patch": "npm version patch --no-git-tag-version && npm run update:dockerfile",
+    "version:minor": "npm version minor --no-git-tag-version && npm run update:dockerfile",
+    "version:major": "npm version major --no-git-tag-version && npm run update:dockerfile",
+    "update:dockerfile": "node scripts/update-version.js"
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.0.0",
+    "compression": "^1.8.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "morgan": "^1.10.0",
+    "session-file-store": "^1.5.0",
+    "sharp": "^0.34.3",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.12",
+    "tailwindcss": "^4.1.12"
+  }
+}

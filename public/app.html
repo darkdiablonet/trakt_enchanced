@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="shortcut icon" href="/assets/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <title>Trakt Enhanced</title>
+  <link rel="stylesheet" href="/assets/tailwind.css">
+  <link rel="stylesheet" href="/assets/fa/css/all.min.css">
+  <script src="/assets/app-modular.js" type="module" defer></script>
+</head>
+<body class="min-h-full text-adaptive selection:bg-sky-500/40 selection:text-white">
+  <header class="app-header">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
+      <div class="flex items-center gap-2 text-lg font-semibold tracking-wide">
+        <img src="/assets/favicon.svg" alt="Trakt Enhanced" class="w-7 h-7 flex-shrink-0">
+        <span><span class="text-sky-300">Trakt</span> Enhanced</span>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <div class="theme-selector">
+          <button id="themeToggle" class="btn btn-outline" title="Changer de thème">
+            <i class="fa-solid fa-palette"></i>
+            <span id="themeToggleText">Auto</span>
+            <i class="fa-solid fa-chevron-down ml-1 text-xs"></i>
+          </button>
+          <div id="themeDropdown" class="hidden absolute right-0 mt-2 w-40 glass rounded-lg border border-white/10 shadow-lg z-50">
+            <button data-theme="auto" class="w-full px-3 py-2 text-left text-sm hover:bg-white/10 rounded-t-lg flex items-center gap-2">
+              <i class="fa-solid fa-circle-half-stroke text-xs"></i>
+              Automatique
+            </button>
+            <button data-theme="light" class="w-full px-3 py-2 text-left text-sm hover:bg-white/10 flex items-center gap-2">
+              <i class="fa-solid fa-sun text-xs"></i>
+              Clair
+            </button>
+            <button data-theme="dark" class="w-full px-3 py-2 text-left text-sm hover:bg-white/10 rounded-b-lg flex items-center gap-2">
+              <i class="fa-solid fa-moon text-xs"></i>
+              Sombre
+            </button>
+          </div>
+        </div>
+        <form method="post" action="/refresh">
+          <input type="hidden" name="csrf" value="<!-- CSRF_TOKEN -->">
+          <button class="btn btn-outline" type="submit"><i class="fa-solid fa-rotate-right"></i><span>Rafraîchir</span></button>
+        </form>
+        <button id="toggleWidth" class="btn btn-outline" title="Basculer pleine largeur">
+          <i class="fa-solid fa-arrows-left-right-to-line"></i><span>Pleine largeur</span>
+        </button>
+        <button id="openFullModal" class="btn btn-outline"><i class="fa-solid fa-bolt"></i><span>Full rebuild</span></button>
+      </div>
+    </div>
+  </header>
+
+  <div id="flashBox"  class="hidden mx-auto max-w-7xl mt-4 px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/60"></div>
+  <div id="deviceBox" class="hidden mx-auto max-w-7xl bg-slate-800/60 border border-slate-700 rounded-xl p-4 mt-6"></div>
+
+  <main id="mainContainer" class="mx-auto max-w-7xl px-4 py-6">
+    <div class="mb-4">
+      <div class="tabs-group">
+        <button id="tabBtnShows"        class="tab-btn-active" data-tab="shows">
+          <i class="fa-solid fa-clapperboard mr-2"></i>Séries
+        </button>
+        <button id="tabBtnMovies"       data-tab="movies">
+          <i class="fa-solid fa-film mr-2"></i>Films
+        </button>
+        <button id="tabBtnShowsUnseen"  data-tab="shows_unseen"  title="En collection avec épisodes manquants">
+          <i class="fa-regular fa-eye-slash mr-2"></i>Séries à voir
+        </button>
+        <button id="tabBtnMoviesUnseen" data-tab="movies_unseen" title="En collection jamais vus">
+          <i class="fa-regular fa-eye-slash mr-2"></i>Films à voir
+        </button>
+        <button id="tabBtnStats" data-tab="stats">
+          <i class="fa-solid fa-chart-simple mr-2"></i>Stats
+        </button>
+      </div>
+    </div>
+
+    <!-- Bouton filtres mobile -->
+    <button id="mobileFiltersToggle" class="sm:hidden mb-4 px-3 py-2 bg-white/5 rounded-lg border border-white/10 flex items-center">
+      <i class="fa fa-filter mr-2"></i>Filtres
+    </button>
+
+    <section id="mobileFilters" class="filters glass rounded-xl px-4 py-3 mb-6 hidden sm:block">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="w-full sm:w-auto">
+          <label for="qActive" class="block text-xs uppercase tracking-wide text-muted mb-1"><i class="fa fa-search mr-1"></i>Rechercher</label>
+          <input id="qActive" type="search" placeholder="Titre… (Ctrl+/)"
+                 class="w-full sm:w-72 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-sky-400/40 focus:ring-2 focus:ring-sky-400/20"
+                 autocomplete="off">
+        </div>
+        <div>
+          <label for="sortActive" class="block text-xs uppercase tracking-wide text-muted mb-1">Tri</label>
+          <select id="sortActive"
+                  class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-sky-400/40 focus:ring-2 focus:ring-sky-400/20">
+            <option value="watched_at:desc"     data-for="shows,movies">Derniers vus</option>
+            <option value="title:asc"           data-for="shows,movies,shows_unseen,movies_unseen">Titre A→Z</option>
+            <option value="title:desc"          data-for="shows,movies,shows_unseen,movies_unseen">Titre Z→A</option>
+            <option value="year:desc"           data-for="shows,movies,shows_unseen,movies_unseen">Année ↓</option>
+            <option value="year:asc"            data-for="shows,movies,shows_unseen,movies_unseen">Année ↑</option>
+            <option value="episodes:desc"       data-for="shows">Épisodes vus ↓</option>
+            <option value="plays:desc"          data-for="movies">Vus ↓</option>
+            <option value="collected_at:desc"   data-for="shows_unseen,movies_unseen">Ajoutés récemment ↓</option>
+            <option value="collected_at:asc"    data-for="shows_unseen,movies_unseen">Ajoutés anciennement ↑</option>
+            <option value="missing:desc"        data-for="shows_unseen">Épisodes manquants ↓</option>
+            <option value="missing:asc"         data-for="shows_unseen">Épisodes manquants ↑</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section id="panelShows"><div id="gridS"  class="grid-default"></div></section>
+    <section id="panelMovies" class="hidden"><div id="gridM"  class="grid-default"></div></section>
+    <section id="panelShowsUnseen" class="hidden"><div id="gridSU" class="grid-default"></div></section>
+    <section id="panelMoviesUnseen" class="hidden"><div id="gridMU" class="grid-default"></div></section>
+    <section id="panelStats" class="hidden">
+      <!-- tuiles stats -->
+      <div id="statsBox" class="grid-default"></div>
+    
+      <!-- HEATMAP déplacé ici -->
+      <div class="glass rounded-xl p-3 mt-6 mb-4 flex flex-wrap items-center gap-3">
+        <label class="text-sm">Type
+          <select id="graphType" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
+            <option value="all">Tout</option>
+            <option value="movies">Films</option>
+            <option value="shows">Séries</option>
+          </select>
+        </label>
+        <label class="text-sm">Année
+          <select id="graphYear" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm"></select>
+        </label>
+      </div>
+      <div id="graphContainer" class="overflow-x-auto"></div>
+      <p id="graphMeta" class="mt-3 text-sm text-muted"></p>
+      <!-- Stats Pro — contrôles -->
+      <div class="glass rounded-xl p-3 mt-6 mb-4 flex flex-wrap items-center gap-3">
+        <label class="text-sm">Type
+          <select id="proType" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
+            <option value="all">Tout</option>
+            <option value="movies">Films</option>
+            <option value="shows">Séries</option>
+          </select>
+        </label>
+        <label class="text-sm">Période
+          <select id="proRange" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
+            <option value="year">Année</option>
+            <option value="lastDays">Derniers jours</option>
+          </select>
+        </label>
+        <label class="text-sm" id="proYearWrap">Année
+          <select id="proYear" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm"></select>
+        </label>
+        <label class="text-sm hidden" id="proDaysWrap">Jours
+          <input id="proDays" type="number" min="7" max="1095" value="365"
+                 class="ml-2 w-24 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
+        </label>
+        <button id="proReload" class="btn btn-outline"><i class="fa-solid fa-rotate-right"></i><span>Actualiser</span></button>
+      </div>
+      
+      <!-- Stats Pro — résumé -->
+      <div id="proSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      
+      <!-- Stats Pro — graphiques -->
+      <div id="proCharts" class="mt-6 space-y-6">
+        <!-- Graphiques temporels principaux -->
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-clock text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Heures</h4>
+              <span class="text-xs text-disabled">Europe/Paris</span>
+            </div>
+            <div id="proChartHours" class="overflow-x-auto"></div>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-calendar-week text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Jours de la semaine</h4>
+              <span class="text-xs text-disabled">L→D</span>
+            </div>
+            <div id="proChartWeek" class="overflow-x-auto"></div>
+          </div>
+        </div>
+        
+        <!-- Graphique mensuel (plus large) -->
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-chart-line text-sky-400"></i>
+            <h4 class="font-semibold text-sm">Évolution par mois</h4>
+          </div>
+          <div id="proChartMonths" class="overflow-x-auto"></div>
+        </div>
+      </div>
+      
+      <!-- Stats Pro — Tops -->
+      <div id="proTops" class="mt-6 space-y-6">
+        <!-- Top listes en grille -->
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-masks-theater text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Genres</h4>
+              <span class="text-xs text-disabled">minutes</span>
+            </div>
+            <div id="proTopGenres"></div>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-tower-broadcast text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Réseaux TV</h4>
+              <span class="text-xs text-disabled">minutes</span>
+            </div>
+            <div id="proTopNetworks"></div>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-building text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Studios</h4>
+              <span class="text-xs text-disabled">minutes</span>
+            </div>
+            <div id="proTopStudios"></div>
+          </div>
+        </div>
+        
+        <!-- Top titres (plus large) -->
+        <div class="card p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-trophy text-sky-400"></i>
+            <h4 class="font-semibold text-sm">Top titres</h4>
+            <span class="text-xs text-disabled">durée totale</span>
+          </div>
+          <div id="proTopTitles"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-10 mb-8 text-sm text-muted"><hr class="border-white/10 mb-4"></hr></footer>
+  </main>
+
+  <div id="fullModal" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="fullModal-title" aria-describedby="fullModal-desc">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true"></div>
+    <div class="relative mx-auto max-w-md w-full mt-32 px-4">
+      <div class="glass rounded-xl border border-white/10 p-5">
+        <div class="flex items-start justify-between">
+          <h3 id="fullModal-title" class="text-lg font-semibold">Full rebuild</h3>
+          <button id="closeFullModal" class="btn text-xs" aria-label="Fermer la modale de full rebuild"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Fermer</span></button>
+        </div>
+        <p id="fullModal-desc" class="text-muted text-sm mt-2">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
+        <form method="post" action="/full_rebuild" class="mt-4 space-y-3">
+          <input type="hidden" name="csrf" value="<!-- CSRF_TOKEN -->">
+          <label for="fullRebuildPwd" class="block text-xs uppercase tracking-wide text-muted">Mot de passe</label>
+          <input id="fullRebuildPwd" type="password" name="pwd" required class="w-full rounded-lg bg-slate-950/60 border border-slate-700 px-3 py-2" aria-describedby="fullModal-desc">
+          <div class="flex justify-end gap-2">
+            <button type="submit" class="btn"><i class="fa-solid fa-bolt"></i><span>Lancer</span></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- Overview popover ancré -->
+  <div id="ovModal" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="ovTitle" aria-describedby="ovText">
+    <!-- backdrop cliquable avec blur -->
+    <div id="ovBackdrop" class="ov-backdrop absolute inset-0" aria-hidden="true"></div>
+  
+    <!-- panneau ancré près du bouton -->
+    <article id="ovPanel" class="ov-panel glassNoTrans rounded-xl border border-white/10 p-4 shadow-2xl">
+      <div class="ov-arrow" aria-hidden="true"></div>
+      <div class="ov-content">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 id="ovTitle" class="text-lg font-semibold"></h3>
+            <div id="ovChips" class="mt-1 flex items-center gap-2 text-sm" aria-label="Informations du contenu"></div>
+          </div>
+          <button id="ovClose" class="btn btn-outline text-xs" aria-label="Fermer la fenêtre d'aperçu">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Fermer</span>
+          </button>
+        </div>
+    
+        <div id="ovBody" class="mt-3 text-adaptive text-[15px] leading-relaxed max-h-[60vh] overflow-auto">
+          <p id="ovText"></p>
+        </div>
+    
+        <div id="ovLinks" class="mt-4 flex flex-wrap gap-2 text-sm"></div>
+      </div>
+    </article>
+  </div>
+
+
+</body>
+</html>

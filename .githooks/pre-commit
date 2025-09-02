@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Vérifie si le package.json a été modifié
+if git diff --cached --name-only | grep -q "package.json"; then
+  echo "📦 package.json modifié, mise à jour du Dockerfile..."
+  npm run update:dockerfile
+  
+  # Ajouter le Dockerfile modifié au commit
+  git add Dockerfile
+  echo "✅ Dockerfile mis à jour automatiquement"
+fi
