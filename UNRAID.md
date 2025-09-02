@@ -61,10 +61,12 @@ Avec cette configuration, vos données et paramètres persisteront lors des mise
 ## Troubleshooting
 
 ### Permissions
-Si vous avez des erreurs de permissions :
+Le conteneur utilise UID/GID 99:100 (standard Unraid). Si vous avez des erreurs de permissions :
 ```bash
-# Depuis Unraid terminal
+# Depuis Unraid terminal - créer le dossier avec les bonnes permissions
+mkdir -p /mnt/user/appdata/trakt-enhanced/{data,data/logs}
 chown -R 99:100 /mnt/user/appdata/trakt-enhanced/
+chmod -R 755 /mnt/user/appdata/trakt-enhanced/
 ```
 
 ### Backup recommandé  

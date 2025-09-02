@@ -4,7 +4,7 @@ FROM node:20-bookworm AS build
 # Build metadata
 LABEL org.opencontainers.image.title="Trakt Enhanced"
 LABEL org.opencontainers.image.description="Trakt Enhanced Node.js application"
-LABEL org.opencontainers.image.version="2.2.29"
+LABEL org.opencontainers.image.version="2.2.30"
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/diabolino/trakt_enhanced"
 LABEL org.opencontainers.image.documentation="https://github.com/diabolino/trakt-enhanced/blob/main/README.md"
 LABEL org.opencontainers.image.source="https://github.com/diabolino/trakt-enhanced"
@@ -53,8 +53,8 @@ ENV FULL_REBUILD_PASSWORD=""
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata curl \
 	&& rm -rf /var/lib/apt/lists/*
 
-# create app user for safety
-RUN groupadd -r app && useradd -r -g app app
+# create app user with Unraid compatible UID/GID (99:100)
+RUN groupadd -g 100 app && useradd -u 99 -g 100 app
 
 WORKDIR /app
 
