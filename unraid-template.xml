@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Trakt-Enhanced</Name>
+  <Repository>docker.io/diabolino/trakt_enhanced:latest</Repository>
+  <Registry>https://hub.docker.com/repository/docker/diabolino/trakt_enhanced/general</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/diabolino/trakt-enhanced/issues</Support>
+  <Project>https://github.com/diabolino/trakt-enhanced</Project>
+  <Overview>Application web moderne pour explorer votre historique Trakt avec une interface élégante.&#xD;
+&#xD;
+✨ Fonctionnalités principales :&#xD;
+• Interface responsive 100% personnalisable&#xD;
+• Tri et recherche avancés (Séries, Films, À voir)&#xD;
+• Posters haute qualité TMDB avec cache intelligent&#xD;
+• Statistiques détaillées avec graphiques interactifs&#xD;
+• Heatmap d'activité style GitHub&#xD;
+• Rafraîchissement automatique programmable&#xD;
+• Mode sombre/clair adaptatif&#xD;
+&#xD;
+🔧 Technologies : Node.js, Express, Chart.js, Tailwind CSS&#xD;
+📊 APIs supportées : Trakt.tv, TMDB&#xD;
+🐳 Optimisé pour Unraid avec persistance des données</Overview>
+  <Category>MediaApp:Other</Category>
+  <WebUI>http://[IP]:[PORT:30009]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/diabolino/trakt-enhanced/main/unraid-template.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/diabolino/trakt-enhanced/main/public/assets/web-app-manifest-512x512.png</Icon>
+  <ExtraParams>--health-cmd="curl -f http://localhost:30009/health || exit 1" --health-interval=30s --health-timeout=5s --health-retries=3</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1756808192</DateInstalled>
+  <DonateText>☕ Offrir un café</DonateText>
+  <DonateLink>https://github.com/sponsors/diabolino</DonateLink>
+  <Requires/>
+  <Config Name="WebUI Port" Target="30009" Default="30009" Mode="tcp" Description="Port d'accès à l'interface web Trakt Enhanced" Type="Port" Display="always" Required="true" Mask="false">30009</Config>
+  <Config Name="Data Directory" Target="/app/data" Default="/mnt/user/appdata/trakt-enhanced/data" Mode="rw" Description="Dossier de données persistantes : cache Trakt/TMDB, sessions, tokens d'authentification, images" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/trakt-enhanced/data</Config>
+  <Config Name="Configuration File" Target="/app/.env" Default="/mnt/user/appdata/trakt-enhanced/.env" Mode="rw" Description="Fichier de configuration persistant : clés API, secrets, paramètres" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/trakt-enhanced/.env</Config>
+  <Config Name="Timezone" Target="TZ" Default="Europe/Paris" Mode="" Description="Timezone pour les logs et statistiques (ex: Europe/Paris, America/New_York)" Type="Variable" Display="always" Required="false" Mask="false">Europe/Paris</Config>
+  <Config Name="Node Environment" Target="NODE_ENV" Default="production" Mode="" Description="Environnement Node.js (production recommandé)" Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
+  <Config Name="Public Host URL" Target="PUBLIC_HOST" Default="" Mode="" Description="URL publique pour l'authentification OAuth Trakt (ex: http://192.168.1.100:30009)" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Docker Host IP" Target="DOCKER_HOST_IP" Default="" Mode="" Description="IP de l'hôte Docker pour la détection automatique (généralement IP de votre serveur Unraid)" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Session Secret" Target="SESSION_SECRET" Default="" Mode="" Description="Clé secrète pour les sessions (laissez vide pour génération automatique)" Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="Full Rebuild Password" Target="FULL_REBUILD_PASSWORD" Default="" Mode="" Description="Mot de passe pour la reconstruction complète du cache (configuré via l'interface)" Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+</Container>
