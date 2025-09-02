@@ -17,6 +17,20 @@ import './modules/pro-stats.js';
 import './modules/theme-ui.js';
 import './modules/markWatched.js';
 
+// Charger la version de l'application
+async function loadAppVersion() {
+  try {
+    const response = await fetch('/health');
+    const health = await response.json();
+    const versionEl = document.getElementById('app-version');
+    if (versionEl && health.version) {
+      versionEl.textContent = `v${health.version}`;
+    }
+  } catch (error) {
+    console.warn('Could not load app version:', error);
+  }
+}
+
 // Event listeners principaux
 elements.toggleWidth?.addEventListener('click', () => { 
   state.width = (state.width==='full') ? 'limited' : 'full'; 
@@ -82,4 +96,7 @@ if (!('IntersectionObserver' in window)) {
 // Make managers available globally for other scripts
 window.lazyManager = lazyManager;
 window.animationManager = animationManager;
+
+// Charger la version au démarrage
+loadAppVersion();
 

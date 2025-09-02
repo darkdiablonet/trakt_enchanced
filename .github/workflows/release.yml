@@ -1,0 +1,105 @@
+name: Create Release
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'package.json' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version-changed: ${{ steps.version-check.outputs.changed }}
+      version: ${{ steps.version-check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: Check if version changed
+        id: version-check
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          if git show HEAD~1:package.json > /dev/null 2>&1; then
+            PREV_VERSION=$(git show HEAD~1:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).version")
+            if [ "$CURRENT_VERSION" != "$PREV_VERSION" ]; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "Version changed: $PREV_VERSION -> $CURRENT_VERSION"
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+              echo "Version unchanged: $CURRENT_VERSION"
+            fi
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "No previous version found, treating as new release"
+          fi
+
+  create-release:
+    needs: check-version
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: release-notes
+        run: |
+          VERSION="v${{ needs.check-version.outputs.version }}"
+          echo "Generating release notes for $VERSION"
+          
+          # Get commits since last tag (or all commits if no tags)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s" $LAST_TAG..HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"- %s" --max-count=10)
+          fi
+          
+          # Create release notes
+          cat > release_notes.md << EOF
+          # Trakt Enhanced $VERSION
+          
+          ## 🚀 What's New
+          $COMMITS
+          
+          ## 📦 Installation
+          
+          ### Docker (Recommended)
+          \`\`\`bash
+          docker run -d \\
+            --name=trakt_enhanced \\
+            -p 30009:30009 \\
+            -v trakt_data:/app/data \\
+            --restart unless-stopped \\
+            docker.io/diabolino/trakt_enhanced:$VERSION
+          \`\`\`
+          
+          ### Manual Installation
+          1. Download and extract the source code
+          2. Run \`npm install && npm run build && npm start\`
+          3. Open http://localhost:30009
+          
+          ## 🔧 Configuration
+          Visit the setup page on first run to configure your Trakt and TMDB API keys.
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          name: "Trakt Enhanced v${{ needs.check-version.outputs.version }}"
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          append_body: true
