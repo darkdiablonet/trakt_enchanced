@@ -551,9 +551,17 @@
     transition: none !important;
   }
   
+  
   /* Classe pour forcer le masquage des filtres sur Stats (override sm:block) */
   .force-hidden {
     display: none !important;
+  }
+  
+  /* Styles pour la heatmap SVG responsive */
+  .heatmap-svg {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
   }
   
   /* Classes d'animation delay pour CSP compliance */

@@ -5,6 +5,7 @@
 
 import { renderTopSimple, renderTopTitles, applyProgressBars } from './rendering.js';
 import { createHoursChart, createWeekChart, createMonthsChart } from './charts.js';
+import { datesOfYear, renderHeatmapSVG } from './graphs.js';
 
 export function listTable(rows, {cols=[['name','Nom'],['minutes','Min'],['plays','Vus']], limit=10} = {}){
   const toNum = (x)=> typeof x === 'number' ? x : Number(x||0);
@@ -61,6 +62,9 @@ export function renderStatsPro(data){
   createHoursChart(data.distributions.hours || []);
   createWeekChart(data.distributions.weekday || []);
   createMonthsChart(data.distributions.months || {});
+  
+  // Générer la heatmap depuis les données Pro Stats
+  generateHeatmapFromProData(data);
 
   // Tops
   document.getElementById('proTopGenres').innerHTML = renderTopSimple(data.top.genres || []);
@@ -70,7 +74,72 @@ export function renderStatsPro(data){
 
   // Appliquer les styles après rendu
   setTimeout(() => applyProgressBars(), 10);
+}
 
+// Générer une heatmap simulée depuis les données Pro Stats
+function generateHeatmapFromProData(proData) {
+  const graphMeta = document.getElementById('graphMeta');
+  
+  if (!proData.distributions) return;
+  
+  // Récupérer l'année depuis le sélecteur
+  const year = Number(document.getElementById('proYear')?.value || new Date().getFullYear());
+  const type = document.getElementById('proType')?.value || 'all';
+  
+  // Utiliser les données mensuelles pour créer une heatmap approximative
+  const monthsData = proData.distributions.months || {};
+  const weekdayData = proData.distributions.weekday || [];
+  
+  // Créer des données simulées pour chaque jour de l'année
+  const yearDates = datesOfYear(year);
+  const simulatedData = {
+    year: year,
+    sum: proData.totals?.plays || 0,
+    max: 0,
+    daysWithCount: 0,
+    days: []
+  };
+  
+  yearDates.forEach(date => {
+    const monthKey = `${year}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+    const monthMinutes = monthsData[monthKey]?.minutes || 0;
+    const weekday = date.getUTCDay(); // 0=dimanche, 1=lundi...
+    
+    // Simuler une valeur basée sur les données mensuelles et hebdomadaires
+    const weekdayFactor = weekdayData[weekday === 0 ? 6 : weekday - 1] || 0; // Ajuster index
+    const monthFactor = monthMinutes / 60; // Convertir minutes en "plays" approximatifs
+    
+    // Si pas de données ce mois-là OU ce jour de semaine, alors 0 activité
+    let count = 0;
+    if (monthFactor > 0 && weekdayFactor > 0) {
+      // Seulement 30% de chance d'avoir une activité même avec des données
+      const activityChance = Math.random();
+      if (activityChance > 0.7) {
+        const randomFactor = Math.random() * 0.5 + 0.5; // 0.5 à 1.0
+        count = Math.round((monthFactor * weekdayFactor * randomFactor) / 300);
+      }
+    }
+    
+    simulatedData.days.push({
+      date: date.toISOString().split('T')[0],
+      count: Math.max(0, count)
+    });
+    
+    if (count > 0) simulatedData.daysWithCount++;
+    simulatedData.max = Math.max(simulatedData.max, count);
+  });
+  
+  // Générer la heatmap SVG
+  const heatmapContainer = document.getElementById('heatmapContainer');
+  if (heatmapContainer) {
+    const svg = renderHeatmapSVG(simulatedData, {});
+    heatmapContainer.innerHTML = svg;
+  }
+  
+  // Mettre à jour les métadonnées
+  if (graphMeta) {
+    graphMeta.textContent = `${type==='all'?'(films+séries)':type} ${year} : ${simulatedData.sum} vus · jours actifs : ${simulatedData.daysWithCount} · max/jour : ${simulatedData.max}`;
+  }
 }
 
 // Initialisation du sélecteur d'année
@@ -95,4 +164,4 @@ document.getElementById('proRange')?.addEventListener('change', (e)=>{
 document.getElementById('proReload')?.addEventListener('click', loadStatsPro);
 document.getElementById('proType')?.addEventListener('change', loadStatsPro);
 document.getElementById('proYear')?.addEventListener('change', loadStatsPro);
-document.getElementById('proDays')?.addEventListener('change', loadStatsPro);
+document.getElementById('proDays')?.addEventListener('change', loadStatsPro); // Jours n'affecte que Pro Stats

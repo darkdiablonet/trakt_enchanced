@@ -49,9 +49,7 @@ export function setTab(tab) {
   }
 
   if (isStats) {
-    // Les cartes stats et graphiques sont gérées dans leurs modules respectifs
-    // On importe dynamiquement pour éviter les dépendances circulaires
-    import('./graphs.js').then(({ loadAndRenderGraph }) => loadAndRenderGraph());
+    // Charger Pro Stats (qui génère aussi la heatmap depuis ses données)
     import('./pro-stats.js').then(({ loadStatsPro }) => loadStatsPro().catch(()=>{}));
     return;
   }

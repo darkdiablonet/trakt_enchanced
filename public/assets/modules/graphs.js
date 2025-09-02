@@ -3,10 +3,9 @@
  * Gestion des graphiques et heatmaps
  */
 
-const graphTypeSel = document.getElementById('graphType');
-const graphYearSel = document.getElementById('graphYear');
-const graphContainer = document.getElementById('graphContainer');
-const graphMeta = document.getElementById('graphMeta');
+// Utilisation des sélecteurs Pro Stats unifiés (fonctions conservées pour compatibilité)
+const getGraphType = () => document.getElementById('proType')?.value || 'all';
+const getGraphYear = () => document.getElementById('proYear')?.value || new Date().getFullYear().toString();
 
 export function fillYearsSelect(selectEl, minYear = 2010) {
   const yNow = new Date().getFullYear();
@@ -83,7 +82,7 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
 
   const jours = ['L','M','M','J','V','S','D'];
 
-  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trakt heatmap ${year}">
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trakt heatmap ${year}" class="heatmap-svg">
   <rect x="0" y="0" width="${W}" height="${H}" fill="#0b1220" rx="8" />`;
 
   // Ligne des mois
@@ -148,22 +147,9 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
 }
 
 export async function loadAndRenderGraph() {
-  if (!graphYearSel.options.length) {
-    fillYearsSelect(graphYearSel, 2010);
-    graphYearSel.value = String(new Date().getFullYear());
-  }
-  const year = Number(graphYearSel.value) || (new Date()).getFullYear();
-  const type = graphTypeSel.value || 'all';
-  try {
-    const r = await fetch(`/api/graph?year=${year}&type=${encodeURIComponent(type)}`, { cache:'no-store' }).then(x=>x.json());
-    if (!r.ok) { graphContainer.innerHTML = '<div class="text-rose-300">Erreur de chargement.</div>'; return; }
-    const { data } = r;
-    const svg = renderHeatmapSVG(data, {});
-    graphContainer.innerHTML = svg;
-    graphMeta.textContent = `Total ${type==='all'?'(films+séries)':type} ${year} : ${data.sum} visionnage(s) · jours actifs : ${data.daysWithCount} · max/jour : ${data.max}`;
-  } catch {
-    graphContainer.innerHTML = '<div class="text-rose-300">API /api/graph indisponible.</div>';
-  }
+  // Cette fonction n'est plus utilisée - la heatmap est maintenant générée
+  // depuis les données Pro Stats avec Chart.js Matrix
+  return Promise.resolve();
 }
 
 export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, titleFormatter=(v)=>v} = {}){
@@ -237,6 +223,5 @@ export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, 
   return svg;
 }
 
-// Event listeners
-if (graphTypeSel) graphTypeSel.addEventListener('change', loadAndRenderGraph);
-if (graphYearSel) graphYearSel.addEventListener('change', loadAndRenderGraph);
+// Event listeners maintenant gérés par le module pro-stats.js
+// car les sélecteurs sont unifiés

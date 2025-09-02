@@ -228,6 +228,8 @@ export function resizeAllCharts() {
   });
 }
 
+// Note: fonction createHeatmap supprimée - on utilise maintenant renderHeatmapSVG
+
 // Nettoyage lors du changement de page
 export function destroyAllCharts() {
   Object.keys(chartInstances).forEach(chartId => {
