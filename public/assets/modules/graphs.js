@@ -121,14 +121,14 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
     const ri = dayIndex(d);
     const x = ci*(cell+gap);
     const y = ri*(cell+gap);
-    const key = d.toISOString().slice(0,10);
-    const count = map.get(key) || 0;
+    const utcKey = d.toISOString().slice(0,10);
+    const count = map.get(utcKey) || 0;
     const lvl = levelFor(count, max);
     const fill = colorFor(lvl);
-    const title = `${key} · ${count} visionnage${count>1?'s':''}`;
+    const title = `${utcKey} · ${count} visionnage${count>1?'s':''}`;
     const delay = (ci * 7 + ri) * 20; // Animation progressive plus lente
     svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" 
-             fill="${fill}" class="svg-interactive heatmap-cell" data-delay="${delay}" data-date="${key}" data-count="${count}">
+             fill="${fill}" class="svg-interactive heatmap-cell" data-delay="${delay}" data-date="${utcKey}" data-count="${count}">
       <title>${title}</title>
     </rect>`;
   }
