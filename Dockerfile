@@ -66,10 +66,8 @@ COPY --from=build /src /app
 COPY --from=build /src/public/assets/favicon.svg /app/logo.svg
 
 # ensure data folder exists & set correct permissions for Unraid
-RUN mkdir -p /app/data && chown -R app:app /app/data
-
-# ensure app user can write config files in /app directory
-RUN chown -R app:app /app
+RUN mkdir -p /app/data && \
+    chown -R app:app /app
 
 # Declare volumes for persistent data
 VOLUME ["/app/data", "/app/.env"]
