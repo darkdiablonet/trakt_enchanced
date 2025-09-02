@@ -36,7 +36,10 @@ export async function loadStatsPro() {
 }
 
 export function renderStatsPro(data){
-  // Résumé avec animations
+  // Générer les données heatmap pour calculer les métriques supplémentaires
+  const heatmapData = generateHeatmapFromProData(data);
+  
+  // Résumé avec animations (6 tuiles maintenant)
   const sumEl = document.getElementById('proSummary');
   const T = data.totals || {};
   sumEl.innerHTML = `
@@ -56,6 +59,14 @@ export function renderStatsPro(data){
       <div class="text-xs text-muted">Heures</div>
       <div class="text-2xl font-semibold animate-count-up delay-1200">${(T.hours||0).toLocaleString('fr-FR')}</div>
     </div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-1000">
+      <div class="text-xs text-muted">Jours actifs</div>
+      <div class="text-2xl font-semibold animate-count-up delay-1400">${heatmapData.daysWithCount}</div>
+    </div>
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-1200">
+      <div class="text-xs text-muted">Max/jour</div>
+      <div class="text-2xl font-semibold animate-count-up delay-1600">${heatmapData.max}</div>
+    </div>
   `;
 
   // Graphiques Chart.js
@@ -63,8 +74,12 @@ export function renderStatsPro(data){
   createWeekChart(data.distributions.weekday || []);
   createMonthsChart(data.distributions.months || {});
   
-  // Générer la heatmap depuis les données Pro Stats
-  generateHeatmapFromProData(data);
+  // Afficher la heatmap (déjà généré plus haut pour les métriques)
+  const heatmapContainer = document.getElementById('graphContainer');
+  if (heatmapContainer && heatmapData) {
+    const svg = renderHeatmapSVG(heatmapData, {});
+    heatmapContainer.innerHTML = svg;
+  }
 
   // Tops
   document.getElementById('proTopGenres').innerHTML = renderTopSimple(data.top.genres || []);
@@ -80,7 +95,7 @@ export function renderStatsPro(data){
 function generateHeatmapFromProData(proData) {
   const graphMeta = document.getElementById('graphMeta');
   
-  if (!proData.distributions) return;
+  if (!proData.distributions) return { daysWithCount: 0, max: 0 };
   
   // Récupérer l'année depuis le sélecteur
   const year = Number(document.getElementById('proYear')?.value || new Date().getFullYear());
@@ -129,17 +144,8 @@ function generateHeatmapFromProData(proData) {
     simulatedData.max = Math.max(simulatedData.max, count);
   });
   
-  // Générer la heatmap SVG
-  const heatmapContainer = document.getElementById('heatmapContainer');
-  if (heatmapContainer) {
-    const svg = renderHeatmapSVG(simulatedData, {});
-    heatmapContainer.innerHTML = svg;
-  }
-  
-  // Mettre à jour les métadonnées
-  if (graphMeta) {
-    graphMeta.textContent = `${type==='all'?'(films+séries)':type} ${year} : ${simulatedData.sum} vus · jours actifs : ${simulatedData.daysWithCount} · max/jour : ${simulatedData.max}`;
-  }
+  // Retourner les données pour utilisation dans le résumé
+  return simulatedData;
 }
 
 // Initialisation du sélecteur d'année

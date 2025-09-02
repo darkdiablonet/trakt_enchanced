@@ -1,6 +1,6 @@
 {
   "name": "trakt_enhanced",
-  "version": "2.2.25",
+  "version": "2.2.26",
   "description": "Trakt Enhanced (Node.js, modular, HTML separated)",
   "type": "module",
   "main": "server.js",
@@ -9,7 +9,7 @@
     "dev:css": "tailwindcss -i ./src/tailwind.css -o ./public/assets/tailwind.css --watch",
     "build:css": "tailwindcss -i ./src/tailwind.css -o ./public/assets/tailwind.css",
     "build:fa": "mkdir -p public/assets/fa && cp -R node_modules/@fortawesome/fontawesome-free/css public/assets/fa/css && cp -R node_modules/@fortawesome/fontawesome-free/webfonts public/assets/fa/webfonts",
-    "build:chartjs": "cp node_modules/chart.js/dist/chart.umd.js* public/assets/ 2>/dev/null || cp node_modules/chart.js/dist/chart.umd.js public/assets/ && cp node_modules/chartjs-chart-matrix/dist/chartjs-chart-matrix.min.js* public/assets/ 2>/dev/null || cp node_modules/chartjs-chart-matrix/dist/chartjs-chart-matrix.min.js public/assets/ && cp node_modules/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js* public/assets/ 2>/dev/null || cp node_modules/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js public/assets/",
+    "build:chartjs": "cp node_modules/chart.js/dist/chart.umd.js* public/assets/ 2>/dev/null || cp node_modules/chart.js/dist/chart.umd.js public/assets/",
     "build": "npm run build:css && npm run build:fa && npm run build:chartjs",
     "start": "node server.js",
     "version:patch": "npm version patch --no-git-tag-version && npm run update:dockerfile",
@@ -23,8 +23,6 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.0.0",
     "chart.js": "^4.5.0",
-    "chartjs-adapter-date-fns": "^3.0.0",
-    "chartjs-chart-matrix": "^3.0.0",
     "compression": "^1.8.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

@@ -124,20 +124,6 @@
       <!-- tuiles stats -->
       <div id="statsBox" class="grid-default"></div>
     
-      <!-- HEATMAP déplacé ici -->
-      <div class="glass rounded-xl p-3 mt-6 mb-4 flex flex-wrap items-center gap-3">
-        <label class="text-sm">Type
-          <select id="graphType" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm">
-            <option value="all">Tout</option>
-            <option value="movies">Films</option>
-            <option value="shows">Séries</option>
-          </select>
-        </label>
-        <label class="text-sm">Année
-          <select id="graphYear" class="ml-2 rounded border border-white/10 bg-white/5 px-2 py-1 text-sm"></select>
-        </label>
-      </div>
-      <div id="graphContainer" class="overflow-x-auto"></div>
       <!-- Stats Pro — contrôles -->
       <div class="glass rounded-xl p-3 mt-6 mb-4 flex flex-wrap items-center gap-3">
         <label class="text-sm">Type
@@ -163,7 +149,9 @@
       </div>
       
       <!-- Stats Pro — résumé -->
-      <div id="proSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div id="proSummary" class="grid grid-cols-2 md:grid-cols-6 gap-3"></div>
+
+      <div id="graphContainer" class="overflow-x-auto mt-6"></div>
       
         <!-- Stats Pro — Test -->
       <div id="proCharts" class="mt-6 space-y-6">
@@ -292,7 +280,7 @@
     <i class="fa-solid fa-chevron-up"></i>
   </button>
 
-  <script src="/assets/chart.js"></script>
+  <script src="/assets/chart.umd.js"></script>
   <script src="/assets/app-modular.js" type="module" defer></script>
 </body>
 </html>

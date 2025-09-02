@@ -20,11 +20,11 @@ export function fillYearsSelect(selectEl, minYear = 2010) {
 
 export function colorFor(level) {
   const palette = [
-    '#0b1220',  // 0: empty
-    '#14532d',  // 1
-    '#166534',  // 2
-    '#22c55e',  // 3
-    '#4ade80'   // 4 (max)
+    '#0b1220',  // 0: empty (très sombre)
+    '#1e3a5f',  // 1: bleu sombre 
+    '#2563eb',  // 2: bleu moyen
+    '#22c55e',  // 3: vert vif
+    '#f59e0b'   // 4: orange/amber (max activité)
   ];
   return palette[level] || palette[0];
 }

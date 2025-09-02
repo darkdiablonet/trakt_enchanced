@@ -531,17 +531,17 @@
     max-width: none;
   }
   
-  /* Sur grands écrans, limiter à 3 colonnes max en mode normal */
+  /* Sur grands écrans, forcer 4 colonnes sur une ligne */
   @media (min-width: 1200px) {
     .stats-grid-optimized {
-      grid-template-columns: repeat(3, 1fr);
-      max-width: 1200px;
+      grid-template-columns: repeat(4, 1fr);
+      max-width: 1400px;
       margin: 0 auto;
     }
     
-    /* En pleine largeur, permettre jusqu'à 4 colonnes */
+    /* En pleine largeur, également 4 colonnes */
     .full-width .stats-grid-optimized {
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       max-width: none;
     }
   }
@@ -572,12 +572,6 @@
   .delay-1000 { animation-delay: 1000ms; }
   .delay-1200 { animation-delay: 1200ms; }
   
-  /* Sur très grands écrans en pleine largeur */
-  @media (min-width: 1200px) {
-    .full-width .stats-grid-optimized {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
   
   /* Hover effects pour les topcard */
   .topcard .row {
