@@ -97,14 +97,19 @@ function generateWatchingsHTML(watchings) {
       <div class="flex items-start gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
         <img src="${poster}" 
              alt="${watching.show}" 
-             class="w-12 h-16 object-cover rounded flex-shrink-0"
-             loading="lazy"
-             onerror="this.src='/assets/placeholder-poster.svg'">
+             class="w-12 h-16 object-cover rounded flex-shrink-0 watching-poster"
+             loading="lazy">
         <div class="flex-1 min-w-0">
           <div class="font-medium text-sm truncate">${watching.show}</div>
-          <div class="text-xs text-muted">
-            S${String(watching.season_number).padStart(2, '0')}E${String(watching.episode_number).padStart(2, '0')}
-          </div>
+          ${watching.type === 'movie' ? `
+            <div class="text-xs text-muted">
+              Film${watching.year ? ` • ${watching.year}` : ''}
+            </div>
+          ` : `
+            <div class="text-xs text-muted">
+              S${String(watching.season_number).padStart(2, '0')}E${String(watching.episode_number).padStart(2, '0')}
+            </div>
+          `}
           <div class="text-xs text-muted mt-1">
             🕐 ${time}
           </div>
@@ -161,6 +166,14 @@ function showWatchingsModal(date, count, watchings) {
   
   // Ajouter la nouvelle modal
   document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Gérer les erreurs d'images après insertion
+  const posterImages = document.querySelectorAll('#watchings-modal .watching-poster');
+  posterImages.forEach(img => {
+    img.addEventListener('error', () => {
+      img.src = '/assets/placeholder-poster.svg';
+    });
+  });
   
   // Gestionnaires d'événements
   const modal = document.getElementById('watchings-modal');

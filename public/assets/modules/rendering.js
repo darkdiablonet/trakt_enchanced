@@ -23,9 +23,16 @@ export function card(r, kind) {
   if (isUnseen) {
     if (kind === 'show') {
       const missing = Number(r.missing ?? 0);
-      metrics = (missing > 0)
-        ? `<span class="chip"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</span>`
-        : `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
+      const episodes = Number(r.episodes ?? 0);
+      const traktId = escapeAttr(r.ids?.trakt || '');
+      
+      // Si missing > 0, cela signifie qu'on a déjà vu certains épisodes
+      // On rend le bouton cliquable pour voir les détails
+      if (missing > 0 && episodes > 0) {
+        metrics = `<button class="chip chip-clickable js-show-watchings" data-trakt-id="${traktId}" data-show-title="${title}" data-kind="show" title="Voir les épisodes regardés"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</button>`;
+      } else {
+        metrics = `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
+      }
     } else {
       metrics = `<button class="chip chip-clickable js-mark-movie-watched" data-trakt-id="${escapeAttr(r.ids?.trakt || '')}" data-movie-title="${title}" title="Cliquer pour marquer comme vu"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</button>`;
     }
@@ -37,9 +44,11 @@ export function card(r, kind) {
     const diff = hasT && w !== t;
     const cls = diff ? 'chip--warn' : '';
     const text = hasT ? `${w}/${t}` : `${w}`;
-    metrics = `<span class="chip ${cls}"><i class="fa-solid fa-film mr-1"></i>${text}</span>`;
+    const traktId = escapeAttr(r.ids?.trakt || '');
+    metrics = `<button class="chip chip-clickable js-show-watchings ${cls}" data-trakt-id="${traktId}" data-show-title="${title}" data-kind="show" title="Voir les détails de visionnage"><i class="fa-solid fa-film mr-1"></i>${text}</button>`;
   } else {
-    metrics = `<span class="chip"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</span>`;
+    const traktId = escapeAttr(r.ids?.trakt || '');
+    metrics = `<button class="chip chip-clickable js-show-watchings" data-trakt-id="${traktId}" data-movie-title="${title}" data-kind="movie" title="Voir les détails de visionnage"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</button>`;
   }
 
   return `

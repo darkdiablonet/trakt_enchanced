@@ -25,6 +25,7 @@ import { computeStatsPro } from './lib/statsPro.js';
 import { readStatsCache, writeStatsCache } from './lib/statsCache.js';
 import { getWatchingsByDate, getCacheStats } from './lib/watchingsByDate.js';
 import { generateRealHeatmapData } from './lib/heatmapData.js';
+import { getMovieWatchingDetails, getShowWatchingDetails } from './lib/watchingDetails.js';
 import { renderTemplate } from './lib/template.js';
 import { checkEnvFile, generateEnvFile } from './lib/setup.js';
 import { addProgressConnection, sendProgress, sendCompletion } from './lib/progressTracker.js';
@@ -516,6 +517,45 @@ app.get('/api/watchings-cache-stats', (req, res) => {
     res.status(404).json({ error: 'Non disponible en production' });
   }
 });
+
+// API: Détails de visionnage pour films et séries
+app.get('/api/watching-details/:kind/:traktId', asyncHandler(async (req, res) => {
+  const { kind, traktId } = req.params;
+  
+  // Validation des paramètres
+  if (!['movie', 'show'].includes(kind)) {
+    return res.status(400).json({ 
+      error: 'Type invalide. Utilisez "movie" ou "show".' 
+    });
+  }
+  
+  if (!traktId || !/^\d+$/.test(traktId)) {
+    return res.status(400).json({ 
+      error: 'ID Trakt invalide' 
+    });
+  }
+  
+  try {
+    let details;
+    
+    if (kind === 'movie') {
+      details = await getMovieWatchingDetails(traktId);
+    } else {
+      details = await getShowWatchingDetails(traktId);
+    }
+    
+    // Cache côté client possible car ces données changent rarement
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // 1h
+    
+    res.json(details);
+    
+  } catch (err) {
+    logger.error('Erreur API watching-details:', err);
+    res.status(500).json({ 
+      error: 'Erreur interne du serveur' 
+    });
+  }
+}));
 
 // Server-Sent Events pour le progrès de chargement
 app.get('/api/loading-progress', (req, res) => {
