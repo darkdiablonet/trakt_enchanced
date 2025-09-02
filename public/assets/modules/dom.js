@@ -48,7 +48,7 @@ export const elements = {
   fullModal: document.getElementById('fullModal'),
   
   // Autres sections
-  filtersSec: document.querySelector('section.filters'),
+  filtersSec: document.querySelector('section.filters:not(#mobileFilters)'),
 };
 
 // Configuration des options de tri

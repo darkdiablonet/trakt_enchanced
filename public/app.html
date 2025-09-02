@@ -167,43 +167,40 @@
       <!-- Stats Pro — résumé -->
       <div id="proSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
       
-      <!-- Stats Pro — graphiques -->
+        <!-- Stats Pro — Test -->
       <div id="proCharts" class="mt-6 space-y-6">
-        <!-- Graphiques temporels principaux -->
-        <div class="pro-stats-charts-grid">
-          <div class="glass rounded-xl p-4">
+        <!-- Graphiques -->
+        <div class="grid gap-6 grid-cols-1 md:grid-cols-3">
+          <div class="card p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-clock text-sky-400"></i>
               <h4 class="font-semibold text-sm">Heures</h4>
               <span class="text-xs text-disabled">Europe/Paris</span>
             </div>
-            <div id="proChartHours" class="overflow-x-auto"></div>
+            <canvas id="proChartHours"></canvas>
           </div>
-          <div class="glass rounded-xl p-4">
+          <div class="card p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-calendar-week text-sky-400"></i>
               <h4 class="font-semibold text-sm">Jours de la semaine</h4>
               <span class="text-xs text-disabled">L→D</span>
             </div>
-            <div id="proChartWeek" class="overflow-x-auto"></div>
+            <canvas id="proChartWeek"></canvas>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-chart-line text-sky-400"></i>
+              <h4 class="font-semibold text-sm">Évolution par mois</h4>
+            </div>
+            <canvas id="proChartMonths"></canvas>
           </div>
         </div>
-        
-        <!-- Graphique mensuel (plus large) -->
-        <div class="glass rounded-xl p-4">
-          <div class="flex items-center gap-2 mb-3">
-            <i class="fa-solid fa-chart-line text-sky-400"></i>
-            <h4 class="font-semibold text-sm">Évolution par mois</h4>
-          </div>
-          <div id="proChartMonths" class="overflow-x-auto"></div>
-        </div>
-      </div>
       
       <!-- Stats Pro — Tops -->
       <div id="proTops" class="mt-6 space-y-6">
         <!-- Top listes en grille -->
-        <div class="pro-stats-top-lists">
-          <div class="glass rounded-xl p-4">
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="card p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-masks-theater text-sky-400"></i>
               <h4 class="font-semibold text-sm">Genres</h4>
@@ -211,7 +208,7 @@
             </div>
             <div id="proTopGenres"></div>
           </div>
-          <div class="glass rounded-xl p-4">
+          <div class="card p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-tower-broadcast text-sky-400"></i>
               <h4 class="font-semibold text-sm">Réseaux TV</h4>
@@ -219,7 +216,7 @@
             </div>
             <div id="proTopNetworks"></div>
           </div>
-          <div class="glass rounded-xl p-4">
+          <div class="card p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-building text-sky-400"></i>
               <h4 class="font-semibold text-sm">Studios</h4>
@@ -230,7 +227,7 @@
         </div>
         
         <!-- Top titres (plus large) -->
-        <div class="glass rounded-xl p-4">
+        <div class="card p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-trophy text-sky-400"></i>
             <h4 class="font-semibold text-sm">Top titres</h4>
@@ -297,6 +294,7 @@
     <i class="fa-solid fa-chevron-up"></i>
   </button>
 
+  <script src="/assets/chart.js"></script>
   <script src="/assets/app-modular.js" type="module" defer></script>
 </body>
 </html>

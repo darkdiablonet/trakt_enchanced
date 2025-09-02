@@ -38,7 +38,15 @@ export function setTab(tab) {
 
   // Cacher les filtres sur "stats" uniquement
   const isStats = (tab === 'stats');
-  elements.filtersSec?.classList.toggle('hidden', isStats);
+  
+  // Masquer le bouton mobile et sa section
+  document.getElementById('mobileFiltersToggle')?.classList.toggle('hidden', isStats);
+  
+  // Forcer le masquage de mobileFilters sur Stats (override de sm:block)
+  const mobileFilters = document.getElementById('mobileFilters');
+  if (mobileFilters) {
+    mobileFilters.classList.toggle('force-hidden', isStats);
+  }
 
   if (isStats) {
     // Les cartes stats et graphiques sont gérées dans leurs modules respectifs

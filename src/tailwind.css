@@ -546,75 +546,26 @@
     }
   }
   
-  /* Layout optimisé pour Pro Stats */
-  .pro-stats-charts-grid {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  /* Désactiver les transitions sur les canvas pour éviter les animations de resize */
+  canvas {
+    transition: none !important;
   }
   
-  /* En mode pleine largeur, mieux répartir les graphiques */
-  .full-width .pro-stats-charts-grid {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  /* Classe pour forcer le masquage des filtres sur Stats (override sm:block) */
+  .force-hidden {
+    display: none !important;
   }
   
-  /* Sur moyens écrans */
-  @media (min-width: 768px) and (max-width: 1023px) {
-    .pro-stats-charts-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-  }
-  
-  /* Sur grands écrans */
-  @media (min-width: 1024px) {
-    .pro-stats-charts-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    /* En pleine largeur, permettre 3 colonnes sur très grands écrans */
-    .full-width .pro-stats-charts-grid {
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    }
-  }
-  
-  /* Sur très grands écrans en pleine largeur (1600px+) */
-  @media (min-width: 1600px) {
-    .full-width .pro-stats-charts-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-    }
-  }
-  
-  /* Layout pour les top lists du Pro Stats */
-  .pro-stats-top-lists {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-  
-  .full-width .pro-stats-top-lists {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
-  
-  @media (min-width: 1200px) {
-    .pro-stats-top-lists {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .full-width .pro-stats-top-lists {
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-  }
-  
-  @media (min-width: 1600px) {
-    .full-width .pro-stats-top-lists {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
+  /* Classes d'animation delay pour CSP compliance */
+  .delay-200 { animation-delay: 200ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-800 { animation-delay: 800ms; }
+  .delay-1000 { animation-delay: 1000ms; }
+  .delay-1200 { animation-delay: 1200ms; }
   
   /* Sur très grands écrans en pleine largeur */
-  @media (min-width: 1600px) {
+  @media (min-width: 1200px) {
     .full-width .stats-grid-optimized {
       grid-template-columns: repeat(4, 1fr);
     }

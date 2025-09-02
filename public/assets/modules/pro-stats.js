@@ -4,7 +4,7 @@
  */
 
 import { renderTopSimple, renderTopTitles, applyProgressBars } from './rendering.js';
-import { barChartSVG } from './graphs.js';
+import { createHoursChart, createWeekChart, createMonthsChart } from './charts.js';
 
 export function listTable(rows, {cols=[['name','Nom'],['minutes','Min'],['plays','Vus']], limit=10} = {}){
   const toNum = (x)=> typeof x === 'number' ? x : Number(x||0);
@@ -39,47 +39,28 @@ export function renderStatsPro(data){
   const sumEl = document.getElementById('proSummary');
   const T = data.totals || {};
   sumEl.innerHTML = `
-    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 200ms;">
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-200">
       <div class="text-xs text-muted">Vus</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 600ms;">${(T.plays||0).toLocaleString('fr-FR')}</div>
+      <div class="text-2xl font-semibold animate-count-up delay-600">${(T.plays||0).toLocaleString('fr-FR')}</div>
     </div>
-    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 400ms;">
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-400">
       <div class="text-xs text-muted">Films</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 800ms;">${(T.movies||0).toLocaleString('fr-FR')}</div>
+      <div class="text-2xl font-semibold animate-count-up delay-800">${(T.movies||0).toLocaleString('fr-FR')}</div>
     </div>
-    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 600ms;">
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-600">
       <div class="text-xs text-muted">Épisodes</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 1000ms;">${(T.episodes||0).toLocaleString('fr-FR')}</div>
+      <div class="text-2xl font-semibold animate-count-up delay-1000">${(T.episodes||0).toLocaleString('fr-FR')}</div>
     </div>
-    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer" style="animation-delay: 800ms;">
+    <div class="glass rounded-xl p-3 animate-fade-in-up hover:scale-105 transition-transform cursor-pointer delay-800">
       <div class="text-xs text-muted">Heures</div>
-      <div class="text-2xl font-semibold animate-count-up" style="animation-delay: 1200ms;">${(T.hours||0).toLocaleString('fr-FR')}</div>
+      <div class="text-2xl font-semibold animate-count-up delay-1200">${(T.hours||0).toLocaleString('fr-FR')}</div>
     </div>
   `;
 
-  // Graphiques
-  const labelsHours = Array.from({length:24}, (_,i)=>String(i));
-  document.getElementById('proChartHours').innerHTML =
-    barChartSVG(data.distributions.hours || [], { labels: labelsHours, w: 760, h: 180 });
-
-  const labelsWeek = ['L','M','M','J','V','S','D'];
-  document.getElementById('proChartWeek').innerHTML =
-    barChartSVG(data.distributions.weekday || [], { labels: labelsWeek, w: 360, h: 180 });
-
-  const monthsObj = data.distributions.months || {};
-  const monthsKeys = Object.keys(monthsObj).sort();
-  const monthLabels = monthsKeys.map(k => k.slice(5));
-  const monthValues = monthsKeys.map(k => monthsObj[k].minutes || 0);
-  document.getElementById('proChartMonths').innerHTML =
-    barChartSVG(monthValues, { labels: monthLabels, w: Math.max(640, 36*monthValues.length), h: 180, titleFormatter:(v)=>`${v} min` });
-  
-  // Appliquer les animations aux barres après rendu
-  setTimeout(() => {
-    document.querySelectorAll('.chart-bar[data-bar-delay]').forEach(bar => {
-      const delay = bar.getAttribute('data-bar-delay');
-      bar.style.setProperty('--bar-delay', `${delay}ms`);
-    });
-  }, 10);
+  // Graphiques Chart.js
+  createHoursChart(data.distributions.hours || []);
+  createWeekChart(data.distributions.weekday || []);
+  createMonthsChart(data.distributions.months || {});
 
   // Tops
   document.getElementById('proTopGenres').innerHTML = renderTopSimple(data.top.genres || []);
@@ -90,9 +71,6 @@ export function renderStatsPro(data){
   // Appliquer les styles après rendu
   setTimeout(() => applyProgressBars(), 10);
 
-  // Métadonnées
-  const meta = document.getElementById('graphMeta');
-  if (meta) meta.textContent = `Fuseau: Europe/Paris · Période: ${data.start} → ${data.end}`;
 }
 
 // Initialisation du sélecteur d'année

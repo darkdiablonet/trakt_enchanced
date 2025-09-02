@@ -14,6 +14,7 @@ import { lazyManager, initializeLazyLoading, fallbackImageLoading } from './modu
 import { animationManager, initializeAnimations } from './modules/animations.js';
 import './modules/modals.js';
 import './modules/pro-stats.js';
+import './modules/charts.js';
 import './modules/theme-ui.js';
 import './modules/markWatched.js';
 import { initScrollToTop } from './modules/scroll-to-top.js';
