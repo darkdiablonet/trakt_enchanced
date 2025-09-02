@@ -11,10 +11,10 @@ Pour conserver vos données et configuration entre les mises à jour, vous devez
 - **Description**: Cache Trakt/TMDB, sessions, tokens d'authentification, cache d'images
 
 ### 2. Configuration (.env)
-- **Conteneur**: `/app/.env`
-- **Hôte**: `/mnt/user/appdata/trakt-enhanced/.env`
+- **Conteneur**: `/app/config`
+- **Hôte**: `/mnt/user/appdata/trakt-enhanced/config`
 - **Type**: Lecture/Écriture (RW)  
-- **Description**: Configuration de l'application (clés API, secrets)
+- **Description**: Dossier de configuration (le fichier .env y sera créé automatiquement)
 
 ## Configuration Unraid complète
 
@@ -40,8 +40,8 @@ Network Type: bridge
   Host Path: /mnt/user/appdata/trakt-enhanced/data
   Access Mode: Read/Write
 
-- Container Path: /app/.env  
-  Host Path: /mnt/user/appdata/trakt-enhanced/.env
+- Container Path: /app/config  
+  Host Path: /mnt/user/appdata/trakt-enhanced/config
   Access Mode: Read/Write
 ```
 
@@ -63,8 +63,8 @@ Avec cette configuration, vos données et paramètres persisteront lors des mise
 ### Permissions
 Le conteneur utilise UID/GID 99:100 (standard Unraid). Si vous avez des erreurs de permissions :
 ```bash
-# Depuis Unraid terminal - créer le dossier avec les bonnes permissions
-mkdir -p /mnt/user/appdata/trakt-enhanced/{data,data/logs}
+# Depuis Unraid terminal - créer les dossiers avec les bonnes permissions
+mkdir -p /mnt/user/appdata/trakt-enhanced/{data,data/logs,config}
 chown -R 99:100 /mnt/user/appdata/trakt-enhanced/
 chmod -R 755 /mnt/user/appdata/trakt-enhanced/
 ```

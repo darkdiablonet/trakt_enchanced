@@ -65,12 +65,12 @@ COPY --from=build /src /app
 # copy logo for metadata/branding
 COPY --from=build /src/public/assets/favicon.svg /app/logo.svg
 
-# ensure data folder exists & set correct permissions for Unraid
-RUN mkdir -p /app/data && \
+# ensure data and config folders exist & set correct permissions for Unraid
+RUN mkdir -p /app/data /app/config && \
     chown -R 99:100 /app
 
 # Declare volumes for persistent data
-VOLUME ["/app/data", "/app/.env"]
+VOLUME ["/app/data", "/app/config"]
 
 # small entrypoint that will drop privileges; we provide the script inline for simplicity
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
