@@ -32,7 +32,8 @@ npm start
 docker run -d \
     --name=trakt_enhanced \
     -p 30009:30009 \
-    -v trakt_data:/app/data \
+    -v ~/trakt_enhanced/data:/app/data \
+    -v ~/trakt_enhanced/config:/app/config \
     --restart unless-stopped \
     docker.io/diabolino/trakt_enhanced:latest
 ```

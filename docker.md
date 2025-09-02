@@ -18,7 +18,8 @@ docker.io/diabolino/trakt_enhanced:latest
 docker run -d \
     --name=trakt_enhanced \
     -p 30009:30009 \
-    -v trakt_data:/app/data \
+    -v ~/trakt_enhanced/data:/app/data \
+    -v ~/trakt_enhanced/config:/app/config \
     --restart unless-stopped \
     docker.io/diabolino/trakt_enhanced:latest
 ```
@@ -29,6 +30,21 @@ docker run -d \
    - Le fichier `.env` sera généré automatiquement
 
 3. **C'est tout !** L'application redémarre et est prête à l'emploi.
+
+## ⚙️ Prérequis - Permissions
+
+**Important** : Créez les dossiers avec les bonnes permissions avant le premier lancement :
+
+```bash
+# Créer les dossiers
+mkdir -p ~/trakt_enhanced/{data,config}
+
+# Définir les bonnes permissions (UID/GID 99:100)
+sudo chown -R 99:100 ~/trakt_enhanced
+
+# Alternative si vous n'avez pas sudo : utiliser votre utilisateur
+chown -R $USER:$USER ~/trakt_enhanced
+```
 
 ## 🔧 Configuration
 
@@ -68,7 +84,7 @@ Si vous préférez créer manuellement le fichier `.env`, vous pouvez toujours l
 
 ### Volume de données (obligatoire)
 ```bash
--v trakt_data:/app/data
+-v ~/trakt_enhanced/data:/app/data
 ```
 Stocke :
 - Cache des données Trakt
@@ -76,9 +92,9 @@ Stocke :
 - Logs de l'application
 - Cache des images et métadonnées
 
-### Dossier de configuration (optionnel)
+### Dossier de configuration (obligatoire)
 ```bash
--v ~/trakt/config:/app/config
+-v ~/trakt_enhanced/config:/app/config
 ```
 Monte votre dossier de configuration local dans le conteneur. Le fichier `.env` y sera créé automatiquement. **Non nécessaire** si vous utilisez la configuration via l'interface web.
 
@@ -104,14 +120,10 @@ services:
     ports:
       - "30009:30009"
     volumes:
-      # Le volume config est optionnel avec la configuration web
-      # - ./trakt/config:/app/config
-      - trakt_data:/app/data
+      - ./trakt_enhanced/data:/app/data
+      - ./trakt_enhanced/config:/app/config
     environment:
       - TZ=Europe/Paris
-
-volumes:
-  trakt_data:
 ```
 
 Puis lancez :
@@ -167,7 +179,7 @@ docker pull docker.io/diabolino/trakt_enhanced:latest
 ```bash
 docker stop trakt_enhanced
 docker rm trakt_enhanced
-docker volume rm trakt_data
+# Plus besoin de supprimer de volumes nommés - les dossiers restent sur l'hôte
 # Puis relancer normalement
 ```
 
