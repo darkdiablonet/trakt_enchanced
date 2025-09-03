@@ -96,34 +96,6 @@ class UITranslations {
 
     const fullRebuildBtn = Array.from(document.querySelectorAll('button span')).find(span => span.textContent.includes('Full rebuild'));
     if (fullRebuildBtn) fullRebuildBtn.textContent = i18n.t('buttons.full_rebuild');
-
-    const filtersBtn = Array.from(document.querySelectorAll('button')).find(button => button.textContent.includes('Filtres'));
-    if (filtersBtn) filtersBtn.textContent = i18n.t('buttons.filters');
-
-    // Theme options
-    const autoTheme = document.querySelector('[data-theme="auto"]');
-    if (autoTheme) {
-      const textNode = autoTheme.childNodes[autoTheme.childNodes.length - 1];
-      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-        textNode.textContent = i18n.t('theme.auto');
-      }
-    }
-
-    const lightTheme = document.querySelector('[data-theme="light"]');
-    if (lightTheme) {
-      const textNode = lightTheme.childNodes[lightTheme.childNodes.length - 1];
-      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-        textNode.textContent = i18n.t('theme.light');
-      }
-    }
-
-    const darkTheme = document.querySelector('[data-theme="dark"]');
-    if (darkTheme) {
-      const textNode = darkTheme.childNodes[darkTheme.childNodes.length - 1];
-      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-        textNode.textContent = i18n.t('theme.dark');
-      }
-    }
   }
 
   translatePlaceholders() {
@@ -157,6 +129,32 @@ class UITranslations {
       const icon = filtersBtn.querySelector('i');
       const iconHtml = icon ? icon.outerHTML : '';
       filtersBtn.innerHTML = `${iconHtml}${i18n.t('buttons.filters')}`;
+    }
+
+    // Translate theme options
+    this.translateThemeOptions();
+  }
+
+  translateThemeOptions() {
+    const autoTheme = document.querySelector('[data-theme="auto"]');
+    if (autoTheme) {
+      const icon = autoTheme.querySelector('i');
+      const iconHtml = icon ? icon.outerHTML : '';
+      autoTheme.innerHTML = `${iconHtml}${i18n.t('theme.auto')}`;
+    }
+
+    const lightTheme = document.querySelector('[data-theme="light"]');
+    if (lightTheme) {
+      const icon = lightTheme.querySelector('i');
+      const iconHtml = icon ? icon.outerHTML : '';
+      lightTheme.innerHTML = `${iconHtml}${i18n.t('theme.light')}`;
+    }
+
+    const darkTheme = document.querySelector('[data-theme="dark"]');
+    if (darkTheme) {
+      const icon = darkTheme.querySelector('i');
+      const iconHtml = icon ? icon.outerHTML : '';
+      darkTheme.innerHTML = `${iconHtml}${i18n.t('theme.dark')}`;
     }
   }
 
