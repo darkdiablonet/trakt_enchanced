@@ -121,6 +121,8 @@ document.getElementById('proRange')?.addEventListener('change', (e)=>{
   const isYear = e.target.value === 'year';
   document.getElementById('proYearWrap')?.classList.toggle('hidden', !isYear);
   document.getElementById('proDaysWrap')?.classList.toggle('hidden', isYear);
+  // Recharger les données quand on change la période
+  loadStatsPro();
 });
 
 document.getElementById('proReload')?.addEventListener('click', loadStatsPro);

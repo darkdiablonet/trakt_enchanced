@@ -14,6 +14,14 @@ import { setTab } from './tabs.js';
 export async function loadData() {
   const resp = await fetch('/api/data', { cache:'no-store' });
   const js = await resp.json();
+  
+  // Vérifier si la configuration est manquante et rediriger vers setup
+  if (js.needsSetup) {
+    console.log('[data] Missing configuration, redirecting to setup');
+    window.location.href = '/setup';
+    return;
+  }
+  
   Object.assign(DATA, js);
 
   if (js.stats) {
@@ -69,6 +77,13 @@ export async function loadData() {
     });
   } else {
     elements.deviceBox.classList.add('hidden');
+  }
+
+  // Gérer les erreurs d'authentification
+  if (js.authError) {
+    elements.flashBox.textContent = js.authError;
+    elements.flashBox.classList.remove('hidden');
+    elements.flashBox.className = 'flash p-4 mb-4 rounded-lg bg-red-800 border border-red-600 text-red-200';
   }
 
   applyWidth();

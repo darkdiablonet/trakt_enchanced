@@ -15,7 +15,7 @@ import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection }
 
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASS, TITLE, reloadEnv } from './lib/config.js';
-import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched } from './lib/trakt.js';
+import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched, hasValidCredentials } from './lib/trakt.js';
 import { buildPageData, invalidatePageCache, updateShowInCache } from './lib/pageData.js';
 import { makeRefresher, loadDeviceCode, clearDeviceCode, getPublicHost } from './lib/util.js';
 import { dailyCounts } from './lib/graph.js';
@@ -338,20 +338,49 @@ app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async 
   delete req.session.allowFull;
 
   const pageData = await buildPageData(req, { forceRefreshOnce, allowFull });
+  
+  // Si les credentials sont manquants, rediriger vers setup
+  if (pageData.needsSetup) {
+    return res.status(412).json({ 
+      ok: false, 
+      error: 'Missing configuration',
+      needsSetup: true,
+      redirectTo: '/setup'
+    });
+  }
+  
   res.setHeader('Cache-Control', 'no-store');
   res.json({ title: TITLE, flash, ...pageData });
 }));
 
 app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
-  const tok = await loadToken();
-  if (!tok?.access_token) return res.status(401).json({ ok:false, err:'no_token' });
-  const headers = traktHeaders(tok.access_token);
-  const stats = await userStats(headers, 'me');
-  res.setHeader('Cache-Control', 'no-store');
-  res.json({ ok:true, stats });
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    const stats = await userStats(null, 'me');
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ ok:true, stats });
+  } catch (error) {
+    logger.error('Error fetching user stats', { error: error.message });
+    res.status(500).json({ ok:false, err:'stats_error' });
+  }
 }));
 
 app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (req, res) => {
+  if (!hasValidCredentials()) {
+    return res.status(412).json({ 
+      ok: false, 
+      error: 'Missing configuration',
+      needsSetup: true 
+    });
+  }
+
   const year = Number(req.query.year) || (new Date()).getFullYear();
   const t = String(req.query.type || 'all');
   const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
@@ -372,6 +401,14 @@ app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (re
 }));
 
 app.get('/api/stats/pro', performanceMiddleware('proStats'), asyncHandler(async (req, res) => {
+  if (!hasValidCredentials()) {
+    return res.status(412).json({ 
+      ok: false, 
+      error: 'Missing configuration',
+      needsSetup: true 
+    });
+  }
+
   const range = String(req.query.range || 'lastDays');
   const year = req.query.year ? Number(req.query.year) : undefined;
   const lastDays = req.query.lastDays ? Number(req.query.lastDays) : 365;
