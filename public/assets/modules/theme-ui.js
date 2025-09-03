@@ -3,6 +3,7 @@
  */
 
 import { themeManager, themes } from './themes.js';
+import i18n from './i18n.js';
 
 class ThemeUI {
   constructor() {
@@ -70,6 +71,11 @@ class ThemeUI {
       this.updateUI();
     });
 
+    // Écouter les changements de langue
+    window.addEventListener('languageChanged', (e) => {
+      this.updateUI();
+    });
+
     // Fermer avec Escape
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.isDropdownOpen) {
@@ -108,14 +114,14 @@ class ThemeUI {
     const currentTheme = themes.getCurrentTheme();
     const effectiveTheme = themes.getEffectiveTheme();
 
-    // Mettre à jour le texte du bouton
+    // Mettre à jour le texte du bouton avec traductions
     const themeLabels = {
-      auto: 'Auto',
-      light: 'Clair',
-      dark: 'Sombre'
+      auto: i18n.t('theme.auto'),
+      light: i18n.t('theme.light'),
+      dark: i18n.t('theme.dark')
     };
 
-    this.themeToggleText.textContent = themeLabels[currentTheme] || 'Auto';
+    this.themeToggleText.textContent = themeLabels[currentTheme] || i18n.t('theme.auto');
 
     // Mettre à jour les états actifs dans le dropdown
     if (this.themeDropdown) {
