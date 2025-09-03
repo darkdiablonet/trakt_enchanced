@@ -23,6 +23,11 @@ class I18n {
     }
     
     console.log(`[i18n] Initialized with language: ${this.currentLang}`);
+    
+    // Déclencher l'événement d'initialisation
+    window.dispatchEvent(new CustomEvent('i18nInitialized', { 
+      detail: { lang: this.currentLang } 
+    }));
   }
 
   detectLanguage() {

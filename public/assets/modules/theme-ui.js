@@ -39,6 +39,11 @@ class ThemeUI {
     
     // Mettre à jour l'état initial
     this.updateUI();
+    
+    // Écouter l'initialisation d'i18n
+    window.addEventListener('i18nInitialized', () => {
+      this.updateUI();
+    });
   }
 
   setupEvents() {
@@ -115,13 +120,27 @@ class ThemeUI {
     const effectiveTheme = themes.getEffectiveTheme();
 
     // Mettre à jour le texte du bouton avec traductions
-    const themeLabels = {
-      auto: i18n.t('theme.auto'),
-      light: i18n.t('theme.light'),
-      dark: i18n.t('theme.dark')
-    };
+    let themeLabels;
+    
+    // Vérifier si i18n est disponible et initialisé
+    if (typeof i18n !== 'undefined' && i18n.t && i18n.translations && Object.keys(i18n.translations).length > 0) {
+      themeLabels = {
+        auto: i18n.t('theme.auto'),
+        light: i18n.t('theme.light'),
+        dark: i18n.t('theme.dark')
+      };
+      console.log('[ThemeUI] Using i18n translations:', themeLabels);
+    } else {
+      // Fallback si i18n n'est pas disponible
+      themeLabels = {
+        auto: 'Auto',
+        light: 'Clair',
+        dark: 'Sombre'
+      };
+      console.log('[ThemeUI] i18n not available, using fallback labels');
+    }
 
-    this.themeToggleText.textContent = themeLabels[currentTheme] || i18n.t('theme.auto');
+    this.themeToggleText.textContent = themeLabels[currentTheme] || themeLabels.auto;
 
     // Mettre à jour les états actifs dans le dropdown
     if (this.themeDropdown) {
