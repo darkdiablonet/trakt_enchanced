@@ -123,6 +123,12 @@ class ThemeUI {
     let themeLabels;
     
     // Vérifier si i18n est disponible et initialisé
+    console.log('[ThemeUI] updateUI called, checking i18n availability...');
+    console.log('[ThemeUI] typeof i18n:', typeof i18n);
+    console.log('[ThemeUI] i18n.t exists:', typeof i18n !== 'undefined' && !!i18n.t);
+    console.log('[ThemeUI] i18n.translations exists:', typeof i18n !== 'undefined' && !!i18n.translations);
+    console.log('[ThemeUI] i18n.translations length:', typeof i18n !== 'undefined' && i18n.translations ? Object.keys(i18n.translations).length : 0);
+    
     if (typeof i18n !== 'undefined' && i18n.t && i18n.translations && Object.keys(i18n.translations).length > 0) {
       themeLabels = {
         auto: i18n.t('theme.auto'),
@@ -130,6 +136,7 @@ class ThemeUI {
         dark: i18n.t('theme.dark')
       };
       console.log('[ThemeUI] Using i18n translations:', themeLabels);
+      console.log('[ThemeUI] Current language:', i18n.getCurrentLanguage());
     } else {
       // Fallback si i18n n'est pas disponible
       themeLabels = {

@@ -15,7 +15,6 @@ import { animationManager, initializeAnimations } from './modules/animations.js'
 import './modules/modals.js';
 import './modules/pro-stats.js';
 import './modules/charts.js';
-import './modules/theme-ui.js';
 import './modules/markWatched.js';
 import { initScrollToTop } from './modules/scroll-to-top.js';
 import { initWatchingProgress, stopWatchingProgress, applyWidthToProgressBarExternal } from './modules/watching-progress.js';
@@ -24,6 +23,7 @@ import { initWatchingDetails } from './modules/watching-details.js';
 import i18n from './modules/i18n.js';
 import languageSelector from './modules/language-selector.js';
 import uiTranslations from './modules/ui-translations.js';
+import './modules/theme-ui.js';
 
 // Charger la version de l'application
 async function loadAppVersion() {
