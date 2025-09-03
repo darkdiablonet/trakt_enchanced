@@ -20,19 +20,8 @@ class UITranslations {
     this.translationMap.set('#tabBtnPlayback', 'navigation.playback');
     this.translationMap.set('#tabBtnStats', 'navigation.stats');
 
-    // Tooltips
-    this.translationMap.set('[title="En collection avec épisodes manquants"]', 'tooltips.shows_unseen');
-    this.translationMap.set('[title="En collection jamais vus"]', 'tooltips.movies_unseen');
-    this.translationMap.set('[title="Contenu en cours de visionnage"]', 'tooltips.playback');
-    this.translationMap.set('[title="Cliquer pour recharger les données"]', 'tooltips.refresh_data');
-    this.translationMap.set('[title="Changer de thème"]', 'tooltips.change_theme');
-    this.translationMap.set('[title="Basculer pleine largeur"]', 'tooltips.toggle_width');
-    this.translationMap.set('[title="Remonter en haut"]', 'tooltips.scroll_to_top');
-
-    // Buttons
-    this.translationMap.set('button span:contains("Rafraîchir")', 'buttons.refresh');
-    this.translationMap.set('button span:contains("Full rebuild")', 'buttons.full_rebuild');
-    this.translationMap.set('button span:contains("Filtres")', 'buttons.filters');
+    // Note: This translationMap is kept for reference but we use direct DOM manipulation
+    // due to CSS selector limitations with :contains()
 
     // Theme options
     this.translationMap.set('[data-theme="auto"]', 'theme.auto');
@@ -124,14 +113,14 @@ class UITranslations {
       }
     }
 
-    // Buttons with spans
-    const refreshBtn = document.querySelector('button span:contains("Rafraîchir")');
+    // Buttons with spans - use proper DOM traversal
+    const refreshBtn = Array.from(document.querySelectorAll('button span')).find(span => span.textContent.includes('Rafraîchir'));
     if (refreshBtn) refreshBtn.textContent = i18n.t('buttons.refresh');
 
-    const fullRebuildBtn = document.querySelector('button span:contains("Full rebuild")');
+    const fullRebuildBtn = Array.from(document.querySelectorAll('button span')).find(span => span.textContent.includes('Full rebuild'));
     if (fullRebuildBtn) fullRebuildBtn.textContent = i18n.t('buttons.full_rebuild');
 
-    const filtersBtn = document.querySelector('button:contains("Filtres")');
+    const filtersBtn = Array.from(document.querySelectorAll('button')).find(button => button.textContent.includes('Filtres'));
     if (filtersBtn) filtersBtn.textContent = i18n.t('buttons.filters');
 
     // Theme options
