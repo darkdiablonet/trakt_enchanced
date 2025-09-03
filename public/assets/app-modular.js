@@ -3,15 +3,27 @@
  * Application principale utilisant les modules découpés
  */
 
-// Imports des modules
+// Imports des modules - I18N EN PREMIER
+import i18n from './modules/i18n.js';
+
+// Modules de base (pas de dépendance i18n)
 import { elements } from './modules/dom.js';
 import { state, saveState } from './modules/state.js';
+
+// Modules avec dépendances i18n
 import { applyWidth } from './modules/utils.js';
 import { renderCurrent } from './modules/rendering.js';
 import { setTab } from './modules/tabs.js';
 import { loadData } from './modules/data.js';
 import { lazyManager, initializeLazyLoading, fallbackImageLoading } from './modules/lazy-loading.js';
 import { animationManager, initializeAnimations } from './modules/animations.js';
+
+// Modules UI avec traductions
+import languageSelector from './modules/language-selector.js';
+import uiTranslations from './modules/ui-translations.js';
+import './modules/header-buttons.js';
+
+// Autres modules
 import './modules/modals.js';
 import './modules/pro-stats.js';
 import './modules/charts.js';
@@ -20,10 +32,40 @@ import { initScrollToTop } from './modules/scroll-to-top.js';
 import { initWatchingProgress, stopWatchingProgress, applyWidthToProgressBarExternal } from './modules/watching-progress.js';
 import { initHeatmapInteractions } from './modules/heatmap-interactions.js';
 import { initWatchingDetails } from './modules/watching-details.js';
-import i18n from './modules/i18n.js';
-import languageSelector from './modules/language-selector.js';
-import uiTranslations from './modules/ui-translations.js';
-import './modules/theme-ui.js';
+
+// Initialisation principale de l'application
+async function initializeApp() {
+  console.log('[App] Starting application initialization...');
+  
+  // Attendre que i18n soit complètement initialisé
+  await new Promise((resolve) => {
+    if (i18n.translations && Object.keys(i18n.translations).length > 0) {
+      resolve();
+    } else {
+      window.addEventListener('i18nInitialized', resolve, { once: true });
+    }
+  });
+  
+  console.log('[App] i18n initialized, applying initial translations...');
+  
+  // Appliquer immédiatement les traductions UI
+  uiTranslations.translateUI();
+  
+  // Appliquer la largeur avec traductions
+  applyWidth();
+  
+  console.log('[App] Initial translations applied');
+  
+  // Maintenant charger les données avec i18n pleinement initialisé
+  await loadData();
+  console.log('[App] Data loaded with translations');
+  
+  // S'assurer que les options de tri sont traduites après le chargement des données
+  setTimeout(() => {
+    uiTranslations.translateSortOptions();
+    console.log('[App] Sort options re-translated after data load');
+  }, 100);
+}
 
 // Charger la version de l'application
 async function loadAppVersion() {
@@ -39,15 +81,14 @@ async function loadAppVersion() {
   }
 }
 
+// Démarrer l'initialisation
+initializeApp().then(() => {
+  console.log('[App] App initialization completed');
+}).catch(console.error);
+
 
 // Event listeners principaux
-elements.toggleWidth?.addEventListener('click', () => { 
-  state.width = (state.width==='full') ? 'limited' : 'full'; 
-  saveState(); 
-  applyWidth();
-  // Appliquer immédiatement le changement à la barre de progression si elle est visible
-  applyWidthToProgressBarExternal();
-});
+// Le bouton toggleWidth est maintenant géré par header-buttons.js
 
 // Ajouter le bouton playback s'il existe dans le DOM mais pas dans elements
 const playbackBtn = document.getElementById('tabBtnPlayback');
@@ -104,9 +145,9 @@ elements.closeFullModal?.addEventListener('click', () => {
   elements.fullModal.classList.add('hidden'); 
 });
 
-// Initialisation
-loadData();
-applyWidth(); // Appliquer l'état de largeur initial
+// Les données sont maintenant chargées depuis initializeApp()
+// loadData() a été déplacé dans initializeApp() pour attendre i18n
+// applyWidth(); // Déjà appelé dans initializeApp()
 
 // Initialize lazy loading and animations
 initializeLazyLoading();

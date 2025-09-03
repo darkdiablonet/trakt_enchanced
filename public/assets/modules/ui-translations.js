@@ -48,6 +48,9 @@ class UITranslations {
   }
 
   translateUI() {
+    // Translate all data-i18n elements first (fastest solution)
+    this.translateDataI18n();
+    
     // Translate static text content
     this.translateTextContent();
     
@@ -66,6 +69,16 @@ class UITranslations {
     console.log('[UITranslations] UI translated to:', i18n.getCurrentLanguage());
   }
 
+  translateDataI18n() {
+    const elements = document.querySelectorAll('[data-i18n]');
+    elements.forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      if (key) {
+        element.textContent = i18n.t(key);
+      }
+    });
+  }
+
   translateTab(selector, key) {
     const tab = document.querySelector(selector);
     if (tab) {
@@ -81,6 +94,15 @@ class UITranslations {
     }
   }
 
+  translateButtonWithSpan(currentText, translationKey) {
+    const buttonSpan = Array.from(document.querySelectorAll('button span')).find(span => 
+      span.textContent.trim() === currentText
+    );
+    if (buttonSpan) {
+      buttonSpan.textContent = i18n.t(translationKey);
+    }
+  }
+
   translateTextContent() {
     // Navigation tabs - Approach améliorée
     this.translateTab('#tabBtnShows', 'navigation.shows');
@@ -91,11 +113,15 @@ class UITranslations {
     this.translateTab('#tabBtnStats', 'navigation.stats');
 
     // Buttons with spans - use proper DOM traversal
-    const refreshBtn = Array.from(document.querySelectorAll('button span')).find(span => span.textContent.includes('Rafraîchir'));
-    if (refreshBtn) refreshBtn.textContent = i18n.t('buttons.refresh');
+    this.translateButtonWithSpan('Rafraîchir', 'buttons.refresh');
+    this.translateButtonWithSpan('Refresh', 'buttons.refresh');
+    this.translateButtonWithSpan('Full rebuild', 'buttons.full_rebuild');
 
-    const fullRebuildBtn = Array.from(document.querySelectorAll('button span')).find(span => span.textContent.includes('Full rebuild'));
-    if (fullRebuildBtn) fullRebuildBtn.textContent = i18n.t('buttons.full_rebuild');
+    // Traduire le bouton "Pleine largeur" / "Full width" si visible
+    this.translateButtonWithSpan('Pleine largeur', 'buttons.full_width');
+    this.translateButtonWithSpan('Largeur limitée', 'buttons.limited_width');
+    this.translateButtonWithSpan('Full width', 'buttons.full_width');
+    this.translateButtonWithSpan('Limited width', 'buttons.limited_width');
   }
 
   translatePlaceholders() {
@@ -136,33 +162,17 @@ class UITranslations {
   }
 
   translateThemeOptions() {
-    const autoTheme = document.querySelector('[data-theme="auto"]');
-    if (autoTheme) {
-      const icon = autoTheme.querySelector('i');
-      const iconHtml = icon ? icon.outerHTML : '';
-      autoTheme.innerHTML = `${iconHtml}${i18n.t('theme.auto')}`;
-    }
-
-    const lightTheme = document.querySelector('[data-theme="light"]');
-    if (lightTheme) {
-      const icon = lightTheme.querySelector('i');
-      const iconHtml = icon ? icon.outerHTML : '';
-      lightTheme.innerHTML = `${iconHtml}${i18n.t('theme.light')}`;
-    }
-
-    const darkTheme = document.querySelector('[data-theme="dark"]');
-    if (darkTheme) {
-      const icon = darkTheme.querySelector('i');
-      const iconHtml = icon ? icon.outerHTML : '';
-      darkTheme.innerHTML = `${iconHtml}${i18n.t('theme.dark')}`;
-    }
+    // Ne rien faire ici, c'est géré par translateDataI18n()
   }
 
   translateSortOptions() {
     const sortSelect = document.getElementById('sortActive');
     if (sortSelect) {
+      console.log('[UITranslations] Translating sort options, current language:', i18n.getCurrentLanguage());
       const options = sortSelect.querySelectorAll('option');
-      options.forEach(option => {
+      console.log('[UITranslations] Found', options.length, 'sort options');
+      
+      options.forEach((option, index) => {
         const value = option.value;
         let translationKey = '';
         
@@ -203,9 +213,14 @@ class UITranslations {
         }
         
         if (translationKey) {
-          option.textContent = i18n.t(translationKey);
+          const oldText = option.textContent;
+          const newText = i18n.t(translationKey);
+          option.textContent = newText;
+          console.log(`[UITranslations] Option ${index}: "${oldText}" → "${newText}"`);
         }
       });
+    } else {
+      console.log('[UITranslations] Sort select not found!');
     }
   }
 
@@ -261,8 +276,15 @@ class UITranslations {
 // Create global instance
 const uiTranslations = new UITranslations();
 
+// Listen for i18n initialization to apply translations immediately
+window.addEventListener('i18nInitialized', () => {
+  console.log('[UITranslations] i18n initialized, applying initial translations');
+  uiTranslations.translateUI();
+});
+
 // Listen for language changes
 window.addEventListener('languageChanged', () => {
+  console.log('[UITranslations] Language changed, retranslating');
   uiTranslations.retranslate();
 });
 

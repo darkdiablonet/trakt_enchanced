@@ -768,6 +768,7 @@ app.post('/setup', csrfProtection, asyncHandler(async (req, res) => {
       process.env.TRAKT_CLIENT_ID = config.traktClientId || '';
       process.env.TRAKT_CLIENT_SECRET = config.traktClientSecret || '';
       process.env.TMDB_API_KEY = config.tmdbApiKey || '';
+      process.env.LANGUAGE = config.language || 'fr-FR';
       if (config.fullRebuildPassword) process.env.FULL_REBUILD_PASSWORD = config.fullRebuildPassword;
       // Recharger les exports dynamiques du module config
       try { reloadEnv(); } catch {}

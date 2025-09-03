@@ -4,6 +4,7 @@
  */
 
 import { posterURL } from './utils.js';
+import i18n from './i18n.js';
 
 // Cache des données de visionnage par ID
 const watchingDetailsCache = new Map();
@@ -48,7 +49,7 @@ async function fetchWatchingDetails(traktId, kind) {
 function formatWatchingDateTime(watchedAt) {
   try {
     const date = new Date(watchedAt);
-    return date.toLocaleString('fr-FR', { 
+    return date.toLocaleString(i18n.currentLang === 'en' ? 'en-US' : 'fr-FR', { 
       weekday: 'long',
       day: 'numeric', 
       month: 'long', 

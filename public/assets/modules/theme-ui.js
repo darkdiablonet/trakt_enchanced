@@ -1,166 +1,139 @@
 /**
- * Theme UI Module - Gestionnaire d'interface pour les thèmes
+ * Theme UI Module - Gestionnaire d'interface pour les thèmes (Switch simple)
  */
 
 import { themeManager, themes } from './themes.js';
-import i18n from './i18n.js';
 
 class ThemeUI {
   constructor() {
     this.themeToggle = null;
-    this.themeDropdown = null;
-    this.themeToggleText = null;
-    this.isDropdownOpen = false;
+    this.themeIcon = null;
     this.init();
   }
 
   init() {
-    // Attendre que le DOM soit chargé
+    console.log('[ThemeUI] Initializing...');
+    console.log('[ThemeUI] Document readyState:', document.readyState);
+    
+    // Attendre que le DOM soit complètement chargé ET que les éléments soient présents
+    let attempts = 0;
+    const maxAttempts = 50; // 5 secondes max
+    
+    const trySetup = () => {
+      attempts++;
+      let toggle = document.getElementById('themeToggle');
+      let icon = document.getElementById('themeIcon');
+      
+      console.log(`[ThemeUI] Attempt ${attempts}: themeToggle=${!!toggle}, themeIcon=${!!icon}`);
+      
+      // Si pas trouvé après 10 tentatives, on le crée nous-mêmes !
+      if (!toggle && attempts > 10) {
+        console.log('[ThemeUI] Creating button manually...');
+        const header = document.querySelector('.app-header .flex.items-center.gap-2');
+        if (header) {
+          toggle = document.createElement('button');
+          toggle.id = 'themeToggle';
+          toggle.className = 'btn btn-outline';
+          toggle.title = 'Changer de thème';
+          
+          icon = document.createElement('i');
+          icon.id = 'themeIcon';
+          icon.className = 'fa-solid fa-circle-half-stroke';
+          
+          toggle.appendChild(icon);
+          header.insertBefore(toggle, header.firstChild);
+          
+          console.log('[ThemeUI] Button created manually!');
+        }
+      }
+      
+      if (toggle && icon) {
+        console.log('[ThemeUI] Elements found, setting up...');
+        this.setupUI();
+      } else if (attempts < maxAttempts) {
+        console.log(`[ThemeUI] Elements not ready yet, retrying in 100ms... (${attempts}/${maxAttempts})`);
+        setTimeout(trySetup, 100);
+      } else {
+        console.error('[ThemeUI] Gave up after', maxAttempts, 'attempts. Elements not found.');
+      }
+    };
+    
+    // Démarrer la tentative
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setupUI());
+      console.log('[ThemeUI] DOM still loading, waiting for DOMContentLoaded...');
+      document.addEventListener('DOMContentLoaded', trySetup);
     } else {
-      this.setupUI();
+      console.log('[ThemeUI] DOM loaded, trying setup...');
+      trySetup();
     }
   }
 
   setupUI() {
-    // Récupérer les éléments DOM
+    console.log('[ThemeUI] Setting up UI...');
+    
+    // Les éléments ont déjà été vérifiés dans trySetup(), on peut les récupérer
     this.themeToggle = document.getElementById('themeToggle');
-    this.themeDropdown = document.getElementById('themeDropdown');
-    this.themeToggleText = document.getElementById('themeToggleText');
+    this.themeIcon = document.getElementById('themeIcon');
 
-    if (!this.themeToggle || !this.themeDropdown || !this.themeToggleText) {
-      console.warn('Éléments de thème non trouvés dans le DOM');
-      return;
-    }
+    console.log('[ThemeUI] themeToggle found:', !!this.themeToggle, this.themeToggle);
+    console.log('[ThemeUI] themeIcon found:', !!this.themeIcon, this.themeIcon);
 
     // Configurer les événements
     this.setupEvents();
     
     // Mettre à jour l'état initial
-    this.updateUI();
+    this.updateIcon();
     
-    // Écouter l'initialisation d'i18n
-    window.addEventListener('i18nInitialized', () => {
-      this.updateUI();
-    });
+    console.log('[ThemeUI] Setup complete!');
   }
 
   setupEvents() {
-    // Événement clic sur le bouton toggle
+    console.log('[ThemeUI] Setting up events...');
+    
+    // Cycle entre les thèmes au clic
     this.themeToggle.addEventListener('click', (e) => {
+      console.log('[ThemeUI] Button clicked!');
+      e.preventDefault();
       e.stopPropagation();
-      this.toggleDropdown();
-    });
-
-    // Événements des boutons de thème
-    const themeButtons = this.themeDropdown.querySelectorAll('[data-theme]');
-    themeButtons.forEach(button => {
-      button.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const theme = button.getAttribute('data-theme');
-        this.selectTheme(theme);
-        this.closeDropdown();
-      });
-    });
-
-    // Fermer le dropdown en cliquant ailleurs
-    document.addEventListener('click', (e) => {
-      if (this.isDropdownOpen && !this.themeToggle.contains(e.target) && !this.themeDropdown.contains(e.target)) {
-        this.closeDropdown();
-      }
+      this.cycleTheme();
     });
 
     // Écouter les changements de thème
     window.addEventListener('themechange', (e) => {
-      this.updateUI();
+      console.log('[ThemeUI] Theme changed event received');
+      this.updateIcon();
     });
-
-    // Écouter les changements de langue
-    window.addEventListener('languageChanged', (e) => {
-      this.updateUI();
-    });
-
-    // Fermer avec Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.isDropdownOpen) {
-        this.closeDropdown();
-      }
-    });
+    
+    console.log('[ThemeUI] Events set up complete!');
   }
 
-  toggleDropdown() {
-    if (this.isDropdownOpen) {
-      this.closeDropdown();
-    } else {
-      this.openDropdown();
+  cycleTheme() {
+    console.log('[ThemeUI] Cycling theme...');
+    
+    const current = themes.getCurrentTheme();
+    let next;
+    
+    switch(current) {
+      case 'auto': next = 'light'; break;
+      case 'light': next = 'dark'; break;
+      case 'dark': next = 'auto'; break;
+      default: next = 'auto';
     }
+    
+    console.log('[ThemeUI] Current:', current, '-> Next:', next);
+    themes.setTheme(next);
   }
 
-  openDropdown() {
-    this.themeDropdown.classList.remove('hidden');
-    this.themeToggle.classList.add('dropdown-active');
-    this.isDropdownOpen = true;
-  }
-
-  closeDropdown() {
-    this.themeDropdown.classList.add('hidden');
-    this.themeToggle.classList.remove('dropdown-active');
-    this.isDropdownOpen = false;
-  }
-
-  selectTheme(theme) {
-    themes.setTheme(theme);
-  }
-
-  updateUI() {
-    if (!this.themeToggleText) return;
+  updateIcon() {
+    if (!this.themeIcon) return;
 
     const currentTheme = themes.getCurrentTheme();
-    const effectiveTheme = themes.getEffectiveTheme();
-
-    // Mettre à jour le texte du bouton avec traductions
-    let themeLabels;
+    const icon = this.getThemeIcon(currentTheme);
     
-    // Vérifier si i18n est disponible et initialisé
-    console.log('[ThemeUI] updateUI called, checking i18n availability...');
-    console.log('[ThemeUI] typeof i18n:', typeof i18n);
-    console.log('[ThemeUI] i18n.t exists:', typeof i18n !== 'undefined' && !!i18n.t);
-    console.log('[ThemeUI] i18n.translations exists:', typeof i18n !== 'undefined' && !!i18n.translations);
-    console.log('[ThemeUI] i18n.translations length:', typeof i18n !== 'undefined' && i18n.translations ? Object.keys(i18n.translations).length : 0);
+    console.log('[ThemeUI] Updating icon for theme:', currentTheme, 'icon:', icon);
     
-    if (typeof i18n !== 'undefined' && i18n.t && i18n.translations && Object.keys(i18n.translations).length > 0) {
-      themeLabels = {
-        auto: i18n.t('theme.auto'),
-        light: i18n.t('theme.light'),
-        dark: i18n.t('theme.dark')
-      };
-      console.log('[ThemeUI] Using i18n translations:', themeLabels);
-      console.log('[ThemeUI] Current language:', i18n.getCurrentLanguage());
-    } else {
-      // Fallback si i18n n'est pas disponible
-      themeLabels = {
-        auto: 'Auto',
-        light: 'Clair',
-        dark: 'Sombre'
-      };
-      console.log('[ThemeUI] i18n not available, using fallback labels');
-    }
-
-    this.themeToggleText.textContent = themeLabels[currentTheme] || themeLabels.auto;
-
-    // Mettre à jour les états actifs dans le dropdown
-    if (this.themeDropdown) {
-      const buttons = this.themeDropdown.querySelectorAll('[data-theme]');
-      buttons.forEach(button => {
-        const theme = button.getAttribute('data-theme');
-        if (theme === currentTheme) {
-          button.classList.add('bg-sky-500/20', 'text-sky-300');
-        } else {
-          button.classList.remove('bg-sky-500/20', 'text-sky-300');
-        }
-      });
-    }
+    // Supprimer toutes les classes d'icônes précédentes
+    this.themeIcon.className = 'fa-solid ' + icon;
   }
 
   getThemeIcon(theme) {
@@ -174,5 +147,6 @@ class ThemeUI {
 }
 
 // Créer et exporter l'instance
+console.log('[ThemeUI] Creating ThemeUI instance...');
 export const themeUI = new ThemeUI();
 export default themeUI;

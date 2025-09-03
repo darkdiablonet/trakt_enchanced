@@ -101,6 +101,27 @@ class I18nLite {
   getCurrentLanguage() {
     return this.currentLang;
   }
+
+  async changeLanguage(lang) {
+    if (!this.supportedLangs.includes(lang)) {
+      console.warn(`[i18n-lite] Unsupported language: ${lang}`);
+      return false;
+    }
+
+    // Load translations if not already loaded
+    if (!this.translations[lang]) {
+      await this.loadTranslations(lang);
+    }
+
+    this.currentLang = lang;
+    localStorage.setItem('trakt_lang', lang);
+    
+    // Update HTML lang attribute
+    document.documentElement.lang = lang;
+    
+    console.log(`[i18n-lite] Language changed to: ${lang}`);
+    return true;
+  }
 }
 
 // Export for use in setup/loading pages

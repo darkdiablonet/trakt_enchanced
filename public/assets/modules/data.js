@@ -5,11 +5,35 @@
 
 import { DATA, state } from './state.js';
 import { elements } from './dom.js';
-import { renderStats } from './stats.js';
+// import { renderStats } from './stats.js'; // Removed - stats cards deleted
 import { loadAndRenderGraph } from './graphs.js';
 import { loadStatsPro } from './pro-stats.js';
 import { applyWidth } from './utils.js';
 import { setTab } from './tabs.js';
+import i18n from './i18n.js';
+
+// Variable pour stocker les dernières données device prompt pour re-render
+let lastDevicePromptData = null;
+
+// Fonction pour générer le HTML du device prompt avec traductions
+function renderDevicePrompt(devicePrompt) {
+  lastDevicePromptData = devicePrompt;
+  
+  const expiryDate = new Date(devicePrompt.expires_in * 1000 + Date.now()).toLocaleString();
+  const url = devicePrompt.verification_url;
+  
+  return `
+    <h2 class="text-lg font-semibold mb-2">${i18n.t('device_auth.title')}</h2>
+    <p class="text-secondary text-sm mb-2">${i18n.t('device_auth.instructions', { url: `<a class="text-sky-400 underline" href="${url}" target="_blank">${url}</a>` })}</p>
+    <div class="text-2xl font-bold tracking-widest bg-black/40 inline-block px-3 py-2 rounded">${devicePrompt.user_code}</div>
+    <div class="text-xs text-muted mt-2">${i18n.t('device_auth.expires', { date: expiryDate })}</div>
+    <div class="mt-3 flex items-center gap-2">
+    <button id="pollBtn" class="btn"><i class="fa-solid fa-arrows-rotate mr-1"></i>${i18n.t('device_auth.validate_button')}</button>
+    <a href="/oauth/new" class="btn"><i class="fa-solid fa-qrcode"></i>${i18n.t('device_auth.new_code_button')}</a>
+    </div>
+    <div id="pollMsg" class="text-sm mt-2 text-muted"></div>
+  `;
+}
 
 export async function loadData() {
   const resp = await fetch('/api/data', { cache:'no-store' });
@@ -24,14 +48,15 @@ export async function loadData() {
   
   Object.assign(DATA, js);
 
-  if (js.stats) {
-    renderStats(js.stats);
-  } else {
-    try {
-      const s = await fetch('/api/stats').then(r => r.ok ? r.json() : null);
-      if (s?.ok && s.stats) renderStats(s.stats);
-    } catch {}
-  }
+  // Stats cards removed - no longer rendering stats
+  // if (js.stats) {
+  //   renderStats(js.stats);
+  // } else {
+  //   try {
+  //     const s = await fetch('/api/stats').then(r => r.ok ? r.json() : null);
+  //     if (s?.ok && s.stats) renderStats(s.stats);
+  //   } catch {}
+  // }
   
   if (state.tab === 'stats') { 
     loadAndRenderGraph(); 
@@ -45,34 +70,24 @@ export async function loadData() {
   }
 
   if (js.devicePrompt && js.devicePrompt.user_code) {
-    elements.deviceBox.innerHTML = `
-      <h2 class="text-lg font-semibold mb-2">Connecter votre compte Trakt</h2>
-      <p class="text-secondary text-sm mb-2">Rendez-vous sur <a class="text-sky-400 underline" href="${js.devicePrompt.verification_url}" target="_blank">${js.devicePrompt.verification_url}</a> et entrez le code :</p>
-      <div class="text-2xl font-bold tracking-widest bg-black/40 inline-block px-3 py-2 rounded">${js.devicePrompt.user_code}</div>
-      <div class="text-xs text-muted mt-2">Ce code expire le ${new Date(js.devicePrompt.expires_in*1000 + Date.now()).toLocaleString()}.</div>
-      <div class="mt-3 flex items-center gap-2">
-      <button id="pollBtn" class="btn"><i class="fa-solid fa-arrows-rotate mr-1"></i>J'ai validé, vérifier</button>
-      <a href="/oauth/new" class="btn"><i class="fa-solid fa-qrcode"></i>Nouveau code</a>
-      </div>
-      <div id="pollMsg" class="text-sm mt-2 text-muted"></div>
-    `;
+    elements.deviceBox.innerHTML = renderDevicePrompt(js.devicePrompt);
     elements.deviceBox.classList.remove('hidden');
     
     const pollBtn = elements.deviceBox.querySelector('#pollBtn');
     const pollMsg = elements.deviceBox.querySelector('#pollMsg');
 
     pollBtn?.addEventListener('click', async () => {
-      pollMsg.textContent = 'Vérification en cours...';
+      pollMsg.textContent = i18n.t('device_auth.checking');
       try {
         const r = await fetch('/oauth/poll').then(x=>x.json());
         if (r.ok) { 
-          pollMsg.textContent = 'Connecté ! Chargement initial...'; 
+          pollMsg.textContent = i18n.t('device_auth.connected'); 
           setTimeout(()=>window.location.href = '/loading', 800); 
         } else { 
-          pollMsg.textContent = r.fatal ? ('Erreur : '+r.err) : 'Toujours en attente, réessayez.'; 
+          pollMsg.textContent = r.fatal ? i18n.t('device_auth.error', { error: r.err }) : i18n.t('device_auth.waiting'); 
         }
       } catch { 
-        pollMsg.textContent = 'Erreur réseau.'; 
+        pollMsg.textContent = i18n.t('device_auth.network_error'); 
       }
     });
   } else {
@@ -90,3 +105,33 @@ export async function loadData() {
   setTab(state.tab);
   elements.qActive.value = state.q || '';
 }
+
+// Re-render device prompt when language changes
+window.addEventListener('languageChanged', () => {
+  console.log('[Data] Language changed, re-rendering device prompt...');
+  
+  if (lastDevicePromptData && elements.deviceBox && !elements.deviceBox.classList.contains('hidden')) {
+    elements.deviceBox.innerHTML = renderDevicePrompt(lastDevicePromptData);
+    
+    // Re-attach event listener
+    const pollBtn = elements.deviceBox.querySelector('#pollBtn');
+    const pollMsg = elements.deviceBox.querySelector('#pollMsg');
+
+    pollBtn?.addEventListener('click', async () => {
+      pollMsg.textContent = i18n.t('device_auth.checking');
+      try {
+        const r = await fetch('/oauth/poll').then(x=>x.json());
+        if (r.ok) { 
+          pollMsg.textContent = i18n.t('device_auth.connected'); 
+          setTimeout(()=>window.location.href = '/loading', 800); 
+        } else { 
+          pollMsg.textContent = r.fatal ? i18n.t('device_auth.error', { error: r.err }) : i18n.t('device_auth.waiting'); 
+        }
+      } catch { 
+        pollMsg.textContent = i18n.t('device_auth.network_error'); 
+      }
+    });
+    
+    console.log('[Data] Device prompt re-rendered with new language');
+  }
+});

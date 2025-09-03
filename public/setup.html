@@ -7,9 +7,30 @@
   <link rel="stylesheet" href="/assets/tailwind.css">
   <link rel="stylesheet" href="/assets/fa/css/all.min.css">
 </head>
-<body class="loading-body">
-  <div class="container mx-auto max-w-2xl p-6">
-    <div class="glass rounded-2xl p-8 shadow-2xl">
+<body class="loading-body overflow-y-auto">
+  <div class="container mx-auto max-w-6xl p-6 min-h-screen">
+    <!-- Language Selector -->
+    <div class="mb-6 flex justify-end">
+      <div class="language-selector relative">
+        <button id="langToggle" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 flex items-center gap-2 text-sm">
+          <i class="fa-solid fa-globe"></i>
+          <span id="langToggleText">FR</span>
+          <i class="fa-solid fa-chevron-down text-xs"></i>
+        </button>
+        <div id="langDropdown" class="hidden absolute right-0 mt-2 w-36 bg-gray-800 rounded-lg border border-gray-600 shadow-xl z-50">
+          <button data-lang="fr" class="w-full px-3 py-2 text-left text-sm hover:bg-gray-700 rounded-t-lg flex items-center gap-2 text-white">
+            <span class="text-base">🇫🇷</span>
+            Français
+          </button>
+          <button data-lang="en" class="w-full px-3 py-2 text-left text-sm hover:bg-gray-700 rounded-b-lg flex items-center gap-2 text-white">
+            <span class="text-base">🇺🇸</span>
+            English
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="glass rounded-2xl p-6 shadow-2xl">
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-white mb-2">
           <i class="fa-solid fa-cog mr-3 text-sky-400"></i>
@@ -33,104 +54,121 @@
       </div>
 
       <form id="setup-form" class="space-y-6">
-        <!-- Configuration de base -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
-            <i class="fa-solid fa-home mr-2 text-sky-400"></i>
-            Configuration de base
-          </h3>
-          
-          <div>
-            <label for="port" class="block text-sm font-medium text-gray-300 mb-1">Port</label>
-            <input type="number" id="port" name="port" value="30009" min="1000" max="65535"
-                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400">
+        <!-- Design 2 colonnes pour écrans moyens et grands -->
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Colonne 1 -->
+          <div class="space-y-6">
+            <!-- Configuration de base -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
+                <i class="fa-solid fa-home mr-2 text-sky-400"></i>
+                Configuration de base
+              </h3>
+              
+              <div>
+                <label for="port" class="block text-sm font-medium text-gray-300 mb-1">Port</label>
+                <input type="number" id="port" name="port" value="30009" min="1000" max="65535"
+                       class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400">
+              </div>
+            </div>
+
+            <!-- API Trakt -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
+                <i class="fa-solid fa-tv mr-2 text-green-400"></i>
+                API Trakt.tv (Requis)
+              </h3>
+              <div class="bg-gray-800/50 p-4 rounded-lg mb-4">
+                <p class="text-sm text-gray-300 mb-2">
+                  <i class="fa-solid fa-info-circle mr-2 text-blue-400"></i>
+                  Pour obtenir vos clés API Trakt :
+                </p>
+                <ol class="text-sm text-gray-400 space-y-1 ml-4">
+                  <li>1. Allez sur <a href="https://trakt.tv/oauth/applications" target="_blank" class="text-sky-400 underline">trakt.tv/oauth/applications</a></li>
+                  <li>2. Créez une nouvelle application</li>
+                  <li>3. Copiez le Client ID et Client Secret</li>
+                </ol>
+              </div>
+              
+              <div>
+                <label for="traktClientId" class="block text-sm font-medium text-gray-300 mb-1">Trakt Client ID *</label>
+                <input type="text" id="traktClientId" name="traktClientId" required
+                       class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400" 
+                       placeholder="Votre Client ID Trakt">
+              </div>
+              <div>
+                <label for="traktClientSecret" class="block text-sm font-medium text-gray-300 mb-1">Trakt Client Secret *</label>
+                <input type="password" id="traktClientSecret" name="traktClientSecret" required
+                       class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                       placeholder="Votre Client Secret Trakt">
+              </div>
+            </div>
+          </div>
+
+          <!-- Colonne 2 -->
+          <div class="space-y-6">
+            <!-- API TMDB -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
+                <i class="fa-solid fa-film mr-2 text-yellow-400"></i>
+                API TMDB (Requis)
+              </h3>
+              <div class="bg-gray-800/50 p-4 rounded-lg mb-4">
+                <p class="text-sm text-gray-300 mb-2">
+                  <i class="fa-solid fa-info-circle mr-2 text-blue-400"></i>
+                  Pour obtenir votre clé API TMDB :
+                </p>
+                <ol class="text-sm text-gray-400 space-y-1 ml-4">
+                  <li>1. Créez un compte sur <a href="https://www.themoviedb.org/" target="_blank" class="text-sky-400 underline">themoviedb.org</a></li>
+                  <li>2. Allez dans Paramètres > API</li>
+                  <li>3. Copiez votre "API Read Access Token"</li>
+                </ol>
+              </div>
+              
+              <div>
+                <label for="tmdbApiKey" class="block text-sm font-medium text-gray-300 mb-1">TMDB API Key *</label>
+                <input type="password" id="tmdbApiKey" name="tmdbApiKey" required
+                       class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                       placeholder="Votre clé API TMDB">
+              </div>
+              
+              <div>
+                <label for="language" class="block text-sm font-medium text-gray-300 mb-1">Langue TMDB *</label>
+                <select id="language" name="language" required
+                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400">
+                  <option value="fr-FR">Français (fr-FR)</option>
+                  <option value="en-US">English (en-US)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Sécurité -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
+                <i class="fa-solid fa-shield-alt mr-2 text-red-400"></i>
+                Sécurité
+              </h3>
+              
+              <div>
+                <label for="fullRebuildPassword" class="block text-sm font-medium text-gray-300 mb-1">Mot de passe rebuild *</label>
+                <input type="password" id="fullRebuildPassword" name="fullRebuildPassword" required
+                       class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                       placeholder="Mot de passe pour le rebuild complet">
+                <p class="text-xs text-gray-400 mt-1">Ce mot de passe sera requis pour forcer un rebuild complet des données</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- API Trakt -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
-            <i class="fa-solid fa-tv mr-2 text-green-400"></i>
-            API Trakt.tv (Requis)
-          </h3>
-          <div class="bg-gray-800/50 p-4 rounded-lg mb-4">
-            <p class="text-sm text-gray-300 mb-2">
-              <i class="fa-solid fa-info-circle mr-2 text-blue-400"></i>
-              Pour obtenir vos clés API Trakt :
-            </p>
-            <ol class="text-sm text-gray-400 space-y-1 ml-4">
-              <li>1. Allez sur <a href="https://trakt.tv/oauth/applications" target="_blank" class="text-sky-400 underline">trakt.tv/oauth/applications</a></li>
-              <li>2. Créez une nouvelle application</li>
-              <li>3. Copiez le Client ID et Client Secret</li>
-            </ol>
-          </div>
-          
-          <div>
-            <label for="traktClientId" class="block text-sm font-medium text-gray-300 mb-1">Trakt Client ID *</label>
-            <input type="text" id="traktClientId" name="traktClientId" required
-                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400" 
-                   placeholder="Votre Client ID Trakt">
-          </div>
-          <div>
-            <label for="traktClientSecret" class="block text-sm font-medium text-gray-300 mb-1">Trakt Client Secret *</label>
-            <input type="password" id="traktClientSecret" name="traktClientSecret" required
-                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
-                   placeholder="Votre Client Secret Trakt">
-          </div>
-        </div>
-
-        <!-- API TMDB -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
-            <i class="fa-solid fa-film mr-2 text-yellow-400"></i>
-            API TMDB (Requis)
-          </h3>
-          <div class="bg-gray-800/50 p-4 rounded-lg mb-4">
-            <p class="text-sm text-gray-300 mb-2">
-              <i class="fa-solid fa-info-circle mr-2 text-blue-400"></i>
-              Pour obtenir votre clé API TMDB :
-            </p>
-            <ol class="text-sm text-gray-400 space-y-1 ml-4">
-              <li>1. Créez un compte sur <a href="https://www.themoviedb.org/" target="_blank" class="text-sky-400 underline">themoviedb.org</a></li>
-              <li>2. Allez dans Paramètres > API</li>
-              <li>3. Copiez votre "API Read Access Token"</li>
-            </ol>
-          </div>
-          
-          <div>
-            <label for="tmdbApiKey" class="block text-sm font-medium text-gray-300 mb-1">TMDB API Key *</label>
-            <input type="password" id="tmdbApiKey" name="tmdbApiKey" required
-                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
-                   placeholder="Votre clé API TMDB">
-          </div>
-        </div>
-
-        <!-- Sécurité -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">
-            <i class="fa-solid fa-shield-alt mr-2 text-red-400"></i>
-            Sécurité
-          </h3>
-          
-          <div>
-            <label for="fullRebuildPassword" class="block text-sm font-medium text-gray-300 mb-1">Mot de passe rebuild *</label>
-            <input type="password" id="fullRebuildPassword" name="fullRebuildPassword" required
-                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
-                   placeholder="Mot de passe pour le rebuild complet">
-            <p class="text-xs text-gray-400 mt-1">Ce mot de passe sera requis pour forcer un rebuild complet des données</p>
-          </div>
-        </div>
-
-
-        <!-- Boutons -->
-        <div class="flex gap-4 pt-6">
+        <!-- Boutons en bas, pleine largeur -->
+        <div class="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-600">
           <button type="submit" id="submit-btn" 
                   class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
             <i class="fa-solid fa-save mr-2"></i>
             <span id="submit-text">Créer la configuration</span>
           </button>
           <button type="button" id="retryBtn"
-                  class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                  class="sm:w-auto bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
             <i class="fa-solid fa-redo mr-2"></i>
             Réinitialiser
           </button>

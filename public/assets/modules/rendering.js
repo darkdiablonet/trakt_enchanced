@@ -105,7 +105,7 @@ export function renderTopSimple(arr) {
       </div>
       <div class="flex items-center gap-2 ml-4">
         <span class="chip chip-xs animate-count-up" data-delay="${delay + 800}">
-          <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString('fr-FR')} min
+          <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString(i18n.currentLang === 'en' ? 'en-US' : 'fr-FR')} min
         </span>
       </div>
     </div>`;
@@ -136,7 +136,7 @@ export function renderTopTitles(arr) {
           <i class="fa-solid ${icon} mr-1"></i>${typeLbl}
         </span>
         <span class="chip chip-xs animate-count-up" data-delay="${delay + 700}">
-          <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString('fr-FR')} min
+          <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString(i18n.currentLang === 'en' ? 'en-US' : 'fr-FR')} min
         </span>
         <span class="chip chip-xs animate-count-up" data-delay="${delay + 800}">
           <i class="fa-solid fa-play mr-1"></i>${plays}
