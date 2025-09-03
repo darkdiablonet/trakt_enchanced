@@ -1,0 +1,95 @@
+{
+  "app": {
+    "title": "Trakt Enhanced",
+    "version": "v{version}",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  },
+  "navigation": {
+    "shows": "Séries",
+    "movies": "Films",
+    "shows_unseen": "Séries à voir",
+    "movies_unseen": "Films à voir",
+    "playback": "En cours",
+    "stats": "Stats"
+  },
+  "tooltips": {
+    "shows_unseen": "En collection avec épisodes manquants",
+    "movies_unseen": "En collection jamais vus",
+    "playback": "Contenu en cours de visionnage",
+    "refresh_data": "Cliquer pour recharger les données",
+    "change_theme": "Changer de thème",
+    "change_language": "Changer de langue",
+    "toggle_width": "Basculer pleine largeur",
+    "scroll_to_top": "Remonter en haut",
+    "close_modal": "Fermer la modale",
+    "close_overview": "Fermer la fenêtre d'aperçu"
+  },
+  "buttons": {
+    "refresh": "Rafraîchir",
+    "full_width": "Pleine largeur",
+    "limited_width": "Largeur limitée",
+    "full_rebuild": "Full rebuild",
+    "close": "Fermer",
+    "launch": "Lancer",
+    "filters": "Filtres"
+  },
+  "theme": {
+    "auto": "Automatique",
+    "light": "Clair",
+    "dark": "Sombre"
+  },
+  "search": {
+    "placeholder": "Titre… (Ctrl+/)",
+    "label": "Rechercher"
+  },
+  "sort": {
+    "label": "Tri",
+    "watched_at_desc": "Derniers vus",
+    "title_asc": "Titre A→Z",
+    "title_desc": "Titre Z→A",
+    "year_desc": "Année ↓",
+    "year_asc": "Année ↑",
+    "episodes_desc": "Épisodes vus ↓",
+    "plays_desc": "Vus ↓",
+    "collected_at_desc": "Ajoutés récemment ↓",
+    "collected_at_asc": "Ajoutés anciennement ↑",
+    "missing_desc": "Épisodes manquants ↓",
+    "missing_asc": "Épisodes manquants ↑"
+  },
+  "stats": {
+    "type": "Type",
+    "all": "Tout",
+    "period": "Période",
+    "year": "Année",
+    "last_days": "Derniers jours",
+    "days": "Jours",
+    "hours": "Heures",
+    "timezone": "Europe/Paris",
+    "weekdays": "Jours de la semaine",
+    "weekdays_short": "L→D",
+    "evolution_months": "Évolution par mois",
+    "genres": "Genres",
+    "networks": "Réseaux TV",
+    "studios": "Studios",
+    "top_titles": "Top titres",
+    "minutes": "minutes",
+    "total_duration": "durée totale"
+  },
+  "modals": {
+    "full_rebuild": {
+      "title": "Full rebuild",
+      "description": "Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.",
+      "password": "Mot de passe"
+    }
+  },
+  "overview": {
+    "content_info": "Informations du contenu"
+  },
+  "time": {
+    "minutes": "{count}m",
+    "hours_minutes": "{hours}h {minutes}m",
+    "days_hours": "{days}j {hours}h"
+  }
+}

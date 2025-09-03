@@ -10,7 +10,7 @@ let currentWatching = null;
 let isInitialized = false;
 
 // Configuration des limites Trakt API (500 appels/5min = 1 appel/0.6s minimum)
-const REFRESH_INTERVAL = 3000; // 3 secondes pour rester largement dans les limites
+const REFRESH_INTERVAL = 30000; // 3 secondes pour rester largement dans les limites
 const REFRESH_INTERVAL_PAUSED = 10000; // 10 secondes quand en pause (moins de sollicitation API)
 const MAX_DURATION_MS = 4 * 60 * 60 * 1000; // 4h max pour éviter les sessions infinies
 

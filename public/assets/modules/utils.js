@@ -5,6 +5,7 @@
 
 import { elements } from './dom.js';
 import { state, saveState } from './state.js';
+import i18n from './i18n.js';
 
 export function posterURL(u) {
   if (!u) return '';
@@ -38,7 +39,7 @@ export function applyWidth() {
   if (full) {
     elements.mainContainer.classList.remove('max-w-7xl','mx-auto');
     elements.mainContainer.classList.add('w-full','max-w-none');
-    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode('Largeur limitée'));
+    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(i18n.t('buttons.limited_width')));
     
     // Appliquer la même logique à tous les conteneurs concernés
     containers.forEach(container => {
@@ -50,7 +51,7 @@ export function applyWidth() {
   } else {
     elements.mainContainer.classList.add('max-w-7xl','mx-auto');
     elements.mainContainer.classList.remove('w-full','max-w-none');
-    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode('Pleine largeur'));
+    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(i18n.t('buttons.full_width')));
     
     // Appliquer la même logique à tous les conteneurs concernés
     containers.forEach(container => {
@@ -63,11 +64,5 @@ export function applyWidth() {
 }
 
 export function humanMinutes(min) {
-  const m = Number(min||0);
-  const d = Math.floor(m / (60*24));
-  const h = Math.floor((m % (60*24)) / 60);
-  const r = m % 60;
-  if (d > 0) return `${d}j ${h}h`;
-  if (h > 0) return `${h}h ${r}m`;
-  return `${m}m`;
+  return i18n.formatTime(min);
 }

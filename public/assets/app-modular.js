@@ -21,6 +21,9 @@ import { initScrollToTop } from './modules/scroll-to-top.js';
 import { initWatchingProgress, stopWatchingProgress, applyWidthToProgressBarExternal } from './modules/watching-progress.js';
 import { initHeatmapInteractions } from './modules/heatmap-interactions.js';
 import { initWatchingDetails } from './modules/watching-details.js';
+import i18n from './modules/i18n.js';
+import languageSelector from './modules/language-selector.js';
+import uiTranslations from './modules/ui-translations.js';
 
 // Charger la version de l'application
 async function loadAppVersion() {
@@ -123,5 +126,12 @@ loadAppVersion();
 initScrollToTop();
 initHeatmapInteractions();
 initWatchingDetails();
+languageSelector.init();
+
+// Initialiser les traductions UI après que i18n soit initialisé
+i18n.init().then(() => {
+  uiTranslations.translateUI();
+});
+
 // initWatchingProgress(); // Auto-initialisé par le module lui-même
 

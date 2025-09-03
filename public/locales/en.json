@@ -1,0 +1,95 @@
+{
+  "app": {
+    "title": "Trakt Enhanced",
+    "version": "v{version}",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "shows": "Shows",
+    "movies": "Movies",
+    "shows_unseen": "Shows to watch",
+    "movies_unseen": "Movies to watch",
+    "playback": "In progress",
+    "stats": "Stats"
+  },
+  "tooltips": {
+    "shows_unseen": "In collection with missing episodes",
+    "movies_unseen": "In collection never watched",
+    "playback": "Content currently being watched",
+    "refresh_data": "Click to reload data",
+    "change_theme": "Change theme",
+    "change_language": "Change language",
+    "toggle_width": "Toggle full width",
+    "scroll_to_top": "Scroll to top",
+    "close_modal": "Close modal",
+    "close_overview": "Close overview window"
+  },
+  "buttons": {
+    "refresh": "Refresh",
+    "full_width": "Full width",
+    "limited_width": "Limited width",
+    "full_rebuild": "Full rebuild",
+    "close": "Close",
+    "launch": "Launch",
+    "filters": "Filters"
+  },
+  "theme": {
+    "auto": "Auto",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "search": {
+    "placeholder": "Title… (Ctrl+/)",
+    "label": "Search"
+  },
+  "sort": {
+    "label": "Sort",
+    "watched_at_desc": "Recently watched",
+    "title_asc": "Title A→Z",
+    "title_desc": "Title Z→A",
+    "year_desc": "Year ↓",
+    "year_asc": "Year ↑",
+    "episodes_desc": "Episodes watched ↓",
+    "plays_desc": "Watched ↓",
+    "collected_at_desc": "Recently added ↓",
+    "collected_at_asc": "Oldest added ↑",
+    "missing_desc": "Missing episodes ↓",
+    "missing_asc": "Missing episodes ↑"
+  },
+  "stats": {
+    "type": "Type",
+    "all": "All",
+    "period": "Period",
+    "year": "Year",
+    "last_days": "Last days",
+    "days": "Days",
+    "hours": "Hours",
+    "timezone": "Europe/Paris",
+    "weekdays": "Weekdays",
+    "weekdays_short": "M→S",
+    "evolution_months": "Monthly evolution",
+    "genres": "Genres",
+    "networks": "Networks",
+    "studios": "Studios",
+    "top_titles": "Top titles",
+    "minutes": "minutes",
+    "total_duration": "total duration"
+  },
+  "modals": {
+    "full_rebuild": {
+      "title": "Full rebuild",
+      "description": "Enter password to launch a full rebuild of the Trakt master cache.",
+      "password": "Password"
+    }
+  },
+  "overview": {
+    "content_info": "Content information"
+  },
+  "time": {
+    "minutes": "{count}m",
+    "hours_minutes": "{hours}h {minutes}m",
+    "days_hours": "{days}d {hours}h"
+  }
+}

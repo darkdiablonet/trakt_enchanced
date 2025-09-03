@@ -12,7 +12,7 @@ import dotenv from 'dotenv';
 import { logger } from './lib/logger.js';
 import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddleware, asyncHandler } from './lib/middleware.js';
 import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection } from './lib/security.js';
-
+import { serverI18n } from './lib/i18n.js';
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASS, TITLE, reloadEnv } from './lib/config.js';
 import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched, hasValidCredentials, get, del } from './lib/trakt.js';
@@ -117,6 +117,9 @@ app.use(session({
 // Middleware CSRF après les sessions
 app.use(csrfTokenMiddleware);
 
+// I18n middleware
+app.use(serverI18n.middleware());
+
 // --- Chemin du cache images
 const ABS_CACHE_DIR   = '/data/cache_imgs';
 const LOCAL_CACHE_DIR = path.join(process.cwd(), 'data', 'cache_imgs');
@@ -131,8 +134,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- Static pour les posters (avant toute autre route)
+// --- Route pour les fichiers de traduction
+app.use('/locales', express.static(path.join(process.cwd(), 'public', 'locales'), {
+  maxAge: '1h',
+  etag: true
+}));
 
+// --- Static pour les posters (avant toute autre route)
 
 app.use('/cache_imgs', express.static(CACHE_IMGS_DIR, {
   fallthrough: false,
