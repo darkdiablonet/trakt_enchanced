@@ -4,6 +4,7 @@
  */
 
 import { UNIFIED_PALETTE } from './graphs.js';
+import i18n from './i18n.js';
 
 // Configuration par défaut pour tous les graphiques
 const defaultConfig = {
@@ -85,6 +86,9 @@ function destroyChart(chartId) {
 
 // Créer graphique des heures
 export function createHoursChart(data) {
+  // Sauvegarder les données pour re-render lors du changement de langue
+  lastChartsData.hours = data;
+  
   destroyChart('proChartHours');
   
   const ctx = document.getElementById('proChartHours');
@@ -127,12 +131,15 @@ export function createHoursChart(data) {
 
 // Créer graphique des jours de la semaine
 export function createWeekChart(data) {
+  // Sauvegarder les données pour re-render lors du changement de langue
+  lastChartsData.weekday = data;
+  
   destroyChart('proChartWeek');
   
   const ctx = document.getElementById('proChartWeek');
   if (!ctx) return;
   
-  const labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const labels = i18n.t('calendar.weekdays_chart');
   
   chartInstances['proChartWeek'] = new Chart(ctx, {
     type: 'bar',
@@ -169,6 +176,9 @@ export function createWeekChart(data) {
 
 // Créer graphique d'évolution par mois
 export function createMonthsChart(monthsObj) {
+  // Sauvegarder les données pour re-render lors du changement de langue
+  lastChartsData.months = monthsObj;
+  
   destroyChart('proChartMonths');
   
   const ctx = document.getElementById('proChartMonths');
@@ -238,3 +248,28 @@ export function destroyAllCharts() {
     destroyChart(chartId);
   });
 }
+
+// Variable pour stocker les dernières données des charts
+let lastChartsData = {
+  hours: null,
+  weekday: null,
+  months: null
+};
+
+// Re-créer les graphiques quand la langue change
+window.addEventListener('languageChanged', () => {
+  console.log('[Charts] Language changed, recreating charts with new labels...');
+  
+  // Re-créer les graphiques avec les nouvelles traductions si on a les données
+  if (lastChartsData.hours !== null) {
+    createHoursChart(lastChartsData.hours);
+  }
+  if (lastChartsData.weekday !== null) {
+    createWeekChart(lastChartsData.weekday);
+  }
+  if (lastChartsData.months !== null) {
+    createMonthsChart(lastChartsData.months);
+  }
+  
+  console.log('[Charts] Charts recreated with new language');
+});

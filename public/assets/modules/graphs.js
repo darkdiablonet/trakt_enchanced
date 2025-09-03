@@ -3,6 +3,8 @@
  * Gestion des graphiques et heatmaps
  */
 
+import i18n from './i18n.js';
+
 // Utilisation des sélecteurs Pro Stats unifiés (fonctions conservées pour compatibilité)
 const getGraphType = () => document.getElementById('proType')?.value || 'all';
 const getGraphYear = () => document.getElementById('proYear')?.value || new Date().getFullYear().toString();
@@ -63,6 +65,9 @@ export function datesOfYear(year) {
 }
 
 export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, left=38 } = {}) {
+  // Sauvegarder les données pour pouvoir re-rendre lors du changement de langue
+  saveLastHeatmapData({ year, max, days }, { cell, gap, top, left });
+  
   const dates = datesOfYear(year);
   const map = new Map(days.map(d => [d.date, d.count]));
   const dayIndex = (d) => (d.getUTCDay() === 0 ? 6 : d.getUTCDay() - 1);
@@ -86,14 +91,14 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
   const txt = (x,y,s,anchor='start') =>
     `<text x="${x}" y="${y}" fill="${UNIFIED_PALETTE.text}" font-size="${s}" text-anchor="${anchor}" font-family="ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial">`;
 
-  const mois = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+  const mois = i18n.t('calendar.months_short');
   const monthCols = [];
   for (let m=0; m<12; m++){
     const d0 = new Date(Date.UTC(year, m, 1));
     monthCols.push({ label: mois[m], col: colIndex(d0) });
   }
 
-  const jours = ['L','M','M','J','V','S','D'];
+  const jours = i18n.t('calendar.weekdays_short');
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trakt heatmap ${year}" class="heatmap-svg">
   <rect x="0" y="0" width="${W}" height="${H}" fill="${UNIFIED_PALETTE.background}" rx="8" />`;
@@ -125,7 +130,8 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
     const count = map.get(utcKey) || 0;
     const lvl = levelFor(count, max);
     const fill = colorFor(lvl);
-    const title = `${utcKey} · ${count} visionnage${count>1?'s':''}`;
+    const viewingText = count === 1 ? i18n.t('calendar.viewing') : i18n.t('calendar.viewings');
+    const title = `${utcKey} · ${count} ${viewingText}`;
     const delay = (ci * 7 + ri) * 20; // Animation progressive plus lente
     svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" 
              fill="${fill}" class="svg-interactive heatmap-cell" data-delay="${delay}" data-date="${utcKey}" data-count="${count}">
@@ -138,13 +144,13 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
   const legendX = left;
   const legendY = top + monthsRow + 7*(cell+gap) + 16;
   svg += `<g transform="translate(${legendX},${legendY})">
-    ${txt(0,0,10)}Moins</text>`;
+    ${txt(0,0,10)}${i18n.t('calendar.less')}</text>`;
   const sw = cell, sg = 6;
   for (let l=1; l<=4; l++){
     const x = 34 + (l-1)*(sw+sg);
     svg += `<rect x="${x}" y="-10" width="${sw}" height="${sw}" rx="2" ry="2" fill="${colorFor(l)}"></rect>`;
   }
-  svg += `${txt(34 + 4*(sw+sg) + 8, 0, 10)}Plus</text></g>`;
+  svg += `${txt(34 + 4*(sw+sg) + 8, 0, 10)}${i18n.t('calendar.more')}</text></g>`;
 
   svg += `</svg>`;
   
@@ -240,3 +246,28 @@ export function barChartSVG(values, {labels=[], w=640, h=160, pad=24, yTicks=3, 
 
 // Event listeners maintenant gérés par le module pro-stats.js
 // car les sélecteurs sont unifiés
+
+// Variables pour stocker les dernières données pour le re-render lors du changement de langue
+let lastHeatmapData = null;
+let lastHeatmapOptions = null;
+
+// Fonction pour sauvegarder les données et options de la dernière heatmap
+export function saveLastHeatmapData(data, options) {
+  lastHeatmapData = data;
+  lastHeatmapOptions = options;
+}
+
+// Re-render la heatmap quand la langue change
+window.addEventListener('languageChanged', () => {
+  console.log('[Graphs] Language changed, re-rendering graphs...');
+  
+  // Re-render la heatmap avec les nouvelles traductions si on a les données
+  if (lastHeatmapData && lastHeatmapOptions) {
+    const heatmapContainer = document.getElementById('graphContainer');
+    if (heatmapContainer) {
+      const svg = renderHeatmapSVG(lastHeatmapData, lastHeatmapOptions);
+      heatmapContainer.innerHTML = svg;
+      console.log('[Graphs] Heatmap re-rendered with new language');
+    }
+  }
+});

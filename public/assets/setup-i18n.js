@@ -66,10 +66,7 @@ class SetupI18n {
     // Translate buttons
     const submitText = document.getElementById('submit-text');
     if (submitText) {
-      submitText.innerHTML = `
-        <i class="fa-solid fa-save mr-2"></i>
-        ${this.i18n.t('setup.create_config')}
-      `;
+      submitText.textContent = this.i18n.t('setup.create_config');
     }
 
     const retryBtn = document.getElementById('retryBtn');
@@ -110,8 +107,8 @@ class SetupI18n {
   }
 
   translateTraktInfo() {
-    // Find Trakt info section
-    const traktSection = Array.from(document.querySelectorAll('h3')).find(h => h.textContent.includes('API Trakt'));
+    // Find Trakt info section by icon (more reliable than text content)
+    const traktSection = Array.from(document.querySelectorAll('h3')).find(h => h.querySelector('.fa-tv'));
     if (!traktSection) return;
 
     const infoBox = traktSection.parentElement.querySelector('.bg-gray-800\\/50');
@@ -134,8 +131,8 @@ class SetupI18n {
   }
 
   translateTmdbInfo() {
-    // Find TMDB info section
-    const tmdbSection = Array.from(document.querySelectorAll('h3')).find(h => h.textContent.includes('TMDB'));
+    // Find TMDB info section by icon (more reliable than text content)
+    const tmdbSection = Array.from(document.querySelectorAll('h3')).find(h => h.querySelector('.fa-film'));
     if (!tmdbSection) return;
 
     const infoBox = tmdbSection.parentElement.querySelector('.bg-gray-800\\/50');
@@ -158,6 +155,77 @@ class SetupI18n {
   }
 }
 
+// Language Selector functionality
+function setupLanguageSelector(i18n, setupI18n) {
+  const langToggle = document.getElementById('langToggle');
+  const langDropdown = document.getElementById('langDropdown');
+  const langToggleText = document.getElementById('langToggleText');
+  
+  if (!langToggle || !langDropdown) return;
+
+  let isOpen = false;
+
+  // Update current language display
+  function updateLanguageDisplay() {
+    const currentLang = i18n.getCurrentLanguage() || 'fr';
+    langToggleText.textContent = currentLang.toUpperCase();
+  }
+
+  // Toggle dropdown
+  langToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isOpen = !isOpen;
+    if (isOpen) {
+      langDropdown.classList.remove('hidden');
+    } else {
+      langDropdown.classList.add('hidden');
+    }
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!langToggle.contains(e.target) && !langDropdown.contains(e.target)) {
+      langDropdown.classList.add('hidden');
+      isOpen = false;
+    }
+  });
+
+  // Handle language selection
+  const langButtons = langDropdown.querySelectorAll('[data-lang]');
+  langButtons.forEach(langBtn => {
+    langBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const lang = langBtn.getAttribute('data-lang');
+      
+      // Change language
+      await i18n.changeLanguage(lang);
+      
+      // Update display
+      updateLanguageDisplay();
+      
+      // Re-translate the page
+      await setupI18n.translatePage();
+      
+      // Close dropdown
+      langDropdown.classList.add('hidden');
+      isOpen = false;
+      
+      console.log('[SetupI18n] Language changed to:', lang);
+    });
+  });
+
+  // Close with Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen) {
+      langDropdown.classList.add('hidden');
+      isOpen = false;
+    }
+  });
+
+  // Initial display
+  updateLanguageDisplay();
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
   if (typeof I18nLite !== 'undefined') {
@@ -166,5 +234,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const setupI18n = new SetupI18n(i18n);
     await setupI18n.translatePage();
+    
+    // Setup language selector
+    setupLanguageSelector(i18n, setupI18n);
   }
 });

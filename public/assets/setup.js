@@ -6,6 +6,26 @@
 const scriptTag = document.currentScript || document.querySelector('script[data-csrf-token]');
 const CSRF_TOKEN = scriptTag ? scriptTag.getAttribute('data-csrf-token') : '';
 
+// Variable pour accéder au système i18n
+let i18n = null;
+
+// Initialiser l'i18n dès que disponible
+if (typeof I18nLite !== 'undefined') {
+  i18n = new I18nLite();
+  i18n.init().then(() => {
+    console.log('[Setup] I18n initialized');
+  });
+}
+
+// Helper function pour les traductions avec fallback
+function t(key, vars = {}) {
+  if (i18n && i18n.t) {
+    return i18n.t(key, vars);
+  }
+  // Fallback si i18n n'est pas disponible
+  return key;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const setupForm = document.getElementById('setup-form');
   if (!setupForm) return;
@@ -30,10 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const csrfState = document.getElementById('csrf-state');
   if (csrfInfo && csrfState) {
     if (CSRF_TOKEN && CSRF_TOKEN.length > 10) {
-      csrfState.textContent = 'Active ✓';
+      csrfState.textContent = t('setup.csrf_active');
       csrfState.className = 'text-green-400';
     } else {
-      csrfState.textContent = 'Manquant ⚠';
+      csrfState.textContent = t('setup.csrf_missing');
       csrfState.className = 'text-yellow-400';
       csrfInfo.classList.remove('hidden'); // Afficher seulement si problème
     }
@@ -51,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // État loading
     submitBtn.disabled = true;
-    submitText.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Configuration en cours...';
+    submitText.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>${t('setup.configuring')}`;
     
     try {
       const formData = new FormData(e.target);
@@ -68,27 +88,27 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Gestion spécifique des erreurs HTTP
       if (!response.ok) {
-        let errorMessage = 'Erreur du serveur';
+        let errorMessage = t('setup.server_error');
         
         if (response.status === 403) {
           const errorData = await response.json().catch(() => ({}));
           if (errorData.code === 'CSRF_MISSING' || errorData.code === 'CSRF_INVALID') {
-            errorMessage = 'Erreur de sécurité CSRF. Veuillez recharger la page et réessayer.';
+            errorMessage = t('setup.csrf_error');
             console.error('CSRF Error:', {
               token: CSRF_TOKEN ? 'présent' : 'manquant',
               tokenLength: CSRF_TOKEN?.length || 0,
               error: errorData
             });
           } else {
-            errorMessage = 'Accès refusé (403)';
+            errorMessage = t('setup.access_denied');
           }
         } else if (response.status === 400) {
           const errorData = await response.json().catch(() => ({}));
-          errorMessage = errorData.error || 'Données invalides (400)';
+          errorMessage = errorData.error || t('setup.invalid_data');
         } else if (response.status === 500) {
-          errorMessage = 'Erreur interne du serveur (500)';
+          errorMessage = t('setup.internal_error');
         } else {
-          errorMessage = `Erreur HTTP ${response.status}`;
+          errorMessage = t('setup.http_error', { status: response.status });
         }
         
         throw new Error(errorMessage);
@@ -100,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Succès
         alert.className = 'p-4 rounded-lg mb-4 bg-green-800 border border-green-600 text-green-200';
         alertIcon.className = 'fa-solid fa-check-circle mr-3 text-green-400';
-        alertMessage.textContent = 'Configuration créée avec succès ! Redirection...';
+        alertMessage.textContent = t('setup.success_message');
         alertContainer.classList.remove('hidden');
         
         // Redirection après 2s
@@ -112,11 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Erreur
         alert.className = 'p-4 rounded-lg mb-4 bg-red-800 border border-red-600 text-red-200';
         alertIcon.className = 'fa-solid fa-exclamation-triangle mr-3 text-red-400';
-        alertMessage.textContent = result.error || 'Erreur lors de la configuration';
+        alertMessage.textContent = result.error || t('setup.config_error');
         alertContainer.classList.remove('hidden');
         
         submitBtn.disabled = false;
-        submitText.innerHTML = '<i class="fa-solid fa-save mr-2"></i>Créer la configuration';
+        submitText.innerHTML = `<i class="fa-solid fa-save mr-2"></i>${t('setup.create_config')}`;
       }
       
     } catch (error) {
@@ -125,11 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
       alertIcon.className = 'fa-solid fa-exclamation-triangle mr-3 text-red-400';
       
       // Utiliser le message d'erreur spécifique ou un message générique
-      alertMessage.textContent = error.message || 'Erreur de connexion au serveur';
+      alertMessage.textContent = error.message || t('setup.connection_error');
       alertContainer.classList.remove('hidden');
       
       submitBtn.disabled = false;
-      submitText.innerHTML = '<i class="fa-solid fa-save mr-2"></i>Créer la configuration';
+      submitText.innerHTML = `<i class="fa-solid fa-save mr-2"></i>${t('setup.create_config')}`;
     }
   });
 });

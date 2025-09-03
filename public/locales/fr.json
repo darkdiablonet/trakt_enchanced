@@ -75,7 +75,42 @@
     "studios": "Studios",
     "top_titles": "Top titres",
     "minutes": "minutes",
-    "total_duration": "durée totale"
+    "total_duration": "durée totale",
+    "overview": "Vue d'ensemble",
+    "total_watched": "Total visionné",
+    "total_time": "Temps total",
+    "total_plays": "Lectures totales",
+    "ratings_given": "Notes données",
+    "movies": "Films",
+    "watched": "Vus",
+    "plays": "Lectures",
+    "watch_time": "Temps visionnage",
+    "collection": "Collection",
+    "comments": "Commentaires",
+    "shows_episodes": "Séries & Épisodes", 
+    "shows_watched": "Séries vues",
+    "shows": "Séries",
+    "seasons": "Saisons",
+    "episodes": "Épisodes",
+    "episode_plays": "Lectures épisodes",
+    "series_time": "Temps séries",
+    "series_collection": "Collection séries",
+    "social_engagement": "Social & Engagement",
+    "friends": "Amis",
+    "following": "Abonnements",
+    "followers": "Abonnés",
+    "lists_created": "Listes créées",
+    "active_days": "Jours actifs",
+    "max_per_day": "Max/jour"
+  },
+  "calendar": {
+    "months_short": ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
+    "weekdays_short": ["L", "M", "M", "J", "V", "S", "D"],
+    "weekdays_chart": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+    "viewing": "visionnage",
+    "viewings": "visionnages",
+    "less": "Moins",
+    "more": "Plus"
   },
   "modals": {
     "full_rebuild": {
@@ -132,7 +167,19 @@
     "rebuild_password_placeholder": "Mot de passe pour le rebuild complet",
     "rebuild_password_help": "Ce mot de passe sera requis pour forcer un rebuild complet des données",
     "create_config": "Créer la configuration",
-    "reset": "Réinitialiser"
+    "reset": "Réinitialiser",
+    "configuring": "Configuration en cours...",
+    "success_message": "Configuration créée avec succès ! Redirection...",
+    "server_error": "Erreur du serveur",
+    "csrf_error": "Erreur de sécurité CSRF. Veuillez recharger la page et réessayer.",
+    "access_denied": "Accès refusé (403)",
+    "invalid_data": "Données invalides (400)",
+    "internal_error": "Erreur interne du serveur (500)",
+    "http_error": "Erreur HTTP {status}",
+    "config_error": "Erreur lors de la configuration",
+    "connection_error": "Erreur de connexion au serveur",
+    "csrf_active": "Active ✓",
+    "csrf_missing": "Manquant ⚠"
   },
   "loading": {
     "page_title": "Chargement initial - Trakt Enhanced",
@@ -153,5 +200,17 @@
     "step_final_detail": "En attente...",
     "info_title": "Première synchronisation :",
     "info_text": "Cette opération peut prendre quelques minutes selon la taille de votre collection Trakt. Les prochains chargements seront beaucoup plus rapides grâce au cache."
+  },
+  "device_auth": {
+    "title": "Connecter votre compte Trakt",
+    "instructions": "Rendez-vous sur {url} et entrez le code :",
+    "expires": "Ce code expire le {date}.",
+    "validate_button": "J'ai validé, vérifier",
+    "new_code_button": "Nouveau code",
+    "checking": "Vérification en cours...",
+    "connected": "Connecté ! Chargement initial...",
+    "error": "Erreur : {error}",
+    "waiting": "Toujours en attente, réessayez.",
+    "network_error": "Erreur réseau."
   }
 }

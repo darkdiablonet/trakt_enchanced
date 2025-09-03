@@ -54,7 +54,12 @@ export function applyWidth() {
   if (full) {
     elements.mainContainer.classList.remove('max-w-7xl','mx-auto');
     elements.mainContainer.classList.add('w-full','max-w-none');
-    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(getTranslatedText('buttons.limited_width', 'Largeur limitée')));
+    // Changer l'attribut data-i18n au lieu d'écraser le texte
+    const span = elements.toggleWidth?.querySelector('span');
+    if (span) {
+      span.setAttribute('data-i18n', 'buttons.limited_width');
+      span.textContent = getTranslatedText('buttons.limited_width', 'Limited width');
+    }
     
     // Appliquer la même logique à tous les conteneurs concernés
     containers.forEach(container => {
@@ -66,7 +71,12 @@ export function applyWidth() {
   } else {
     elements.mainContainer.classList.add('max-w-7xl','mx-auto');
     elements.mainContainer.classList.remove('w-full','max-w-none');
-    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(getTranslatedText('buttons.full_width', 'Pleine largeur')));
+    // Changer l'attribut data-i18n au lieu d'écraser le texte
+    const span = elements.toggleWidth?.querySelector('span');
+    if (span) {
+      span.setAttribute('data-i18n', 'buttons.full_width');
+      span.textContent = getTranslatedText('buttons.full_width', 'Full width');
+    }
     
     // Appliquer la même logique à tous les conteneurs concernés
     containers.forEach(container => {
@@ -81,3 +91,15 @@ export function applyWidth() {
 export function humanMinutes(min) {
   return i18n.formatTime(min);
 }
+
+// Écouter les changements de langue pour mettre à jour le bouton largeur
+window.addEventListener('languageChanged', () => {
+  console.log('[Utils] Language changed, updating width button');
+  applyWidth(); // Re-applique la largeur avec les nouvelles traductions
+});
+
+// Écouter l'événement personnalisé pour mettre à jour le bouton largeur
+window.addEventListener('updateWidthButton', () => {
+  console.log('[Utils] updateWidthButton event received');
+  applyWidth();
+});

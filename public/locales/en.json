@@ -75,7 +75,42 @@
     "studios": "Studios",
     "top_titles": "Top titles",
     "minutes": "minutes",
-    "total_duration": "total duration"
+    "total_duration": "total duration",
+    "overview": "Overview",
+    "total_watched": "Total watched",
+    "total_time": "Total time",
+    "total_plays": "Total plays",
+    "ratings_given": "Ratings given",
+    "movies": "Movies",
+    "watched": "Watched",
+    "plays": "Plays",
+    "watch_time": "Watch time",
+    "collection": "Collection",
+    "comments": "Comments",
+    "shows_episodes": "Shows & Episodes",
+    "shows_watched": "Shows watched", 
+    "shows": "Shows",
+    "seasons": "Seasons",
+    "episodes": "Episodes",
+    "episode_plays": "Episode plays",
+    "series_time": "Series time",
+    "series_collection": "Series collection",
+    "social_engagement": "Social & Engagement",
+    "friends": "Friends",
+    "following": "Following",
+    "followers": "Followers",
+    "lists_created": "Lists created",
+    "active_days": "Active days",
+    "max_per_day": "Max/day"
+  },
+  "calendar": {
+    "months_short": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "weekdays_short": ["M", "T", "W", "T", "F", "S", "S"],
+    "weekdays_chart": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "viewing": "viewing",
+    "viewings": "viewings",
+    "less": "Less",
+    "more": "More"
   },
   "modals": {
     "full_rebuild": {
@@ -132,7 +167,19 @@
     "rebuild_password_placeholder": "Password for full rebuild",
     "rebuild_password_help": "This password will be required to force a full data rebuild",
     "create_config": "Create configuration",
-    "reset": "Reset"
+    "reset": "Reset",
+    "configuring": "Configuring...",
+    "success_message": "Configuration created successfully! Redirecting...",
+    "server_error": "Server error",
+    "csrf_error": "CSRF security error. Please reload the page and try again.",
+    "access_denied": "Access denied (403)",
+    "invalid_data": "Invalid data (400)",
+    "internal_error": "Internal server error (500)",
+    "http_error": "HTTP error {status}",
+    "config_error": "Configuration error",
+    "connection_error": "Server connection error",
+    "csrf_active": "Active ✓",
+    "csrf_missing": "Missing ⚠"
   },
   "loading": {
     "page_title": "Initial loading - Trakt Enhanced",
@@ -153,5 +200,17 @@
     "step_final_detail": "Waiting...",
     "info_title": "First synchronization:",
     "info_text": "This operation may take a few minutes depending on the size of your Trakt collection. Next loadings will be much faster thanks to the cache."
+  },
+  "device_auth": {
+    "title": "Connect your Trakt account",
+    "instructions": "Go to {url} and enter the code:",
+    "expires": "This code expires on {date}.",
+    "validate_button": "I have validated, check",
+    "new_code_button": "New code",
+    "checking": "Checking...",
+    "connected": "Connected! Initial loading...",
+    "error": "Error: {error}",
+    "waiting": "Still waiting, please try again.",
+    "network_error": "Network error."
   }
 }

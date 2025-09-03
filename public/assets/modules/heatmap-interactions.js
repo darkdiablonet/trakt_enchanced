@@ -4,6 +4,7 @@
  */
 
 import { posterURL } from './utils.js';
+import i18n from './i18n.js';
 
 // Cache des données de visionnages par date
 const watchingsCache = new Map();
@@ -50,7 +51,8 @@ async function fetchWatchingsByDate(date) {
 function formatWatchedTime(watchedAt) {
   try {
     const date = new Date(watchedAt);
-    return date.toLocaleTimeString('fr-FR', { 
+    const locale = i18n.currentLang === 'en' ? 'en-US' : 'fr-FR';
+    return date.toLocaleTimeString(locale, { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
@@ -67,7 +69,8 @@ function formatWatchedTime(watchedAt) {
 function formatDate(dateStr) {
   try {
     const date = new Date(dateStr + 'T00:00:00Z');
-    return date.toLocaleDateString('fr-FR', { 
+    const locale = i18n.currentLang === 'en' ? 'en-US' : 'fr-FR';
+    return date.toLocaleDateString(locale, { 
       weekday: 'long', 
       day: 'numeric', 
       month: 'long', 
