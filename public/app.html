@@ -59,6 +59,9 @@
     </div>
   </header>
 
+  <!-- Real-time Watching Progress Bar -->
+  <div id="watching-progress" class="hidden mx-auto max-w-7xl px-4 py-2"></div>
+
   <div id="flashBox"  class="hidden mx-auto max-w-7xl mt-4 px-4 py-3 rounded-lg border border-slate-700 bg-slate-800/60"></div>
   <div id="deviceBox" class="hidden mx-auto max-w-7xl bg-slate-800/60 border border-slate-700 rounded-xl p-4 mt-6"></div>
 
@@ -76,6 +79,9 @@
         </button>
         <button id="tabBtnMoviesUnseen" data-tab="movies_unseen" title="En collection jamais vus">
           <i class="fa-regular fa-eye-slash mr-2"></i>Films à voir
+        </button>
+        <button id="tabBtnPlayback" data-tab="playback" title="Contenu en cours de visionnage">
+          <i class="fa-solid fa-play-circle mr-2"></i>En cours
         </button>
         <button id="tabBtnStats" data-tab="stats">
           <i class="fa-solid fa-chart-simple mr-2"></i>Stats
@@ -120,6 +126,9 @@
     <section id="panelMovies" class="hidden"><div id="gridM"  class="grid-default"></div></section>
     <section id="panelShowsUnseen" class="hidden"><div id="gridSU" class="grid-default"></div></section>
     <section id="panelMoviesUnseen" class="hidden"><div id="gridMU" class="grid-default"></div></section>
+    <section id="panelPlayback" class="hidden">
+      <div id="playbackContainer" class="grid-default"></div>
+    </section>
     <section id="panelStats" class="hidden">
       <!-- tuiles stats -->
       <div id="statsBox" class="grid-default"></div>

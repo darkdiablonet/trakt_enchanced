@@ -226,6 +226,17 @@
     background: #10b981;
     animation: flash-success 0.6s ease;
   }
+  .badge-progress{
+    position:absolute; top:.5rem; left:.5rem;
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.25rem .5rem; border-radius:.6rem;
+    background: var(--bg-glass); 
+    color: var(--text-primary); 
+    font-weight:700; font-size:.75rem;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);
+    border:1px solid var(--border-secondary);
+    backdrop-filter:blur(4px);
+  }
   @keyframes flash-success {
     0%, 100% { background: #10b981; }
     50% { background: #34d399; }
@@ -945,10 +956,30 @@
   }
 }
 
-/* (facultatif) petit fallback pour line-clamp si tu l’utilises */
+/* (facultatif) petit fallback pour line-clamp si tu l'utilises */
 .line-clamp-2{
   display:-webkit-box;
   -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
+}
+
+/* Animations pour la barre de progression temps réel */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+/* Effet de pulse personnalisé pour la barre de progression */
+@keyframes progress-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.animate-progress-pulse {
+  animation: progress-pulse 2s ease-in-out infinite;
 }

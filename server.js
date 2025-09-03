@@ -15,7 +15,7 @@ import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection }
 
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASS, TITLE, reloadEnv } from './lib/config.js';
-import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched, hasValidCredentials } from './lib/trakt.js';
+import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched, hasValidCredentials, get, del } from './lib/trakt.js';
 import { buildPageData, invalidatePageCache, updateShowInCache } from './lib/pageData.js';
 import { makeRefresher, loadDeviceCode, clearDeviceCode, getPublicHost } from './lib/util.js';
 import { dailyCounts } from './lib/graph.js';
@@ -175,6 +175,13 @@ app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets'), 
   }
 }));
 app.use('/public', express.static(path.join(DATA_DIR, '..', 'public'), { maxAge: '30d' }));
+
+// Servir les images statiques (placeholders, etc.)
+app.use('/img', express.static(path.join(process.cwd(), 'public', 'img'), {
+  etag: true,
+  lastModified: true,
+  maxAge: '7d'
+}));
 
 // si tu veux assurer la compatibilité .ico:
 app.get('/favicon.ico', (req, res) => {
@@ -427,6 +434,28 @@ app.get('/api/stats/pro', performanceMiddleware('proStats'), asyncHandler(async 
   return res.json({ ok:true, data, cached:false });
 }));
 
+// API: Test endpoint pour /users/{id}/watching
+app.get('/api/watching/:userId?', performanceMiddleware('watching'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    const userId = req.params.userId || 'me';
+    const watching = await get(`/users/${userId}/watching`);
+    
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ ok: true, watching });
+  } catch (error) {
+    logger.error('Error fetching watching data', { error: error.message, userId: req.params.userId });
+    res.status(500).json({ ok: false, error: 'Failed to fetch watching data' });
+  }
+}));
+
 // API: Marquer un épisode comme vu
 app.post('/api/mark-watched', csrfProtection, asyncHandler(async (req, res) => {
   const { trakt_id, season, number } = req.body;
@@ -543,6 +572,86 @@ app.get('/api/watchings-by-date/:date', performanceMiddleware('watchingsByDate')
     res.status(500).json({ 
       error: 'Erreur interne du serveur' 
     });
+  }
+}));
+
+// API: Récupérer la progression de lecture (playback progress)
+app.get('/api/playback', performanceMiddleware('playback'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    const playback = await get('/sync/playback');
+    
+    // Enrichir chaque item avec l'URL du poster si disponible
+    if (playback && Array.isArray(playback)) {
+      const { posterFromTraktId } = await import('./lib/tmdb.js');
+      
+      for (const item of playback) {
+        const traktId = item.type === 'movie' 
+          ? item.movie?.ids?.trakt 
+          : item.show?.ids?.trakt;
+        
+        if (traktId) {
+          const posterUrl = await posterFromTraktId(traktId);
+          if (posterUrl) {
+            if (item.type === 'movie') {
+              item.movie.poster = posterUrl;
+            } else {
+              if (!item.show) item.show = {};
+              item.show.poster = posterUrl;
+            }
+          }
+        }
+      }
+    }
+    
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ ok: true, playback });
+  } catch (error) {
+    logger.error('Error fetching playback progress', { error: error.message });
+    res.status(500).json({ ok: false, error: 'Failed to fetch playback progress' });
+  }
+}));
+
+// API: Supprimer un élément de progression de lecture (remove playback item)
+app.delete('/api/playback/:id', performanceMiddleware('playback-remove'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    const { id } = req.params;
+    
+    // Validation de l'ID
+    if (!id || !/^\d+$/.test(id)) {
+      return res.status(400).json({ 
+        ok: false, 
+        error: 'Invalid playback ID. Must be a numeric value.' 
+      });
+    }
+    
+    // Appel à l'API Trakt pour supprimer l'élément de progression
+    const result = await del(`/sync/playback/${id}`);
+    
+    res.json({ 
+      ok: true, 
+      message: 'Playback item removed successfully',
+      id: parseInt(id),
+      result
+    });
+  } catch (error) {
+    logger.error('Error removing playback item', { error: error.message, id: req.params.id });
+    res.status(500).json({ ok: false, error: 'Failed to remove playback item' });
   }
 }));
 

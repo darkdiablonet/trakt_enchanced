@@ -18,6 +18,7 @@ export const elements = {
     movies: document.getElementById('tabBtnMovies'),
     shows_unseen: document.getElementById('tabBtnShowsUnseen'),
     movies_unseen: document.getElementById('tabBtnMoviesUnseen'),
+    playback: document.getElementById('tabBtnPlayback'),
     stats: document.getElementById('tabBtnStats'),
   },
   
@@ -27,6 +28,7 @@ export const elements = {
     movies: document.getElementById('panelMovies'),
     shows_unseen: document.getElementById('panelShowsUnseen'),
     movies_unseen: document.getElementById('panelMoviesUnseen'),
+    playback: document.getElementById('panelPlayback'),
     stats: document.getElementById('panelStats'),
   },
   

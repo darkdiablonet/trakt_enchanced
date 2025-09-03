@@ -36,21 +36,29 @@ export function setTab(tab) {
   Object.entries(elements.tabBtns).forEach(([k,b]) => b?.classList.toggle('tab-btn-active', k===tab));
   Object.entries(elements.panels).forEach(([k,p]) => p?.classList.toggle('hidden', k!==tab));
 
-  // Cacher les filtres sur "stats" uniquement
+  // Cacher les filtres sur "stats" et "playback"
   const isStats = (tab === 'stats');
+  const isPlayback = (tab === 'playback');
+  const hideFilters = isStats || isPlayback;
   
   // Masquer le bouton mobile et sa section
-  document.getElementById('mobileFiltersToggle')?.classList.toggle('hidden', isStats);
+  document.getElementById('mobileFiltersToggle')?.classList.toggle('hidden', hideFilters);
   
-  // Forcer le masquage de mobileFilters sur Stats (override de sm:block)
+  // Forcer le masquage de mobileFilters sur Stats et Playback (override de sm:block)
   const mobileFilters = document.getElementById('mobileFilters');
   if (mobileFilters) {
-    mobileFilters.classList.toggle('force-hidden', isStats);
+    mobileFilters.classList.toggle('force-hidden', hideFilters);
   }
 
   if (isStats) {
     // Charger Pro Stats (qui génère aussi la heatmap depuis ses données)
     import('./pro-stats.js').then(({ loadStatsPro }) => loadStatsPro().catch(()=>{}));
+    return;
+  }
+
+  if (isPlayback) {
+    // Charger les données de playback
+    import('./playback.js').then(({ loadPlayback }) => loadPlayback().catch(()=>{}));
     return;
   }
 

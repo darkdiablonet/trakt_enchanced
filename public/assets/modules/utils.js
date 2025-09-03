@@ -27,14 +27,38 @@ export function esc(s) {
 
 export function applyWidth() {
   const full = state.width === 'full';
+  const containers = [
+    document.getElementById('watching-progress'),
+    document.getElementById('flashBox'),
+    document.getElementById('deviceBox')
+  ];
+  
+  console.log('[applyWidth] full:', full, 'containers found:', containers.filter(Boolean).length);
+  
   if (full) {
     elements.mainContainer.classList.remove('max-w-7xl','mx-auto');
     elements.mainContainer.classList.add('w-full','max-w-none');
     elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode('Largeur limitée'));
+    
+    // Appliquer la même logique à tous les conteneurs concernés
+    containers.forEach(container => {
+      if (container) {
+        container.classList.remove('max-w-7xl','mx-auto');
+        container.classList.add('w-full','max-w-none');
+      }
+    });
   } else {
     elements.mainContainer.classList.add('max-w-7xl','mx-auto');
     elements.mainContainer.classList.remove('w-full','max-w-none');
     elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode('Pleine largeur'));
+    
+    // Appliquer la même logique à tous les conteneurs concernés
+    containers.forEach(container => {
+      if (container) {
+        container.classList.add('max-w-7xl','mx-auto');
+        container.classList.remove('w-full','max-w-none');
+      }
+    });
   }
 }
 

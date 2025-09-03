@@ -18,6 +18,7 @@ import './modules/charts.js';
 import './modules/theme-ui.js';
 import './modules/markWatched.js';
 import { initScrollToTop } from './modules/scroll-to-top.js';
+import { initWatchingProgress, stopWatchingProgress, applyWidthToProgressBarExternal } from './modules/watching-progress.js';
 import { initHeatmapInteractions } from './modules/heatmap-interactions.js';
 import { initWatchingDetails } from './modules/watching-details.js';
 
@@ -40,8 +41,17 @@ async function loadAppVersion() {
 elements.toggleWidth?.addEventListener('click', () => { 
   state.width = (state.width==='full') ? 'limited' : 'full'; 
   saveState(); 
-  applyWidth(); 
+  applyWidth();
+  // Appliquer immédiatement le changement à la barre de progression si elle est visible
+  applyWidthToProgressBarExternal();
 });
+
+// Ajouter le bouton playback s'il existe dans le DOM mais pas dans elements
+const playbackBtn = document.getElementById('tabBtnPlayback');
+if (playbackBtn && !elements.tabBtns.playback) {
+  elements.tabBtns.playback = playbackBtn;
+  elements.panels.playback = document.getElementById('panelPlayback');
+}
 
 Object.values(elements.tabBtns).forEach(btn => 
   btn?.addEventListener('click', () => setTab(btn.dataset.tab))
@@ -93,6 +103,7 @@ elements.closeFullModal?.addEventListener('click', () => {
 
 // Initialisation
 loadData();
+applyWidth(); // Appliquer l'état de largeur initial
 
 // Initialize lazy loading and animations
 initializeLazyLoading();
@@ -112,4 +123,5 @@ loadAppVersion();
 initScrollToTop();
 initHeatmapInteractions();
 initWatchingDetails();
+// initWatchingProgress(); // Auto-initialisé par le module lui-même
 
