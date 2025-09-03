@@ -133,5 +133,10 @@ i18n.init().then(() => {
   uiTranslations.translateUI();
 });
 
+// Écouter les mises à jour du bouton largeur
+window.addEventListener('updateWidthButton', () => {
+  applyWidth();
+});
+
 // initWatchingProgress(); // Auto-initialisé par le module lui-même
 

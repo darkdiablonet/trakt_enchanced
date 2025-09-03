@@ -247,6 +247,14 @@ class UITranslations {
   // Method to retranslate UI when language changes
   retranslate() {
     this.translateUI();
+    
+    // Forcer la mise à jour du bouton pleine largeur
+    this.updateWidthButton();
+  }
+
+  updateWidthButton() {
+    // Déclencher un événement pour que utils.js puisse se mettre à jour
+    window.dispatchEvent(new CustomEvent('updateWidthButton'));
   }
 }
 

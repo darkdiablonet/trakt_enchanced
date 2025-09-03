@@ -36,10 +36,18 @@ export function applyWidth() {
   
   console.log('[applyWidth] full:', full, 'containers found:', containers.filter(Boolean).length);
   
+  // Fonction pour obtenir le texte traduit avec fallback
+  const getTranslatedText = (key, fallback) => {
+    if (typeof i18n !== 'undefined' && i18n.t && i18n.translations && Object.keys(i18n.translations).length > 0) {
+      return i18n.t(key);
+    }
+    return fallback;
+  };
+  
   if (full) {
     elements.mainContainer.classList.remove('max-w-7xl','mx-auto');
     elements.mainContainer.classList.add('w-full','max-w-none');
-    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(i18n.t('buttons.limited_width')));
+    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(getTranslatedText('buttons.limited_width', 'Largeur limitée')));
     
     // Appliquer la même logique à tous les conteneurs concernés
     containers.forEach(container => {
@@ -51,7 +59,7 @@ export function applyWidth() {
   } else {
     elements.mainContainer.classList.add('max-w-7xl','mx-auto');
     elements.mainContainer.classList.remove('w-full','max-w-none');
-    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(i18n.t('buttons.full_width')));
+    elements.toggleWidth?.querySelector('span')?.replaceChildren(document.createTextNode(getTranslatedText('buttons.full_width', 'Pleine largeur')));
     
     // Appliquer la même logique à tous les conteneurs concernés
     containers.forEach(container => {
