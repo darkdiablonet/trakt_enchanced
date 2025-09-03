@@ -6,6 +6,7 @@
 import { state, DATA } from './state.js';
 import { elements } from './dom.js';
 import { posterURL, escapeAttr, esc } from './utils.js';
+import i18n from './i18n.js';
 
 export function card(r, kind) {
   const posterRaw = String(r.poster||'');
@@ -29,12 +30,12 @@ export function card(r, kind) {
       // Si missing > 0, cela signifie qu'on a déjà vu certains épisodes
       // On rend le bouton cliquable pour voir les détails
       if (missing > 0 && episodes > 0) {
-        metrics = `<button class="chip chip-clickable js-show-watchings" data-trakt-id="${traktId}" data-show-title="${title}" data-kind="show" title="Voir les épisodes regardés"><i class="fa-solid fa-list-check mr-1"></i>${missing} à voir</button>`;
+        metrics = `<button class="chip chip-clickable js-show-watchings" data-trakt-id="${traktId}" data-show-title="${title}" data-kind="show" title="${i18n.t('cards.view_episodes')}"><i class="fa-solid fa-list-check mr-1"></i>${missing} ${i18n.t('cards.to_watch')}</button>`;
       } else {
-        metrics = `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</span>`;
+        metrics = `<span class="chip"><i class="fa-regular fa-eye-slash mr-1"></i>${i18n.t('cards.not_watched')}</span>`;
       }
     } else {
-      metrics = `<button class="chip chip-clickable js-mark-movie-watched" data-trakt-id="${escapeAttr(r.ids?.trakt || '')}" data-movie-title="${title}" title="Cliquer pour marquer comme vu"><i class="fa-regular fa-eye-slash mr-1"></i>Non vu</button>`;
+      metrics = `<button class="chip chip-clickable js-mark-movie-watched" data-trakt-id="${escapeAttr(r.ids?.trakt || '')}" data-movie-title="${title}" title="${i18n.t('cards.click_to_mark_watched')}"><i class="fa-regular fa-eye-slash mr-1"></i>${i18n.t('cards.not_watched')}</button>`;
     }
   } else if (kind === 'show') {
     const w0 = Number(r.episodes ?? 0);
@@ -45,10 +46,10 @@ export function card(r, kind) {
     const cls = diff ? 'chip--warn' : '';
     const text = hasT ? `${w}/${t}` : `${w}`;
     const traktId = escapeAttr(r.ids?.trakt || '');
-    metrics = `<button class="chip chip-clickable js-show-watchings ${cls}" data-trakt-id="${traktId}" data-show-title="${title}" data-kind="show" title="Voir les détails de visionnage"><i class="fa-solid fa-film mr-1"></i>${text}</button>`;
+    metrics = `<button class="chip chip-clickable js-show-watchings ${cls}" data-trakt-id="${traktId}" data-show-title="${title}" data-kind="show" title="${i18n.t('cards.view_details')}"><i class="fa-solid fa-film mr-1"></i>${text}</button>`;
   } else {
     const traktId = escapeAttr(r.ids?.trakt || '');
-    metrics = `<button class="chip chip-clickable js-show-watchings" data-trakt-id="${traktId}" data-movie-title="${title}" data-kind="movie" title="Voir les détails de visionnage"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</button>`;
+    metrics = `<button class="chip chip-clickable js-show-watchings" data-trakt-id="${traktId}" data-movie-title="${title}" data-kind="movie" title="${i18n.t('cards.view_details')}"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</button>`;
   }
 
   return `
@@ -63,15 +64,15 @@ export function card(r, kind) {
       data-trakt="${escapeAttr(url)}"
       data-tmdb="${escapeAttr(tmdburl)}"
       data-kind="${escapeAttr(kind)}"
-      title="Synopsis">
-      <i class="fa-solid fa-circle-info"></i><span>Synopsis</span>
+      title="${i18n.t('overview.synopsis_tooltip')}">
+      <i class="fa-solid fa-circle-info"></i><span>${i18n.t('overview.synopsis')}</span>
     </button>
     ${ next ? `<button class="badge-next js-mark-watched" 
         data-trakt-id="${escapeAttr(r.next_episode_data?.trakt_id || '')}"
         data-season="${escapeAttr(r.next_episode_data?.season || '')}"
         data-number="${escapeAttr(r.next_episode_data?.number || '')}"
         data-show-title="${escapeAttr(title)}"
-        title="Cliquer pour marquer comme vu">
+        title="${i18n.t('cards.click_to_mark_watched')}">
         <i class="fa-solid fa-forward-step"></i><span>${next}</span>
       </button>` : '' }
     </div>
@@ -120,7 +121,7 @@ export function renderTopTitles(arr) {
     const plays = Number(it.plays||0);
     const pct = Math.round(minutes * 100 / max);
     const icon = it.type === 'show' ? 'fa-tv' : 'fa-film';
-    const typeLbl = it.type === 'show' ? 'Série' : 'Film';
+    const typeLbl = it.type === 'show' ? i18n.t('cards.show') : i18n.t('cards.movie');
     const delay = i * 120; // Plus lent pour top titres plus long
     return `<div class="row animate-fade-in-up" data-delay="${delay}">
       <span class="rank">${i+1}</span>

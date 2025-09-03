@@ -85,7 +85,18 @@
     }
   },
   "overview": {
-    "content_info": "Content information"
+    "content_info": "Content information",
+    "synopsis": "Synopsis",
+    "synopsis_tooltip": "Synopsis"
+  },
+  "cards": {
+    "to_watch": "to watch",
+    "view_episodes": "View watched episodes",
+    "view_details": "View watching details",
+    "show": "Show",
+    "movie": "Movie",
+    "click_to_mark_watched": "Click to mark as watched",
+    "not_watched": "Not watched"
   },
   "time": {
     "minutes": "{count}m",
