@@ -15,7 +15,7 @@ import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection }
 import { serverI18n } from './lib/i18n.js';
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASS, TITLE, reloadEnv } from './lib/config.js';
-import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched, hasValidCredentials, get, del } from './lib/trakt.js';
+import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken } from './lib/trakt.js';
 import { buildPageData, invalidatePageCache, updateShowInCache } from './lib/pageData.js';
 import { makeRefresher, loadDeviceCode, clearDeviceCode, getPublicHost } from './lib/util.js';
 import { dailyCounts } from './lib/graph.js';
@@ -384,6 +384,181 @@ app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (re
   } catch (error) {
     logger.error('Error fetching user stats', { error: error.message });
     res.status(500).json({ ok:false, err:'stats_error' });
+  }
+}));
+
+// API: Get token status
+app.get('/api/token-status', performanceMiddleware('tokenStatus'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    const token = await loadToken();
+    if (!token?.access_token) {
+      return res.json({ 
+        ok: true,
+        hasToken: false,
+        needsAuth: true,
+        message: 'No token found - authentication required'
+      });
+    }
+    
+    // Calculate expiration
+    const now = Math.floor(Date.now() / 1000);
+    const createdAt = token.created_at || now;
+    const expiresIn = token.expires_in || (7776000); // Default 90 days
+    const expiresAt = createdAt + expiresIn;
+    const timeUntilExpiry = expiresAt - now;
+    
+    const status = {
+      ok: true,
+      hasToken: true,
+      hasRefreshToken: !!token.refresh_token,
+      expiresIn: timeUntilExpiry,
+      expiresInHours: Math.floor(timeUntilExpiry / 3600),
+      expiresInDays: Math.floor(timeUntilExpiry / 86400),
+      needsRefresh: timeUntilExpiry < 86400, // Less than 24 hours
+      expired: timeUntilExpiry <= 0
+    };
+    
+    res.json(status);
+  } catch (error) {
+    logger.error('Error checking token status', { error: error.message });
+    res.status(500).json({ ok: false, err: 'status_error', message: error.message });
+  }
+}));
+
+// API: Refresh Trakt token
+app.post('/api/refresh-token', performanceMiddleware('refreshToken'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    // Load current token
+    const currentToken = await loadToken();
+    if (!currentToken?.refresh_token) {
+      return res.status(400).json({ 
+        ok: false, 
+        error: 'No refresh token available',
+        message: 'Please re-authenticate with Trakt'
+      });
+    }
+    
+    // Use ensureValidToken which handles refresh automatically
+    const newToken = await ensureValidToken();
+    
+    if (newToken?.access_token) {
+      // Save the new token
+      await saveToken(newToken);
+      
+      // Update session if exists
+      if (req.session) {
+        req.session.trakt = newToken;
+      }
+      
+      res.json({ 
+        ok: true, 
+        message: 'Token refreshed successfully',
+        expires_in: newToken.expires_in,
+        created_at: newToken.created_at
+      });
+    } else {
+      res.status(500).json({ 
+        ok: false, 
+        error: 'Failed to refresh token',
+        details: newToken
+      });
+    }
+  } catch (error) {
+    logger.error('Error refreshing token', { error: error.message });
+    res.status(500).json({ ok: false, err: 'refresh_error', message: error.message });
+  }
+}));
+
+// API: Get last activities from Trakt
+app.get('/api/last-activities', performanceMiddleware('lastActivities'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    // Call the Trakt API to get last activities
+    const activities = await getLastActivities();
+    
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ 
+      ok: true, 
+      activities,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error fetching last activities', { error: error.message });
+    res.status(500).json({ ok: false, err: 'activities_error', message: error.message });
+  }
+}));
+
+// API: Get watch history from Trakt
+app.get('/api/history', performanceMiddleware('history'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+    
+    // Get query parameters
+    const { 
+      type = null,        // movies, shows, seasons, episodes (null = all)
+      item_id = null,     // Trakt ID, Trakt slug, or IMDB ID
+      start_at = null,    // ISO 8601 date-time
+      end_at = null,      // ISO 8601 date-time  
+      page = 1,           // Page number
+      limit = 10          // Results per page (max 100)
+    } = req.query;
+    
+    // Call the Trakt API using the dedicated function
+    const history = await getHistory({
+      type,
+      itemId: item_id,
+      startAt: start_at,
+      endAt: end_at,
+      page,
+      limit
+    });
+    
+    // Get pagination info
+    const paginationInfo = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      itemCount: history.length
+    };
+    
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ 
+      ok: true, 
+      history,
+      pagination: paginationInfo,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error fetching history', { error: error.message });
+    res.status(500).json({ ok: false, err: 'history_error', message: error.message });
   }
 }));
 
