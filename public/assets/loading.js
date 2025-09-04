@@ -43,7 +43,43 @@ function updateProgress(percent) {
   if (progressPercent) progressPercent.textContent = `${Math.round(percent)}%`;
 }
 
-function startLoading() {
+async function startLoading() {
+  // PRE-CHARGEMENT OPTIMISÉ : Récupérer d'abord les données watched en un seul appel
+  try {
+    updateStep('progress', 'active', 'Pré-chargement optimisé des données watchées...', 5);
+    
+    // Pré-charger shows et movies en parallèle
+    const [showsResponse, moviesResponse] = await Promise.all([
+      fetch('/api/watched/shows'),
+      fetch('/api/watched/movies')
+    ]);
+    
+    let totalItems = 0;
+    if (showsResponse.ok) {
+      const showsData = await showsResponse.json();
+      totalItems += showsData.length;
+      console.log(`[loading] Pre-chargement shows: ${showsData.length} shows récupérés`);
+    }
+    
+    if (moviesResponse.ok) {
+      const moviesData = await moviesResponse.json();
+      totalItems += moviesData.length;
+      console.log(`[loading] Pre-chargement movies: ${moviesData.length} movies récupérés`);
+    }
+    
+    if (totalItems > 0) {
+      console.log(`[loading] Pre-chargement optimisé réussi: ${totalItems} éléments total`);
+      updateStep('progress', 'active', `Données pré-chargées: ${totalItems} éléments`, 15);
+    } else {
+      console.warn('[loading] Pre-chargement échoué, fallback sur méthode classique');
+      updateStep('progress', 'active', 'Fallback sur méthode classique...', 10);
+    }
+  } catch (error) {
+    console.warn('[loading] Erreur pre-chargement:', error);
+    updateStep('progress', 'active', 'Chargement des données...', 10);
+  }
+  
+  // Maintenant démarrer le processus SSE normal qui bénéficiera du cache
   eventSource = new EventSource('/api/loading-progress');
   
   eventSource.onmessage = function(event) {

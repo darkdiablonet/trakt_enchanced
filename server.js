@@ -15,7 +15,7 @@ import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection }
 import { serverI18n } from './lib/i18n.js';
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASS, TITLE, reloadEnv } from './lib/config.js';
-import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken } from './lib/trakt.js';
+import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken } from './lib/trakt.js';
 import { buildPageData, invalidatePageCache, updateShowInCache } from './lib/pageData.js';
 import { makeRefresher, loadDeviceCode, clearDeviceCode, getPublicHost } from './lib/util.js';
 import { dailyCounts } from './lib/graph.js';
@@ -30,6 +30,7 @@ import { renderTemplate } from './lib/template.js';
 import { checkEnvFile, generateEnvFile } from './lib/setup.js';
 import { addProgressConnection, sendProgress, sendCompletion } from './lib/progressTracker.js';
 import { startActivityMonitor, stopActivityMonitor, getMonitorStatus } from './lib/activityMonitor.js';
+import { getRateLimitStats } from './lib/apiRateLimiter.js';
 
 dotenv.config();
 
@@ -403,6 +404,9 @@ app.get('/api/monitor-status', performanceMiddleware('monitorStatus'), asyncHand
   }
 }));
 
+// API: Get rate limit stats
+app.get('/api/rate-limits', performanceMiddleware('rateLimits'), getRateLimitStats);
+
 // API: Check if rebuild is in progress
 app.get('/api/rebuild-status', performanceMiddleware('rebuildStatus'), asyncHandler(async (req, res) => {
   try {
@@ -722,6 +726,57 @@ app.post('/api/mark-watched', csrfProtection, asyncHandler(async (req, res) => {
   } catch (error) {
     logger.error('Error marking episode as watched', { error: error.message, trakt_id, season, number });
     return res.status(500).json({ ok: false, error: 'Internal server error' });
+  }
+}));
+
+// Endpoint pour retirer un épisode de l'historique
+app.post('/api/unmark-watched', csrfProtection, asyncHandler(async (req, res) => {
+  const { trakt_id, season, number } = req.body;
+  
+  if (!trakt_id || !season || !number) {
+    return res.status(400).json({ ok: false, error: 'Missing required fields: trakt_id, season, number' });
+  }
+  
+  try {
+    const tok = await loadToken();
+    if (!tok?.access_token) {
+      return res.status(401).json({ ok: false, error: 'No Trakt token available' });
+    }
+    
+    const result = await removeEpisodeFromHistory({ trakt_id, season, number });
+    
+    if (result?.deleted?.episodes > 0) {
+      logger.info('Episode removed from history', { trakt_id, season, number });
+      
+      // Mettre à jour le cache pour cette série
+      await updateShowInCache(trakt_id, traktHeaders(tok.access_token));
+      
+      return res.json({ ok: true, message: 'Episode removed from history successfully' });
+    } else {
+      logger.warn('Failed to remove episode from history', { trakt_id, season, number, result });
+      return res.json({ ok: false, error: 'Failed to remove episode from history' });
+    }
+  } catch (error) {
+    logger.error('Error removing episode from history', { error: error.message, trakt_id, season, number });
+    return res.status(500).json({ ok: false, error: 'Internal server error' });
+  }
+}));
+
+// Endpoint pour récupérer les shows/movies watched
+app.get('/api/watched/:type', asyncHandler(async (req, res) => {
+  const { type } = req.params;
+  const validTypes = ['shows', 'movies'];
+  
+  if (!validTypes.includes(type)) {
+    return res.status(400).json({ error: 'Invalid type. Use "shows" or "movies"' });
+  }
+  
+  try {
+    const data = await get(`/sync/watched/${type}`);
+    res.json(data);
+  } catch (error) {
+    logger.error('Error fetching watched data', { error: error.message, type });
+    res.status(500).json({ error: 'Failed to fetch watched data' });
   }
 }));
 
@@ -1057,9 +1112,9 @@ app.listen(PORT, () => {
   const JITTER = Math.floor(Math.random() * 5000); // petit jitter optionnel
   refresher.schedule({ intervalMs: EVERY, initialDelayMs: JITTER });
 
-  // Start activity monitor (30 seconds interval)
+  // Start activity monitor (5 minutes interval par défaut)
   if (hasValidCredentials()) {
-    const MONITOR_INTERVAL = Number(process.env.ACTIVITY_MONITOR_INTERVAL_MS || 30000);
+    const MONITOR_INTERVAL = Number(process.env.ACTIVITY_MONITOR_INTERVAL_MS || 300000); // 5 minutes par défaut
     startActivityMonitor(MONITOR_INTERVAL);
     console.log(`[monitor] Activity monitor started (checking every ${MONITOR_INTERVAL / 1000}s)`);
   } else {

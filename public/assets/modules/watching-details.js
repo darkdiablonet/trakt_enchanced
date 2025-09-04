@@ -94,7 +94,7 @@ function generateMovieDetailsHTML(movieData) {
  * @param {Object} showData - Données de la série
  * @returns {string} HTML des détails
  */
-function generateShowDetailsHTML(showData) {
+function generateShowDetailsHTML(showData, traktId) {
   if (!showData.watchings || showData.watchings.length === 0) {
     return '<div class="text-center text-muted py-8">Aucun épisode regardé trouvé</div>';
   }
@@ -111,8 +111,17 @@ function generateShowDetailsHTML(showData) {
               S${String(watching.season_number).padStart(2, '0')}E${String(watching.episode_number).padStart(2, '0')}
             </div>
           </div>
-          <div class="text-xs text-muted text-right">
-            🗓️ ${datetime}
+          <div class="flex items-center gap-2">
+            <div class="text-xs text-muted text-right">
+              🗓️ ${datetime}
+            </div>
+            <button class="js-unmark-episode text-red-400 hover:text-red-300 transition-colors" 
+                    data-trakt-id="${traktId}" 
+                    data-season="${watching.season_number}" 
+                    data-number="${watching.episode_number}"
+                    title="${i18n.t('actions.remove_from_history') || 'Retirer de l\'historique'}">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -126,10 +135,10 @@ function generateShowDetailsHTML(showData) {
  * @param {string} kind - Type: 'movie' ou 'show'
  * @param {Object} data - Données de visionnage
  */
-function showWatchingDetailsModal(title, kind, data) {
+function showWatchingDetailsModal(title, kind, data, traktId) {
   const detailsHTML = kind === 'movie' 
     ? generateMovieDetailsHTML(data)
-    : generateShowDetailsHTML(data);
+    : generateShowDetailsHTML(data, traktId);
   
   const kindLabel = kind === 'movie' ? 'Film' : 'Série';
   const count = data.watchings?.length || 0;
@@ -229,7 +238,7 @@ async function handleWatchingDetailsClick(event) {
     }
     
     // Afficher la modal
-    showWatchingDetailsModal(title, kind, data);
+    showWatchingDetailsModal(title, kind, data, traktId);
     
   } catch (err) {
     console.error('Erreur lors du clic sur les détails:', err);
