@@ -32,6 +32,7 @@ import { initScrollToTop } from './modules/scroll-to-top.js';
 import { initWatchingProgress, stopWatchingProgress, applyWidthToProgressBarExternal } from './modules/watching-progress.js';
 import { initHeatmapInteractions } from './modules/heatmap-interactions.js';
 import { initWatchingDetails } from './modules/watching-details.js';
+import { startLiveUpdates } from './modules/live-updates.js';
 
 // Initialisation principale de l'application
 async function initializeApp() {
@@ -65,6 +66,12 @@ async function initializeApp() {
     uiTranslations.translateSortOptions();
     console.log('[App] Sort options re-translated after data load');
   }, 100);
+  
+  // Démarrer les mises à jour en temps réel
+  setTimeout(() => {
+    startLiveUpdates();
+    console.log('[App] Live updates started');
+  }, 2000); // Attendre 2s après le chargement initial
 }
 
 // Charger la version de l'application

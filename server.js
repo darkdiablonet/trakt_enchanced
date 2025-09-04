@@ -29,6 +29,7 @@ import { getMovieWatchingDetails, getShowWatchingDetails } from './lib/watchingD
 import { renderTemplate } from './lib/template.js';
 import { checkEnvFile, generateEnvFile } from './lib/setup.js';
 import { addProgressConnection, sendProgress, sendCompletion } from './lib/progressTracker.js';
+import { startActivityMonitor, stopActivityMonitor, getMonitorStatus } from './lib/activityMonitor.js';
 
 dotenv.config();
 
@@ -384,6 +385,57 @@ app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (re
   } catch (error) {
     logger.error('Error fetching user stats', { error: error.message });
     res.status(500).json({ ok:false, err:'stats_error' });
+  }
+}));
+
+// API: Get monitor status
+app.get('/api/monitor-status', performanceMiddleware('monitorStatus'), asyncHandler(async (req, res) => {
+  try {
+    const status = getMonitorStatus();
+    res.json({ 
+      ok: true, 
+      ...status,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error getting monitor status', { error: error.message });
+    res.status(500).json({ ok: false, err: 'monitor_error', message: error.message });
+  }
+}));
+
+// API: Check if rebuild is in progress
+app.get('/api/rebuild-status', performanceMiddleware('rebuildStatus'), asyncHandler(async (req, res) => {
+  try {
+    const status = getMonitorStatus();
+    res.json({ 
+      ok: true, 
+      isRebuilding: status.isUpdating || false,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error getting rebuild status', { error: error.message });
+    res.status(500).json({ ok: false, err: 'rebuild_status_error', message: error.message });
+  }
+}));
+
+// API: Control activity monitor
+app.post('/api/monitor/:action', performanceMiddleware('monitorControl'), asyncHandler(async (req, res) => {
+  try {
+    const { action } = req.params;
+    
+    if (action === 'start') {
+      const interval = Number(req.body.interval || 30000);
+      startActivityMonitor(interval);
+      res.json({ ok: true, message: 'Monitor started', interval });
+    } else if (action === 'stop') {
+      stopActivityMonitor();
+      res.json({ ok: true, message: 'Monitor stopped' });
+    } else {
+      res.status(400).json({ ok: false, error: 'Invalid action. Use start or stop' });
+    }
+  } catch (error) {
+    logger.error('Error controlling monitor', { error: error.message });
+    res.status(500).json({ ok: false, err: 'monitor_control_error', message: error.message });
   }
 }));
 
@@ -1005,10 +1057,32 @@ app.listen(PORT, () => {
   const JITTER = Math.floor(Math.random() * 5000); // petit jitter optionnel
   refresher.schedule({ intervalMs: EVERY, initialDelayMs: JITTER });
 
+  // Start activity monitor (30 seconds interval)
+  if (hasValidCredentials()) {
+    const MONITOR_INTERVAL = Number(process.env.ACTIVITY_MONITOR_INTERVAL_MS || 30000);
+    startActivityMonitor(MONITOR_INTERVAL);
+    console.log(`[monitor] Activity monitor started (checking every ${MONITOR_INTERVAL / 1000}s)`);
+  } else {
+    console.log('[monitor] Activity monitor not started (missing Trakt credentials)');
+  }
+
   // (optionnel) endpoint manuel pour tester en live
   app.post('/_debug/refresh', asyncHandler(async (_req, res) => {
     logger.info('Manual refresh triggered via debug endpoint');
     await refresher.refreshNow('manual');
     res.json({ ok: true, timestamp: new Date().toISOString() });
   }));
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('[server] SIGTERM received, shutting down gracefully...');
+  stopActivityMonitor();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('[server] SIGINT received, shutting down gracefully...');
+  stopActivityMonitor();
+  process.exit(0);
 });
