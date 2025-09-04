@@ -46,6 +46,13 @@ export async function loadData() {
     return;
   }
   
+  // Vérifier si le token utilisateur est corrompu et rediriger vers auth
+  if (js.needsAuth) {
+    console.log('[data] User token corrupted or missing, redirecting to authentication');
+    window.location.href = '/auth';
+    return;
+  }
+  
   Object.assign(DATA, js);
 
   // Stats cards removed - no longer rendering stats
