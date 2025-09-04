@@ -50,3 +50,11 @@ docs/
 
 .specstory
 .claude
+
+# Sensitive data that shouldn't be in Docker images
+data/.secrets/
+data/.cache_*
+data/*.json
+
+# Test files
+test-*.js

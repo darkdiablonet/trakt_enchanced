@@ -33,6 +33,9 @@ RUN set -eux; \
 # copy full repo
 COPY . .
 
+# Clean any existing tokens, caches, or sensitive data that shouldn't be in the image
+RUN rm -rf data/.secrets/ data/.cache_* data/*.json || true
+
 # build assets (tailwind + fontawesome)
 RUN npm run build
 
