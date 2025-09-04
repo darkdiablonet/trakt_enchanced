@@ -258,7 +258,6 @@ let lastChartsData = {
 
 // Re-créer les graphiques quand la langue change
 window.addEventListener('languageChanged', () => {
-  console.log('[Charts] Language changed, recreating charts with new labels...');
   
   // Re-créer les graphiques avec les nouvelles traductions si on a les données
   if (lastChartsData.hours !== null) {
@@ -271,5 +270,4 @@ window.addEventListener('languageChanged', () => {
     createMonthsChart(lastChartsData.months);
   }
   
-  console.log('[Charts] Charts recreated with new language');
 });

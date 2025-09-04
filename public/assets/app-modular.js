@@ -36,7 +36,6 @@ import { startLiveUpdates } from './modules/live-updates.js';
 
 // Initialisation principale de l'application
 async function initializeApp() {
-  console.log('[App] Starting application initialization...');
   
   // Attendre que i18n soit complètement initialisé
   await new Promise((resolve) => {
@@ -47,7 +46,6 @@ async function initializeApp() {
     }
   });
   
-  console.log('[App] i18n initialized, applying initial translations...');
   
   // Appliquer immédiatement les traductions UI
   uiTranslations.translateUI();
@@ -55,22 +53,18 @@ async function initializeApp() {
   // Appliquer la largeur avec traductions
   applyWidth();
   
-  console.log('[App] Initial translations applied');
   
   // Maintenant charger les données avec i18n pleinement initialisé
   await loadData();
-  console.log('[App] Data loaded with translations');
   
   // S'assurer que les options de tri sont traduites après le chargement des données
   setTimeout(() => {
     uiTranslations.translateSortOptions();
-    console.log('[App] Sort options re-translated after data load');
   }, 100);
   
   // Démarrer les mises à jour en temps réel
   setTimeout(() => {
     startLiveUpdates();
-    console.log('[App] Live updates started');
   }, 2000); // Attendre 2s après le chargement initial
 }
 
@@ -90,7 +84,6 @@ async function loadAppVersion() {
 
 // Démarrer l'initialisation
 initializeApp().then(() => {
-  console.log('[App] App initialization completed');
 }).catch(console.error);
 
 

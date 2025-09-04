@@ -19,7 +19,6 @@ class I18nLite {
       await this.loadTranslations(this.fallbackLang);
     }
     
-    console.log(`[i18n-lite] Initialized with language: ${this.currentLang}`);
   }
 
   detectLanguage() {
@@ -95,7 +94,6 @@ class I18nLite {
     // Update page title
     document.title = this.t(`${section}.page_title`);
     
-    console.log(`[i18n-lite] Page language updated for: ${section}`);
   }
 
   getCurrentLanguage() {
@@ -119,7 +117,6 @@ class I18nLite {
     // Update HTML lang attribute
     document.documentElement.lang = lang;
     
-    console.log(`[i18n-lite] Language changed to: ${lang}`);
     return true;
   }
 }

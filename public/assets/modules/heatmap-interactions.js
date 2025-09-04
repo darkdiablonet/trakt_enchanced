@@ -253,7 +253,6 @@ export function initHeatmapInteractions() {
     }
   });
   
-  console.log('Interactions heatmap initialisées');
 }
 
 /**

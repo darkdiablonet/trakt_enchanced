@@ -41,16 +41,25 @@ export async function loadData() {
   
   // Vérifier si la configuration est manquante et rediriger vers setup
   if (js.needsSetup) {
-    console.log('[data] Missing configuration, redirecting to setup');
     window.location.href = '/setup';
     return;
   }
   
-  // Vérifier si le token utilisateur est corrompu et rediriger vers auth
+  // Vérifier si le token utilisateur est corrompu - afficher deviceBox pour reconnexion
   if (js.needsAuth) {
-    console.log('[data] User token corrupted or missing, redirecting to authentication');
-    window.location.href = '/auth';
-    return;
+    // Masquer le conteneur principal quand deviceBox est affichée
+    const mainContainer = document.getElementById('mainContainer');
+    if (mainContainer) {
+      mainContainer.style.display = 'none';
+    }
+    // Continue le traitement normal pour afficher deviceBox si devicePrompt est disponible
+    // La logique de deviceBox ci-dessous s'occupera de l'affichage
+  } else {
+    // S'assurer que le conteneur principal est visible quand pas d'authentification requise
+    const mainContainer = document.getElementById('mainContainer');
+    if (mainContainer) {
+      mainContainer.style.display = '';
+    }
   }
   
   Object.assign(DATA, js);
@@ -115,7 +124,6 @@ export async function loadData() {
 
 // Re-render device prompt when language changes
 window.addEventListener('languageChanged', () => {
-  console.log('[Data] Language changed, re-rendering device prompt...');
   
   if (lastDevicePromptData && elements.deviceBox && !elements.deviceBox.classList.contains('hidden')) {
     elements.deviceBox.innerHTML = renderDevicePrompt(lastDevicePromptData);
@@ -139,6 +147,5 @@ window.addEventListener('languageChanged', () => {
       }
     });
     
-    console.log('[Data] Device prompt re-rendered with new language');
   }
 });

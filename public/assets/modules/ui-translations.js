@@ -66,7 +66,6 @@ class UITranslations {
     // Translate aria-labels
     this.translateAriaLabels();
 
-    console.log('[UITranslations] UI translated to:', i18n.getCurrentLanguage());
   }
 
   translateDataI18n() {
@@ -168,9 +167,7 @@ class UITranslations {
   translateSortOptions() {
     const sortSelect = document.getElementById('sortActive');
     if (sortSelect) {
-      console.log('[UITranslations] Translating sort options, current language:', i18n.getCurrentLanguage());
       const options = sortSelect.querySelectorAll('option');
-      console.log('[UITranslations] Found', options.length, 'sort options');
       
       options.forEach((option, index) => {
         const value = option.value;
@@ -216,11 +213,9 @@ class UITranslations {
           const oldText = option.textContent;
           const newText = i18n.t(translationKey);
           option.textContent = newText;
-          console.log(`[UITranslations] Option ${index}: "${oldText}" → "${newText}"`);
         }
       });
     } else {
-      console.log('[UITranslations] Sort select not found!');
     }
   }
 
@@ -278,13 +273,11 @@ const uiTranslations = new UITranslations();
 
 // Listen for i18n initialization to apply translations immediately
 window.addEventListener('i18nInitialized', () => {
-  console.log('[UITranslations] i18n initialized, applying initial translations');
   uiTranslations.translateUI();
 });
 
 // Listen for language changes
 window.addEventListener('languageChanged', () => {
-  console.log('[UITranslations] Language changed, retranslating');
   uiTranslations.retranslate();
 });
 

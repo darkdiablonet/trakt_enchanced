@@ -79,11 +79,8 @@ class LanguageSelector {
   }
 
   async changeLanguage(lang) {
-    console.log(`[LanguageSelector] Attempting to change language to ${lang}`);
     const success = await i18n.changeLanguage(lang);
     if (success) {
-      console.log(`[LanguageSelector] Successfully changed to ${lang}`);
-      console.log(`[LanguageSelector] Language change complete, events should fire automatically`);
       // Ne pas recharger la page - laissons les événements faire leur travail
     } else {
       console.error(`[LanguageSelector] Failed to change to ${lang}`);

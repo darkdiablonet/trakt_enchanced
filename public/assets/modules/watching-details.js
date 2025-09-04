@@ -243,7 +243,6 @@ export function initWatchingDetails() {
   // Délégation d'événement sur le document
   document.addEventListener('click', handleWatchingDetailsClick);
   
-  console.log('Détails de visionnage initialisés');
 }
 
 /**

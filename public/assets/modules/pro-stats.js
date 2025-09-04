@@ -140,11 +140,9 @@ let lastProStatsData = null;
 
 // Rendre les stats pro quand la langue change
 window.addEventListener('languageChanged', () => {
-  console.log('[ProStats] Language changed, re-rendering pro stats...');
   
   // Re-render les stats pro avec les nouvelles traductions si on a les données
   if (lastProStatsData) {
     renderStatsPro(lastProStatsData);
-    console.log('[ProStats] Pro stats re-rendered with new language');
   }
 });

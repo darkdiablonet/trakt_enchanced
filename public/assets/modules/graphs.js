@@ -259,7 +259,6 @@ export function saveLastHeatmapData(data, options) {
 
 // Re-render la heatmap quand la langue change
 window.addEventListener('languageChanged', () => {
-  console.log('[Graphs] Language changed, re-rendering graphs...');
   
   // Re-render la heatmap avec les nouvelles traductions si on a les données
   if (lastHeatmapData && lastHeatmapOptions) {
@@ -267,7 +266,6 @@ window.addEventListener('languageChanged', () => {
     if (heatmapContainer) {
       const svg = renderHeatmapSVG(lastHeatmapData, lastHeatmapOptions);
       heatmapContainer.innerHTML = svg;
-      console.log('[Graphs] Heatmap re-rendered with new language');
     }
   }
 });

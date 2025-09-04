@@ -12,8 +12,6 @@ class ThemeUI {
   }
 
   init() {
-    console.log('[ThemeUI] Initializing...');
-    console.log('[ThemeUI] Document readyState:', document.readyState);
     
     // Attendre que le DOM soit complètement chargé ET que les éléments soient présents
     let attempts = 0;
@@ -24,11 +22,9 @@ class ThemeUI {
       let toggle = document.getElementById('themeToggle');
       let icon = document.getElementById('themeIcon');
       
-      console.log(`[ThemeUI] Attempt ${attempts}: themeToggle=${!!toggle}, themeIcon=${!!icon}`);
       
       // Si pas trouvé après 10 tentatives, on le crée nous-mêmes !
       if (!toggle && attempts > 10) {
-        console.log('[ThemeUI] Creating button manually...');
         const header = document.querySelector('.app-header .flex.items-center.gap-2');
         if (header) {
           toggle = document.createElement('button');
@@ -43,15 +39,12 @@ class ThemeUI {
           toggle.appendChild(icon);
           header.insertBefore(toggle, header.firstChild);
           
-          console.log('[ThemeUI] Button created manually!');
         }
       }
       
       if (toggle && icon) {
-        console.log('[ThemeUI] Elements found, setting up...');
         this.setupUI();
       } else if (attempts < maxAttempts) {
-        console.log(`[ThemeUI] Elements not ready yet, retrying in 100ms... (${attempts}/${maxAttempts})`);
         setTimeout(trySetup, 100);
       } else {
         console.error('[ThemeUI] Gave up after', maxAttempts, 'attempts. Elements not found.');
@@ -60,23 +53,18 @@ class ThemeUI {
     
     // Démarrer la tentative
     if (document.readyState === 'loading') {
-      console.log('[ThemeUI] DOM still loading, waiting for DOMContentLoaded...');
       document.addEventListener('DOMContentLoaded', trySetup);
     } else {
-      console.log('[ThemeUI] DOM loaded, trying setup...');
       trySetup();
     }
   }
 
   setupUI() {
-    console.log('[ThemeUI] Setting up UI...');
     
     // Les éléments ont déjà été vérifiés dans trySetup(), on peut les récupérer
     this.themeToggle = document.getElementById('themeToggle');
     this.themeIcon = document.getElementById('themeIcon');
 
-    console.log('[ThemeUI] themeToggle found:', !!this.themeToggle, this.themeToggle);
-    console.log('[ThemeUI] themeIcon found:', !!this.themeIcon, this.themeIcon);
 
     // Configurer les événements
     this.setupEvents();
@@ -84,15 +72,12 @@ class ThemeUI {
     // Mettre à jour l'état initial
     this.updateIcon();
     
-    console.log('[ThemeUI] Setup complete!');
   }
 
   setupEvents() {
-    console.log('[ThemeUI] Setting up events...');
     
     // Cycle entre les thèmes au clic
     this.themeToggle.addEventListener('click', (e) => {
-      console.log('[ThemeUI] Button clicked!');
       e.preventDefault();
       e.stopPropagation();
       this.cycleTheme();
@@ -100,15 +85,12 @@ class ThemeUI {
 
     // Écouter les changements de thème
     window.addEventListener('themechange', (e) => {
-      console.log('[ThemeUI] Theme changed event received');
       this.updateIcon();
     });
     
-    console.log('[ThemeUI] Events set up complete!');
   }
 
   cycleTheme() {
-    console.log('[ThemeUI] Cycling theme...');
     
     const current = themes.getCurrentTheme();
     let next;
@@ -120,7 +102,6 @@ class ThemeUI {
       default: next = 'auto';
     }
     
-    console.log('[ThemeUI] Current:', current, '-> Next:', next);
     themes.setTheme(next);
   }
 
@@ -130,7 +111,6 @@ class ThemeUI {
     const currentTheme = themes.getCurrentTheme();
     const icon = this.getThemeIcon(currentTheme);
     
-    console.log('[ThemeUI] Updating icon for theme:', currentTheme, 'icon:', icon);
     
     // Supprimer toutes les classes d'icônes précédentes
     this.themeIcon.className = 'fa-solid ' + icon;
@@ -147,6 +127,5 @@ class ThemeUI {
 }
 
 // Créer et exporter l'instance
-console.log('[ThemeUI] Creating ThemeUI instance...');
 export const themeUI = new ThemeUI();
 export default themeUI;

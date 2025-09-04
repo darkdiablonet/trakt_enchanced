@@ -22,7 +22,6 @@ class I18n {
       await this.loadTranslations(this.fallbackLang);
     }
     
-    console.log(`[i18n] Initialized with language: ${this.currentLang}`);
     
     // Déclencher l'événement d'initialisation
     window.dispatchEvent(new CustomEvent('i18nInitialized', { 
@@ -57,13 +56,11 @@ class I18n {
       }
       
       this.translations[lang] = await response.json();
-      console.log(`[i18n] Loaded translations for: ${lang}`);
     } catch (error) {
       console.error(`[i18n] Error loading ${lang} translations:`, error);
       
       // If it's not the fallback language, try to load fallback
       if (lang !== this.fallbackLang && !this.translations[this.fallbackLang]) {
-        console.log(`[i18n] Falling back to ${this.fallbackLang}`);
         this.currentLang = this.fallbackLang;
       }
     }
@@ -86,7 +83,6 @@ class I18n {
     // Update HTML lang attribute
     document.documentElement.lang = lang;
     
-    console.log(`[i18n] Language changed to: ${lang}`);
     
     // Dispatch custom event for components to re-render
     window.dispatchEvent(new CustomEvent('languageChanged', { 

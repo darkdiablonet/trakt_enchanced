@@ -34,20 +34,14 @@ export function applyWidth() {
     document.getElementById('deviceBox')
   ];
   
-  console.log('[applyWidth] full:', full, 'containers found:', containers.filter(Boolean).length);
   
   // Fonction pour obtenir le texte traduit avec fallback
   const getTranslatedText = (key, fallback) => {
-    console.log('[Utils] applyWidth called, checking i18n for key:', key);
-    console.log('[Utils] typeof i18n:', typeof i18n);
-    console.log('[Utils] i18n available:', typeof i18n !== 'undefined' && i18n.t && i18n.translations && Object.keys(i18n.translations).length > 0);
     
     if (typeof i18n !== 'undefined' && i18n.t && i18n.translations && Object.keys(i18n.translations).length > 0) {
       const translated = i18n.t(key);
-      console.log('[Utils] Using translation for', key, ':', translated);
       return translated;
     }
-    console.log('[Utils] Using fallback for', key, ':', fallback);
     return fallback;
   };
   
@@ -94,12 +88,10 @@ export function humanMinutes(min) {
 
 // Écouter les changements de langue pour mettre à jour le bouton largeur
 window.addEventListener('languageChanged', () => {
-  console.log('[Utils] Language changed, updating width button');
   applyWidth(); // Re-applique la largeur avec les nouvelles traductions
 });
 
 // Écouter l'événement personnalisé pour mettre à jour le bouton largeur
 window.addEventListener('updateWidthButton', () => {
-  console.log('[Utils] updateWidthButton event received');
   applyWidth();
 });

@@ -20,7 +20,6 @@ const MIN_UPDATE_INTERVAL = 30000; // Minimum 30s between data reloads
  */
 async function checkForUpdates() {
   if (isUpdating) {
-    console.log('[live-updates] Update already in progress, skipping...');
     return;
   }
 
@@ -32,7 +31,6 @@ async function checkForUpdates() {
     const monitorData = await response.json();
     
     if (!monitorData.ok || !monitorData.running) {
-      console.log('[live-updates] Monitor not running');
       return;
     }
 
@@ -51,10 +49,8 @@ async function checkForUpdates() {
 
     // If we have a previous timestamp and it's different, reload data
     if (lastActivityTimestamp !== null && currentWatchedAt > lastActivityTimestamp) {
-      console.log('[live-updates] New watch activity detected, updating data...');
       await updateData();
     } else if (Math.random() < 0.05) { // Log status occasionally (5% chance)
-      console.log('[live-updates] No new activity detected');
     }
     
     lastActivityTimestamp = currentWatchedAt;
@@ -77,11 +73,9 @@ async function waitForRebuildComplete(maxWaitTime = 15000) {
       
       const status = await response.json();
       if (!status.isRebuilding) {
-        console.log('[live-updates] Server rebuild completed, proceeding with client update');
         return true;
       }
       
-      console.log('[live-updates] Waiting for server rebuild to complete...');
       await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
       
     } catch (error) {
@@ -90,7 +84,6 @@ async function waitForRebuildComplete(maxWaitTime = 15000) {
     }
   }
   
-  console.log('[live-updates] Proceeding with update (rebuild wait timeout or error)');
   return false;
 }
 
@@ -103,7 +96,6 @@ async function updateData() {
   isUpdating = true;
   
   try {
-    console.log('[live-updates] New activity detected, waiting for server rebuild...');
     
     // Show updating notification
     showUpdatingNotification();
@@ -111,7 +103,6 @@ async function updateData() {
     // Wait for server rebuild to complete
     await waitForRebuildComplete();
     
-    console.log('[live-updates] Refreshing page data...');
     const startTime = Date.now();
     
     // Reload data
@@ -124,7 +115,6 @@ async function updateData() {
     showUpdateNotification();
     
     const duration = Date.now() - startTime;
-    console.log(`[live-updates] Data refreshed in ${duration}ms`);
     
   } catch (error) {
     console.error('[live-updates] Error updating data:', error.message);
@@ -196,11 +186,9 @@ function showUpdateNotification() {
  */
 export function startLiveUpdates() {
   if (updateInterval) {
-    console.log('[live-updates] Live updates already started');
     return;
   }
   
-  console.log(`[live-updates] Starting live updates (checking every ${CHECK_INTERVAL/1000}s)`);
   
   // Initial check
   checkForUpdates();
@@ -216,7 +204,6 @@ export function stopLiveUpdates() {
   if (updateInterval) {
     clearInterval(updateInterval);
     updateInterval = null;
-    console.log('[live-updates] Live updates stopped');
   }
 }
 
@@ -233,6 +220,5 @@ export function getLiveUpdatesStatus() {
 
 // Manual update function for debugging
 export function forceUpdate() {
-  console.log('[live-updates] Force updating...');
   updateData();
 }

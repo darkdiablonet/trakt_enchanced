@@ -6,7 +6,6 @@
 import { escapeAttr } from './utils.js';
 
 export async function loadPlayback() {
-  console.log('[loadPlayback] Loading playback progress...');
   
   const container = document.getElementById('playbackContainer');
   if (!container) {
@@ -211,7 +210,6 @@ async function removePlaybackItem(id) {
       throw new Error(result.error || 'Failed to remove playback item');
     }
     
-    console.log('[removePlaybackItem] Item removed successfully:', id);
     
   } catch (error) {
     console.error('[removePlaybackItem] Error:', error);

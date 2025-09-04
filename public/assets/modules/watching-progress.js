@@ -30,14 +30,11 @@ function applyWidthToProgressBar() {
 
 export function initWatchingProgress() {
   if (isInitialized) {
-    console.log('[initWatchingProgress] Already initialized, skipping...');
     return;
   }
   
-  console.log('[initWatchingProgress] Starting initialization...');
   const progressContainer = document.getElementById('watching-progress');
   if (progressContainer) {
-    console.log('[initWatchingProgress] Container found, starting polling');
     // Nettoyer le conteneur au démarrage pour supprimer tout résidu
     hideProgressBar();
     isInitialized = true;
@@ -104,18 +101,15 @@ async function fetchPlaybackData() {
 function startWatchingPolling() {
   // S'assurer qu'aucun interval ne tourne déjà
   if (watchingInterval) {
-    console.log('[startWatchingPolling] Stopping existing interval:', watchingInterval);
     clearInterval(watchingInterval);
     watchingInterval = null;
   }
   
-  console.log('[startWatchingPolling] Starting polling with interval:', REFRESH_INTERVAL + 'ms');
   // Premier appel immédiat
   updateWatchingProgress();
   
   // Puis polling régulier
   watchingInterval = setInterval(updateWatchingProgress, REFRESH_INTERVAL);
-  console.log('[startWatchingPolling] Interval started, ID:', watchingInterval);
 }
 
 function isContentPaused(watching, playbackList) {

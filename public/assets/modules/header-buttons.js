@@ -14,17 +14,14 @@ class HeaderButtons {
   }
 
   init() {
-    console.log('[HeaderButtons] Initializing...');
     
     // Attendre que le header soit disponible
     const trySetup = () => {
       this.headerContainer = document.querySelector('.app-header .flex.items-center.gap-2');
       
       if (this.headerContainer) {
-        console.log('[HeaderButtons] Header container found, creating buttons...');
         this.createButtons();
       } else {
-        console.log('[HeaderButtons] Header not ready, retrying...');
         setTimeout(trySetup, 100);
       }
     };
@@ -58,7 +55,6 @@ class HeaderButtons {
     // Ajouter le conteneur au header
     this.headerContainer.appendChild(buttonsContainer);
     
-    console.log('[HeaderButtons] All buttons created successfully!');
     
     // Écouter les changements de langue pour mettre à jour les textes
     window.addEventListener('languageChanged', () => {
@@ -86,7 +82,6 @@ class HeaderButtons {
       <i class="fa-solid fa-chevron-down ml-1 text-xs"></i>
     `;
     
-    console.log('[HeaderButtons] Language selector initialized with:', currentLang);
 
     const dropdown = document.createElement('div');
     dropdown.id = 'langDropdown';
@@ -157,7 +152,6 @@ class HeaderButtons {
         button.classList.remove('dropdown-active');
         isOpen = false;
         
-        console.log('[HeaderButtons] Language changed to:', lang);
       });
     });
 
@@ -235,7 +229,6 @@ class HeaderButtons {
     form.appendChild(csrfInput);
     form.appendChild(button);
     
-    console.log('[HeaderButtons] CSRF token for refresh:', csrfToken);
     
     return form;
   }
@@ -285,7 +278,6 @@ class HeaderButtons {
       default: next = 'auto';
     }
     
-    console.log('[HeaderButtons] Cycling theme:', current, '->', next);
     themes.setTheme(next);
   }
 
@@ -303,12 +295,10 @@ class HeaderButtons {
     const iconClass = icons[currentTheme] || 'fa-circle-half-stroke';
     icon.className = 'fa-solid ' + iconClass;
     
-    console.log('[HeaderButtons] Theme icon updated:', currentTheme, iconClass);
   }
 
   updateButtonTexts() {
     // Les textes avec data-i18n seront mis à jour automatiquement par ui-translations.js
-    console.log('[HeaderButtons] Button texts will be updated by ui-translations');
   }
 
   updateLanguageDisplay() {
@@ -316,7 +306,6 @@ class HeaderButtons {
     if (langText) {
       const currentLang = i18n.getCurrentLanguage() || 'fr';
       langText.textContent = currentLang.toUpperCase();
-      console.log('[HeaderButtons] Language display updated to:', currentLang.toUpperCase());
     }
   }
 }
