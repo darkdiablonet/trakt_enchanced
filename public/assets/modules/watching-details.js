@@ -69,7 +69,7 @@ function formatWatchingDateTime(watchedAt) {
  */
 function generateMovieDetailsHTML(movieData) {
   if (!movieData.watchings || movieData.watchings.length === 0) {
-    return '<div class="text-center text-muted py-8">Aucun visionnage trouvé</div>';
+    return `<div class="text-center text-muted py-8">${i18n.t('calendar.no_viewings_found')}</div>`;
   }
 
   return movieData.watchings.map(watching => {
@@ -152,7 +152,7 @@ function showWatchingDetailsModal(title, kind, data, traktId) {
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-lg font-semibold truncate">${title}</h3>
-              <p class="text-sm text-muted">${kindLabel} • ${count} visionnage${count > 1 ? 's' : ''}</p>
+              <p class="text-sm text-muted">${kindLabel} • ${count} ${count > 1 ? i18n.t('calendar.viewings') : i18n.t('calendar.viewing')}</p>
             </div>
             <button id="close-details-modal" class="text-muted hover:text-white transition-colors">
               <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">

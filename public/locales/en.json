@@ -109,6 +109,8 @@
     "weekdays_chart": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     "viewing": "viewing",
     "viewings": "viewings",
+    "no_viewings": "No viewings that day",
+    "no_viewings_found": "No viewings found",
     "less": "Less",
     "more": "More"
   },
@@ -122,7 +124,8 @@
   "overview": {
     "content_info": "Content information",
     "synopsis": "Synopsis",
-    "synopsis_tooltip": "Synopsis"
+    "synopsis_tooltip": "Synopsis",
+    "no_synopsis": "No synopsis available."
   },
   "cards": {
     "to_watch": "to watch",
@@ -185,6 +188,7 @@
     "page_title": "Initial loading - Trakt Enhanced",
     "title": "Initial loading in progress",
     "subtitle": "Retrieving your data from Trakt.tv...",
+    "progress": "Loading progress...",
     "global_progress": "Global progress",
     "step_auth": "Authentication",
     "step_auth_detail": "Verifying Trakt token",

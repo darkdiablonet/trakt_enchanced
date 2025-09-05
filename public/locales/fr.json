@@ -109,6 +109,8 @@
     "weekdays_chart": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
     "viewing": "visionnage",
     "viewings": "visionnages",
+    "no_viewings": "Aucun visionnage ce jour-là",
+    "no_viewings_found": "Aucun visionnage trouvé",
     "less": "Moins",
     "more": "Plus"
   },
@@ -122,7 +124,8 @@
   "overview": {
     "content_info": "Informations du contenu",
     "synopsis": "Synopsis",
-    "synopsis_tooltip": "Synopsis"
+    "synopsis_tooltip": "Synopsis",
+    "no_synopsis": "Aucun synopsis disponible."
   },
   "cards": {
     "to_watch": "à voir",
@@ -185,6 +188,7 @@
     "page_title": "Chargement initial - Trakt Enhanced",
     "title": "Chargement initial en cours",
     "subtitle": "Récupération de vos données depuis Trakt.tv...",
+    "progress": "Chargement des progressions...",
     "global_progress": "Progrès global",
     "step_auth": "Authentification",
     "step_auth_detail": "Vérification du token Trakt",

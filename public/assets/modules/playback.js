@@ -4,6 +4,7 @@
  */
 
 import { escapeAttr } from './utils.js';
+import i18n from './i18n.js';
 
 export async function loadPlayback() {
   
@@ -18,7 +19,7 @@ export async function loadPlayback() {
     container.innerHTML = `
       <div class="flex items-center justify-center p-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
-        <span class="ml-3 text-muted">Chargement des progressions...</span>
+        <span class="ml-3 text-muted">${i18n.t('loading.progress') || 'Loading progress...'}</span>
       </div>
     `;
 

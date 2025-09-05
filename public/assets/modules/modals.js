@@ -3,6 +3,8 @@
  * Gestion des modales et fenêtres contextuelles avec support accessibilité
  */
 
+import i18n from './i18n.js';
+
 const ovModal = document.getElementById('ovModal');
 const ovBackdrop = document.getElementById('ovBackdrop');
 const ovPanel = document.getElementById('ovPanel');
@@ -130,9 +132,9 @@ export function openOverviewFromBtn(btn) {
   ovTitle.textContent = d.title || '';
   ovChips.innerHTML = `
     ${d.year ? `<span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${d.year}</span>` : ''}
-    ${d.kind ? `<span class="chip"><i class="fa-solid ${d.kind==='show'?'fa-tv':'fa-film'} mr-1"></i>${d.kind==='show'?'Série':'Film'}</span>` : ''}
+    ${d.kind ? `<span class="chip"><i class="fa-solid ${d.kind==='show'?'fa-tv':'fa-film'} mr-1"></i>${d.kind==='show'?i18n.t('cards.show'):i18n.t('cards.movie')}</span>` : ''}
   `;
-  ovText.textContent = d.overview || 'Aucun synopsis disponible.';
+  ovText.textContent = d.overview || i18n.t('overview.no_synopsis') || 'Aucun synopsis disponible.';
   ovLinks.innerHTML = `
     ${d.trakt ? `<a class="chip" href="${d.trakt}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>` : ''}
     ${d.tmdb ? `<a class="chip" href="${d.tmdb}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}

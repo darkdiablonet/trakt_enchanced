@@ -88,7 +88,7 @@ function formatDate(dateStr) {
  */
 function generateWatchingsHTML(watchings) {
   if (!watchings || watchings.length === 0) {
-    return '<div class="text-center text-muted py-8">Aucun visionnage ce jour-là</div>';
+    return `<div class="text-center text-muted py-8">${i18n.t('calendar.no_viewings')}</div>`;
   }
 
   return watchings.map(watching => {
@@ -141,7 +141,7 @@ function showWatchingsModal(date, count, watchings) {
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-lg font-semibold">${formattedDate}</h3>
-              <p class="text-sm text-muted">${count} visionnage${count > 1 ? 's' : ''}</p>
+              <p class="text-sm text-muted">${count} ${count > 1 ? i18n.t('calendar.viewings') : i18n.t('calendar.viewing')}</p>
             </div>
             <button id="close-modal" class="text-muted hover:text-white transition-colors">
               <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">

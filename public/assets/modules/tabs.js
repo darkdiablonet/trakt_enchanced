@@ -6,6 +6,7 @@
 import { state, saveState } from './state.js';
 import { elements, SORT_ALL } from './dom.js';
 import { renderCurrent } from './rendering.js';
+import i18n from './i18n.js';
 
 export function rebuildSortOptions(tab) {
   const allowed = SORT_ALL.filter(opt =>
@@ -19,8 +20,31 @@ export function rebuildSortOptions(tab) {
   };
   const currentKey = `${state.sort.field}:${state.sort.dir}`;
   const selectedKey = allowed.some(o => o.value === currentKey) ? currentKey : defaultByTab[tab];
+  
+  // Fonction pour obtenir la clé de traduction basée sur la valeur
+  const getTranslationKey = (value) => {
+    const translationMap = {
+      'watched_at:desc': 'sort.watched_at_desc',
+      'title:asc': 'sort.title_asc',
+      'title:desc': 'sort.title_desc',
+      'year:desc': 'sort.year_desc',
+      'year:asc': 'sort.year_asc',
+      'episodes:desc': 'sort.episodes_desc',
+      'plays:desc': 'sort.plays_desc',
+      'collected_at:desc': 'sort.collected_at_desc',
+      'collected_at:asc': 'sort.collected_at_asc',
+      'missing:desc': 'sort.missing_desc',
+      'missing:asc': 'sort.missing_asc'
+    };
+    return translationMap[value] || value;
+  };
+  
   elements.sortActive.innerHTML = allowed
-    .map(o => `<option value="${o.value}" data-for="${o.for}">${o.label}</option>`)
+    .map(o => {
+      const translationKey = getTranslationKey(o.value);
+      const translatedLabel = i18n.t(translationKey) || o.label;
+      return `<option value="${o.value}" data-for="${o.for}">${translatedLabel}</option>`;
+    })
     .join('');
   elements.sortActive.value = selectedKey;
   const [f, d] = selectedKey.split(':');
