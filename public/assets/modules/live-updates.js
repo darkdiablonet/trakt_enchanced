@@ -7,6 +7,7 @@
 import { DATA } from './state.js';
 import { renderCurrent } from './rendering.js';
 import logger from './logger.js';
+import indexedDBCache from './indexeddb-cache.js';
 
 class LiveUpdatesManager {
   constructor() {
@@ -115,16 +116,20 @@ class LiveUpdatesManager {
     
     // Pour les changements externes, forcer un rechargement complet des données
     // car les nouvelles données peuvent ne pas être dans le cache local
-    logger.liveUpdates(`⚡ External change detected for ${cardType} ${traktIdNum} - reloading fresh data...`);
+    logger.liveUpdates(`⚡ External change detected for ${cardType} ${traktIdNum} - invalidating caches and reloading...`);
     
     try {
-      // Import dynamique pour éviter les dépendances circulaires
+      // ÉTAPE 1: Invalider le cache IndexedDB pour forcer un refresh
+      await indexedDBCache.clearPageData();
+      logger.liveUpdates('🗑️ IndexedDB cache invalidated due to external changes');
+      
+      // ÉTAPE 2: Import dynamique pour éviter les dépendances circulaires
       const { loadData } = await import('./data.js');
       
-      // Recharger toutes les données depuis le serveur
+      // ÉTAPE 3: Recharger toutes les données (sera forcé depuis API car cache invalidé)
       await loadData();
       
-      // Re-rendre l'interface avec les nouvelles données
+      // ÉTAPE 4: Re-rendre l'interface avec les nouvelles données
       renderCurrent();
       
       logger.liveUpdates(`🔥 FULL DATA RELOAD COMPLETE FOR EXTERNAL CHANGE - ${cardType.toUpperCase()} ${traktIdNum} IS NOW UP TO DATE!`);
