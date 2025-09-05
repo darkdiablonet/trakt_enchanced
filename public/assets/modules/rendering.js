@@ -167,10 +167,10 @@ export function sortItems(items, field, dir) {
     if (field==='watched_at' || field==='collected_at') {
       const taRaw = field==='collected_at'
         ? (a.collected_at_ts ?? Date.parse(a.collected_at ?? ''))
-        : Date.parse(a.watched_at ?? '');
+        : Date.parse(a.last_watched_at ?? '');
       const tbRaw = field==='collected_at'
         ? (b.collected_at_ts ?? Date.parse(b.collected_at ?? ''))
-        : Date.parse(b.watched_at ?? '');
+        : Date.parse(b.last_watched_at ?? '');
       const ta = Number.isFinite(taRaw) ? taRaw : (dir==='asc' ? -Infinity : Infinity);
       const tb = Number.isFinite(tbRaw) ? tbRaw : (dir==='asc' ? -Infinity : Infinity);
       return dir==='asc' ? (ta-tb) : (tb-ta);

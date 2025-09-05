@@ -31,8 +31,6 @@ export function rebuildSortOptions(tab) {
       'year:asc': 'sort.year_asc',
       'episodes:desc': 'sort.episodes_desc',
       'plays:desc': 'sort.plays_desc',
-      'collected_at:desc': 'sort.collected_at_desc',
-      'collected_at:asc': 'sort.collected_at_asc',
       'missing:desc': 'sort.missing_desc',
       'missing:asc': 'sort.missing_asc'
     };

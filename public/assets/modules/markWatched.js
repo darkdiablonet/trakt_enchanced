@@ -5,6 +5,122 @@
 import { loadData } from './data.js';
 import { setTab } from './tabs.js';
 import { state, DATA } from './state.js';
+import { invalidateWatchingCache } from './watching-details.js';
+import { renderCurrent } from './rendering.js';
+import i18n from './i18n.js';
+
+// Fonction pour mettre à jour les données d'une série avec les données du serveur
+function updateShowDataWithServerCard(traktId, serverCard) {
+  const traktIdNum = parseInt(traktId);
+  
+  // Mettre à jour les données dans showsRows et showsUnseenRows
+  const sections = ['showsRows', 'showsUnseenRows'];
+  let updated = false;
+  
+  for (const section of sections) {
+    const rows = DATA[section] || [];
+    const showIndex = rows.findIndex(s => s.ids?.trakt === traktIdNum);
+    
+    if (showIndex !== -1) {
+      // Remplacer complètement avec les données serveur
+      rows[showIndex] = { ...serverCard };
+      updated = true;
+      console.log(`[updateShowDataWithServerCard] Updated show ${traktIdNum} in ${section}`);
+    }
+  }
+  
+  if (updated) {
+    // Déclencher un re-rendu complet de l'interface avec les nouvelles données
+    renderCurrent();
+    console.log(`[updateShowDataWithServerCard] Interface re-rendered for show ${traktIdNum}`);
+  }
+}
+
+// Fonction pour mettre à jour les données d'un film avec les données du serveur
+function updateMovieDataWithServerCard(traktId, serverCard) {
+  const traktIdNum = parseInt(traktId);
+  
+  // Chercher dans moviesUnseenRows et le déplacer vers moviesRows si marqué comme vu
+  const movieIndex = DATA.moviesUnseenRows.findIndex(movie => movie.ids?.trakt === traktIdNum);
+  if (movieIndex !== -1 && serverCard.plays > 0) {
+    // Retirer de la liste non-vue
+    DATA.moviesUnseenRows.splice(movieIndex, 1);
+    
+    // Ajouter aux films vus avec les données serveur
+    DATA.moviesRows.unshift({ ...serverCard });
+    
+    console.log(`[updateMovieDataWithServerCard] Moved movie ${traktIdNum} from unseen to seen`);
+    
+    // Déclencher un re-rendu complet de l'interface
+    renderCurrent();
+    console.log(`[updateMovieDataWithServerCard] Interface re-rendered after moving movie ${traktIdNum}`);
+  } else {
+    // Mettre à jour dans la section appropriée
+    const sections = ['moviesRows', 'moviesUnseenRows'];
+    for (const section of sections) {
+      const rows = DATA[section] || [];
+      const movieIndex = rows.findIndex(m => m.ids?.trakt === traktIdNum);
+      
+      if (movieIndex !== -1) {
+        rows[movieIndex] = { ...serverCard };
+        console.log(`[updateMovieDataWithServerCard] Updated movie ${traktIdNum} in ${section}`);
+        
+        // Déclencher un re-rendu complet de l'interface
+        renderCurrent();
+        console.log(`[updateMovieDataWithServerCard] Interface re-rendered for movie ${traktIdNum}`);
+        break;
+      }
+    }
+  }
+}
+
+// Fonction pour récupérer seulement les données d'une série spécifique
+async function refreshShowData(traktId) {
+  try {
+    console.log(`[refreshShow] Refreshing data for show ${traktId}`);
+    
+    // Récupérer les nouvelles données depuis le serveur
+    const response = await fetch(`/api/show-data/${traktId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const showData = await response.json();
+    
+    // Mettre à jour DATA avec les nouvelles informations
+    const sections = ['showsRows', 'showsUnseenRows'];
+    let updated = false;
+    
+    for (const section of sections) {
+      const rows = DATA[section] || [];
+      const showIndex = rows.findIndex(s => s.ids?.trakt === traktId);
+      
+      if (showIndex !== -1) {
+        // Conserver certaines propriétés de l'ancien objet et fusionner avec les nouvelles données
+        const oldShow = rows[showIndex];
+        rows[showIndex] = {
+          ...oldShow,
+          ...showData,
+          ids: oldShow.ids // Garder les IDs originaux
+        };
+        updated = true;
+        console.log(`[refreshShow] Updated show in ${section}`);
+      }
+    }
+    
+    if (updated) {
+      // Mettre à jour l'affichage
+      updateNextEpisodeButtonDisplay(traktId);
+      updateShowCardMetrics(traktId);
+      console.log(`[refreshShow] Display updated for show ${traktId}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.warn(`[refreshShow] Failed to refresh show ${traktId}:`, error.message);
+    return false;
+  }
+}
 
 function getCsrfToken() {
   const input = document.querySelector('input[name="csrf"]');
@@ -31,6 +147,42 @@ function updateMovieDataLocally(traktId) {
   DATA.moviesRows.unshift(watchedMovie);
 }
 
+function updateShowCardMetrics(traktId) {
+  const traktIdNum = parseInt(traktId);
+  
+  // Trouver les cards correspondant à cette série (dans tous les onglets)
+  document.querySelectorAll(`article[data-prefetch*="${traktIdNum}"] .js-show-watchings`).forEach(metricsBtn => {
+    // Récupérer les données mises à jour de la série
+    const showData = [...DATA.showsRows, ...DATA.showsUnseenRows].find(s => s.ids?.trakt === traktIdNum);
+    if (!showData) return;
+    
+    const w0 = Number(showData.episodes ?? 0);
+    const t = Number(showData.episodes_total ?? 0);
+    const w = t > 0 ? Math.min(w0, t) : w0;
+    const hasT = t > 0;
+    const diff = hasT && w !== t;
+    
+    // Mettre à jour le texte du bouton
+    const text = hasT ? `${w}/${t}` : `${w}`;
+    const icon = metricsBtn.querySelector('i');
+    const textSpan = icon ? icon.nextSibling : null;
+    
+    if (textSpan) {
+      textSpan.textContent = text;
+    } else {
+      // Fallback: recréer le contenu complet
+      metricsBtn.innerHTML = `<i class="fa-solid fa-film mr-1"></i>${text}`;
+    }
+    
+    // Mettre à jour les classes CSS pour la couleur d'alerte
+    if (diff) {
+      metricsBtn.classList.add('chip--warn');
+    } else {
+      metricsBtn.classList.remove('chip--warn');
+    }
+  });
+}
+
 function updateEpisodeDataLocally(traktId, season, number) {
   const traktIdNum = parseInt(traktId);
   const seasonNum = parseInt(season);
@@ -49,12 +201,12 @@ function updateEpisodeDataLocally(traktId, season, number) {
       show.missing = Math.max(0, show.episodes_total - show.episodes);
     }
     
-    // Si c'était le prochain épisode, essayer de calculer le nouvel épisode suivant
+    // Si c'était le prochain épisode, passer au suivant
     if (show.next_episode_data && 
         show.next_episode_data.season === seasonNum && 
         show.next_episode_data.number === numberNum) {
       
-      // Simple incrémentation - dans une vraie app, il faudrait vérifier les saisons
+      // Passer à l'épisode suivant
       const nextNumber = numberNum + 1;
       const nextSeason = seasonNum;
       
@@ -66,13 +218,17 @@ function updateEpisodeDataLocally(traktId, season, number) {
       };
       show.next = `S${String(nextSeason).padStart(2,'0')}E${String(nextNumber).padStart(2,'0')}`;
       
-      // Si on a dépassé les épisodes disponibles, supprimer les données next
+      // Si tous les épisodes sont vus, supprimer les données next
       if (show.missing <= 0) {
         delete show.next_episode_data;
         delete show.next;
       }
     }
   });
+  
+  // Mettre à jour immédiatement l'affichage
+  updateNextEpisodeButtonDisplay(traktIdNum);
+  updateShowCardMetrics(traktIdNum);
 }
 
 function updateEpisodeDataLocallyForUnmark(traktId, season, number) {
@@ -93,38 +249,12 @@ function updateEpisodeDataLocallyForUnmark(traktId, season, number) {
       show.missing = Math.max(0, show.episodes_total - show.episodes);
     }
     
-    // Quand on retire un épisode, on doit recalculer le prochain épisode correctement
-    // L'épisode retiré devient le nouveau "next" seulement s'il était le prochain prévu
-    if (seasonNum && numberNum) {
-      // Si l'épisode retiré était le prochain attendu, on recule d'un épisode
-      if (show.next_episode_data && 
-          show.next_episode_data.season === seasonNum && 
-          show.next_episode_data.number === numberNum) {
-        
-        // L'épisode retiré devient le nouveau next
-        show.next_episode_data = {
-          season: seasonNum,
-          number: numberNum,
-          trakt_id: traktIdNum
-        };
-        show.next = `S${String(seasonNum).padStart(2,'0')}E${String(numberNum).padStart(2,'0')}`;
-      }
-      // Si l'épisode retiré est antérieur au next actuel, il devient le nouveau next
-      else if (show.next_episode_data && 
-               ((seasonNum < show.next_episode_data.season) ||
-                (seasonNum === show.next_episode_data.season && numberNum < show.next_episode_data.number))) {
-        
-        show.next_episode_data = {
-          season: seasonNum,
-          number: numberNum,
-          trakt_id: traktIdNum
-        };
-        show.next = `S${String(seasonNum).padStart(2,'0')}E${String(numberNum).padStart(2,'0')}`;
-      }
-    }
-    
-    // S'assurer qu'on a des données next si missing > 0 et qu'on n'en a pas
-    if (show.missing > 0 && !show.next_episode_data && seasonNum && numberNum) {
+    // L'épisode retiré devient potentiellement le nouveau next
+    if (!show.next_episode_data || 
+        (show.next_episode_data.season > seasonNum) ||
+        (show.next_episode_data.season === seasonNum && show.next_episode_data.number > numberNum)) {
+      
+      // L'épisode retiré devient le nouveau next
       show.next_episode_data = {
         season: seasonNum,
         number: numberNum,
@@ -133,6 +263,10 @@ function updateEpisodeDataLocallyForUnmark(traktId, season, number) {
       show.next = `S${String(seasonNum).padStart(2,'0')}E${String(numberNum).padStart(2,'0')}`;
     }
   });
+  
+  // Mettre à jour immédiatement l'affichage
+  updateNextEpisodeButtonDisplay(traktIdNum);
+  updateShowCardMetrics(traktIdNum);
 }
 
 function updateNextEpisodeButtonDisplay(traktId) {
@@ -150,24 +284,30 @@ function updateNextEpisodeButtonDisplay(traktId) {
   if (!updatedShow) return;
   
   // Trouver toutes les cartes de cette série dans le DOM
-  const cards = document.querySelectorAll(`article[data-prefetch*="${traktIdNum}"], .card`);
+  const cards = document.querySelectorAll(`article[data-prefetch*="${traktIdNum}"]`);
   
   cards.forEach(card => {
-    // Vérifier si c'est bien la bonne série (par précaution)
-    const nextBtn = card.querySelector('.badge-next');
+    // Trouver le bouton next dans cette carte
+    const nextBtn = card.querySelector('.badge-next, .js-mark-watched');
     if (!nextBtn) return;
     
-    const cardTraktId = nextBtn.dataset.traktId;
-    if (parseInt(cardTraktId) !== traktIdNum) return;
+    // Vérifier que c'est bien la bonne série
+    const cardTraktId = parseInt(nextBtn.dataset.traktId);
+    if (cardTraktId !== traktIdNum) return;
     
     // Mettre à jour le bouton next avec les nouvelles données
     if (updatedShow.next_episode_data && updatedShow.next) {
       // Il y a un prochain épisode
       nextBtn.dataset.season = updatedShow.next_episode_data.season;
       nextBtn.dataset.number = updatedShow.next_episode_data.number;
-      nextBtn.querySelector('span').textContent = updatedShow.next;
+      nextBtn.style.display = ''; // S'assurer qu'il est visible
+      
+      const spanElement = nextBtn.querySelector('span');
+      if (spanElement) {
+        spanElement.textContent = updatedShow.next;
+      }
     } else {
-      // Plus de prochain épisode, masquer ou supprimer le bouton
+      // Plus de prochain épisode, masquer le bouton
       nextBtn.style.display = 'none';
     }
   });
@@ -312,19 +452,19 @@ document.addEventListener('click', async (e) => {
       btn.className = originalClass.replace('loading', '') + ' success';
       btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Vu ✓</span>';
       
+      // Invalider le cache de la modal des épisodes vus
+      invalidateWatchingCache(traktId, 'show');
+      
       // Toast de succès
-      showToast(`${showTitle} S${season.padStart(2,'0')}E${number.padStart(2,'0')} marqué comme vu !`, 'success');
+      showToast(`${showTitle} S${(season || '0').padStart(2,'0')}E${(number || '0').padStart(2,'0')} marqué comme vu !`, 'success');
       
-      // Mise à jour immédiate des données locales pour réactivité
-      updateEpisodeDataLocally(traktId, season, number);
-      
-      // Mettre à jour immédiatement l'affichage du prochain épisode
-      updateNextEpisodeButtonDisplay(traktId);
-      
-      // Refresh automatique après 1.5s pour synchronisation
-      setTimeout(() => {
-        loadData();
-      }, 1500);
+      // Utiliser directement les données mises à jour du serveur si disponibles
+      if (result.updatedCard) {
+        updateShowDataWithServerCard(traktId, result.updatedCard);
+      } else {
+        // Fallback vers la mise à jour locale
+        updateEpisodeDataLocally(traktId, season, number);
+      }
       
     } else {
       // Erreur
@@ -381,20 +521,25 @@ document.addEventListener('click', async (e) => {
       btn.className = originalClass.replace('loading', '') + ' success';
       btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Vu ✓</span>';
       
+      // Invalider le cache de la modal des visionnages
+      invalidateWatchingCache(traktId, 'movie');
+      
       // Toast de succès
       showToast(`${movieTitle} marqué comme vu !`, 'success');
       
-      // Mise à jour immédiate des données locales pour réactivité
-      updateMovieDataLocally(traktId);
+      // Utiliser directement les données mises à jour du serveur si disponibles
+      if (result.updatedCard) {
+        updateMovieDataWithServerCard(traktId, result.updatedCard);
+      } else {
+        // Fallback vers la mise à jour locale
+        updateMovieDataLocally(traktId);
+      }
       
       // Changement d'onglet immédiat si nécessaire
       setTimeout(() => {
         if (state.tab === 'movies_unseen') {
           setTab('movies');
         }
-        
-        // Rechargement en arrière-plan pour synchronisation
-        loadData().catch(console.error);
       }, 1500);
       
     } else {
@@ -437,7 +582,7 @@ document.addEventListener('click', async (e) => {
   }
   
   // Confirmation
-  if (!confirm(`Retirer S${season.padStart(2,'0')}E${number.padStart(2,'0')} de l'historique ?`)) {
+  if (!confirm(`Retirer S${(season || '0').padStart(2,'0')}E${(number || '0').padStart(2,'0')} de l'historique ?`)) {
     return;
   }
   
@@ -450,6 +595,9 @@ document.addEventListener('click', async (e) => {
     const result = await unmarkEpisodeWatched(traktId, season, number);
     
     if (result.ok) {
+      // Invalider le cache de la modal des épisodes vus
+      invalidateWatchingCache(traktId, 'show');
+      
       // Succès - masquer la ligne
       const episodeRow = btn.closest('.p-3');
       if (episodeRow) {
@@ -467,13 +615,13 @@ document.addEventListener('click', async (e) => {
       
       showToast(`Épisode retiré de l'historique`, 'success');
       
-      // Cache page invalidé côté serveur, refresh les données via loadData()
-      console.log(`[DEBUG] Unmark success for ${traktId} S${season}E${number}, refreshing data`);
-      setTimeout(async () => {
-        console.log(`[DEBUG] Starting loadData() refresh after unmark`);
-        await loadData();
-        console.log(`[DEBUG] loadData() completed after unmark`);
-      }, 500);
+      // Utiliser directement les données mises à jour du serveur si disponibles
+      if (result.updatedCard) {
+        updateShowDataWithServerCard(traktId, result.updatedCard);
+      } else {
+        // Fallback vers la mise à jour locale
+        updateEpisodeDataLocallyForUnmark(traktId, season, number);
+      }
       
     } else {
       // Erreur

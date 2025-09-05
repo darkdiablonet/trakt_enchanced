@@ -66,7 +66,7 @@
     "last_days": "Last days",
     "days": "Days",
     "hours": "Hours",
-    "timezone": "Europe/Paris",
+    "timezone": "auto",
     "weekdays": "Weekdays",
     "weekdays_short": "M→S",
     "evolution_months": "Monthly evolution",

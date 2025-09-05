@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
 import session from 'express-session';
@@ -15,9 +16,10 @@ import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection }
 import { serverI18n } from './lib/i18n.js';
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASS, TITLE, reloadEnv } from './lib/config.js';
-import { saveToken, deviceToken, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken } from './lib/trakt.js';
-import { buildPageData, invalidatePageCache, updateShowInCache } from './lib/pageData.js';
-import { makeRefresher, loadDeviceCode, clearDeviceCode, getPublicHost } from './lib/util.js';
+import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken } from './lib/trakt.js';
+// Ancien système de cache global supprimé - utilisation du cache granulaire uniquement
+import { buildPageDataGranular, getOrBuildShowCard, updateSpecificCard } from './lib/pageDataNew.js';
+import { makeRefresher, loadDeviceCode, saveDeviceCode, clearDeviceCode, getPublicHost, jsonLoad } from './lib/util.js';
 import { dailyCounts } from './lib/graph.js';
 import { imageProxyRouter } from './lib/sharp.js';
 import { readGraphCache, writeGraphCache } from './lib/graphCache.js';
@@ -29,10 +31,54 @@ import { getMovieWatchingDetails, getShowWatchingDetails } from './lib/watchingD
 import { renderTemplate } from './lib/template.js';
 import { checkEnvFile, generateEnvFile } from './lib/setup.js';
 import { addProgressConnection, sendProgress, sendCompletion } from './lib/progressTracker.js';
-import { startActivityMonitor, stopActivityMonitor, getMonitorStatus } from './lib/activityMonitor.js';
+import { startActivityMonitor, stopActivityMonitor, getMonitorStatus, setBroadcastFunction } from './lib/activityMonitor.js';
 import { getRateLimitStats } from './lib/apiRateLimiter.js';
 
 dotenv.config();
+
+// Système de broadcast pour Server-Sent Events (SSE)
+const liveClients = new Set();
+
+function broadcastCardUpdate(type, traktId, cardData) {
+  const eventData = {
+    type: 'card-update',
+    cardType: type,
+    traktId: traktId,
+    card: cardData,
+    timestamp: Date.now()
+  };
+  
+  const message = `data: ${JSON.stringify(eventData)}\n\n`;
+  
+  liveClients.forEach(client => {
+    try {
+      client.write(message);
+    } catch (error) {
+      console.warn('[SSE] Client disconnected, removing from list');
+      liveClients.delete(client);
+    }
+  });
+  
+  console.log(`[SSE] Broadcasted ${type} ${traktId} update to ${liveClients.size} clients`);
+}
+
+// Invalider TOUS les caches globaux (les 3 fichiers de merde qui restent)
+async function invalidateGlobalCaches() {
+  const globalCacheFiles = [
+    path.join(DATA_DIR, '.cache_trakt', 'trakt_history_cache.json'),
+    path.join(DATA_DIR, '.cache_trakt', 'trakt_master.json'), 
+    path.join(DATA_DIR, '.cache_trakt', 'watched_shows_complete.json')
+  ];
+  
+  for (const file of globalCacheFiles) {
+    try {
+      await fsp.unlink(file);
+      console.log(`[Cache] 🗑️  Invalidated global cache: ${path.basename(file)}`);
+    } catch (error) {
+      // File might not exist, that's ok
+    }
+  }
+}
 
 // Lire la version depuis package.json au démarrage
 const packageJson = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf-8'));
@@ -354,10 +400,8 @@ app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async 
   delete req.session.forceRefreshOnce;
   delete req.session.allowFull;
 
-  const pageData = await buildPageData(req, { forceRefreshOnce, allowFull });
-  
-  // Si les credentials sont manquants, rediriger vers setup
-  if (pageData.needsSetup) {
+  // Vérifier si les credentials sont configurés
+  if (!hasValidCredentials()) {
     return res.status(412).json({ 
       ok: false, 
       error: 'Missing configuration',
@@ -365,6 +409,54 @@ app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async 
       redirectTo: '/setup'
     });
   }
+
+  // Vérifier si on a un token utilisateur
+  const token = await loadToken();
+  const headers = traktHeaders(token?.access_token);
+  
+  if (!token?.access_token) {
+    // On a les credentials mais pas de token - il faut générer un device prompt
+    const dc = req.session.device_code || await loadDeviceCode();
+    if (!dc?.device_code) {
+      // Générer un nouveau device code
+      try {
+        const newDc = await deviceCode();
+        if (newDc?.device_code) {
+          req.session.device_code = newDc;
+          await saveDeviceCode(newDc);
+          
+          return res.json({
+            title: TITLE,
+            flash,
+            needsAuth: true,
+            devicePrompt: newDc,
+            showsRows: [],
+            moviesRows: [],
+            showsUnseenRows: [],
+            moviesUnseenRows: []
+          });
+        }
+      } catch (error) {
+        console.error('[api/data] Error generating device code:', error);
+        return res.status(500).json({ error: 'Failed to generate device code' });
+      }
+    } else {
+      // Device code existant
+      return res.json({
+        title: TITLE,
+        flash,
+        needsAuth: true,
+        devicePrompt: dc,
+        showsRows: [],
+        moviesRows: [],
+        showsUnseenRows: [],
+        moviesUnseenRows: []
+      });
+    }
+  }
+
+  // On a les credentials et le token - construire les données normalement
+  const pageData = await buildPageDataGranular(headers);
   
   res.setHeader('Cache-Control', 'no-store');
   res.json({ title: TITLE, flash, ...pageData });
@@ -715,10 +807,22 @@ app.post('/api/mark-watched', csrfProtection, asyncHandler(async (req, res) => {
     if (result?.added?.episodes > 0) {
       logger.info('Episode marked as watched', { trakt_id, season, number });
       
-      // Mettre à jour uniquement cette série dans le cache (plus rapide)
-      await updateShowInCache(trakt_id, headers);
+      // Mise à jour granulaire de la carte spécifique uniquement
+      const updatedCard = await updateSpecificCard('show', trakt_id, headers);
       
-      return res.json({ ok: true, message: 'Episode marked as watched successfully' });
+      // TODO: Invalidation sélective intelligente des caches (pas tout supprimer!)
+      // await invalidateGlobalCaches(); // DESACTIVÉ pour ne pas casser heatmap/stats
+      
+      // Broadcast LIVE de la mise à jour à tous les clients connectés
+      if (updatedCard) {
+        broadcastCardUpdate('show', trakt_id, updatedCard);
+      }
+      
+      return res.json({ 
+        ok: true, 
+        message: 'Episode marked as watched successfully',
+        updatedCard: updatedCard
+      });
     } else {
       logger.warn('Failed to mark episode as watched', { trakt_id, season, number, result });
       return res.status(400).json({ ok: false, error: 'Failed to mark episode as watched' });
@@ -748,10 +852,24 @@ app.post('/api/unmark-watched', csrfProtection, asyncHandler(async (req, res) =>
     if (result?.deleted?.episodes > 0) {
       logger.info('Episode removed from history', { trakt_id, season, number });
       
-      // Mettre à jour le cache pour cette série
-      await updateShowInCache(trakt_id, traktHeaders(tok.access_token));
+      // Mise à jour granulaire de la carte spécifique uniquement
+      const tok = await loadToken();
+      const headers = traktHeaders(tok.access_token);
+      const updatedCard = await updateSpecificCard('show', trakt_id, headers);
       
-      return res.json({ ok: true, message: 'Episode removed from history successfully' });
+      // TODO: Invalidation sélective intelligente des caches (pas tout supprimer!)
+      // await invalidateGlobalCaches(); // DESACTIVÉ pour ne pas casser heatmap/stats
+      
+      // Broadcast LIVE de la mise à jour à tous les clients connectés
+      if (updatedCard) {
+        broadcastCardUpdate('show', trakt_id, updatedCard);
+      }
+      
+      return res.json({ 
+        ok: true, 
+        message: 'Episode removed from history successfully',
+        updatedCard: updatedCard
+      });
     } else {
       logger.warn('Failed to remove episode from history', { trakt_id, season, number, result });
       return res.json({ ok: false, error: 'Failed to remove episode from history' });
@@ -780,6 +898,44 @@ app.get('/api/watched/:type', asyncHandler(async (req, res) => {
   }
 }));
 
+// Endpoint optimisé avec le nouveau système granulaire
+app.get('/api/show-data/:traktId', asyncHandler(async (req, res) => {
+  const { traktId } = req.params;
+  const traktIdNum = parseInt(traktId);
+  
+  if (!traktIdNum) {
+    return res.status(400).json({ error: 'Invalid trakt ID' });
+  }
+  
+  try {
+    // Utiliser le nouveau système de cache granulaire
+    const token = await loadToken();
+    const headers = traktHeaders(token?.access_token);
+    
+    const card = await getOrBuildShowCard(traktIdNum, headers);
+    
+    if (!card) {
+      return res.status(404).json({ error: 'Show not found' });
+    }
+    
+    // Retourner seulement les données nécessaires
+    const response = {
+      episodes: card.episodes,
+      episodes_total: card.episodes_total,
+      missing: card.missing,
+      next: card.next,
+      next_episode_data: card.next_episode_data,
+      last_watched_at: card.last_watched_at
+    };
+    
+    res.json(response);
+    
+  } catch (error) {
+    logger.error('Error fetching show data', { error: error.message, traktId });
+    res.status(500).json({ error: 'Failed to fetch show data' });
+  }
+}));
+
 app.post('/api/mark-movie-watched', csrfProtection, asyncHandler(async (req, res) => {
   const { trakt_id } = req.body;
   
@@ -799,10 +955,22 @@ app.post('/api/mark-movie-watched', csrfProtection, asyncHandler(async (req, res
     if (result?.added?.movies > 0) {
       logger.info('Movie marked as watched', { trakt_id });
       
-      // Invalider le cache pour forcer le refresh
-      await invalidatePageCache();
+      // Mise à jour granulaire de la carte spécifique uniquement
+      const updatedCard = await updateSpecificCard('movie', trakt_id, headers);
       
-      return res.json({ ok: true, message: 'Movie marked as watched successfully' });
+      // TODO: Invalidation sélective intelligente des caches (pas tout supprimer!)
+      // await invalidateGlobalCaches(); // DESACTIVÉ pour ne pas casser heatmap/stats
+      
+      // Broadcast LIVE de la mise à jour à tous les clients connectés
+      if (updatedCard) {
+        broadcastCardUpdate('movie', trakt_id, updatedCard);
+      }
+      
+      return res.json({ 
+        ok: true, 
+        message: 'Movie marked as watched successfully',
+        updatedCard: updatedCard
+      });
     } else {
       logger.warn('Failed to mark movie as watched', { trakt_id, result });
       return res.status(400).json({ ok: false, error: 'Failed to mark movie as watched' });
@@ -980,8 +1148,8 @@ app.get('/api/watching-details/:kind/:traktId', asyncHandler(async (req, res) =>
       details = await getShowWatchingDetails(traktId);
     }
     
-    // Cache côté client possible car ces données changent rarement
-    res.setHeader('Cache-Control', 'public, max-age=3600'); // 1h
+    // Pas de cache côté client pour que les données se mettent à jour immédiatement
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     
     res.json(details);
     
@@ -992,6 +1160,71 @@ app.get('/api/watching-details/:kind/:traktId', asyncHandler(async (req, res) =>
     });
   }
 }));
+
+// Server-Sent Events pour les mises à jour live de cartes
+app.get('/api/live-events', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Cache-Control',
+    'X-Accel-Buffering': 'no' // Nginx fix pour SSE
+  });
+  
+  // Ajouter le client à la liste des connexions live
+  liveClients.add(res);
+  console.log(`[SSE] Client connected, total: ${liveClients.size}`);
+  
+  // Envoyer un événement de connexion initiale
+  res.write('data: {"type":"connected","timestamp":' + Date.now() + '}\n\n');
+  
+  // Nettoyer les connexions fermées
+  req.on('close', () => {
+    liveClients.delete(res);
+    console.log(`[SSE] Client disconnected, total: ${liveClients.size}`);
+  });
+  
+  req.on('error', () => {
+    liveClients.delete(res);
+    console.log(`[SSE] Client error, disconnected, total: ${liveClients.size}`);
+  });
+  
+  // Heartbeat pour maintenir la connexion
+  const heartbeat = setInterval(() => {
+    try {
+      res.write('data: {"type":"heartbeat","timestamp":' + Date.now() + '}\n\n');
+    } catch (error) {
+      clearInterval(heartbeat);
+      liveClients.delete(res);
+      console.warn(`[SSE] Heartbeat failed, client disconnected`);
+    }
+  }, 30000); // 30 secondes
+  
+  req.on('close', () => clearInterval(heartbeat));
+});
+
+// API pour vérifier s'il y a des changements récents (fallback pour SSE)
+app.get('/api/live-status', (req, res) => {
+  try {
+    console.log('[API] /live-status called, getting monitor status...');
+    const status = getMonitorStatus();
+    console.log('[API] Monitor status:', JSON.stringify(status, null, 2));
+    
+    const response = {
+      hasRecentChanges: status.hasRecentExternalChanges || false,
+      monitorRunning: status.running,
+      isUpdating: status.isUpdating,
+      lastCheck: status.lastCheckTimestamp
+    };
+    
+    console.log('[API] /live-status response:', JSON.stringify(response, null, 2));
+    res.json(response);
+  } catch (error) {
+    console.error('[API] /live-status error:', error.message, error.stack);
+    res.json({ hasRecentChanges: false, error: error.message });
+  }
+});
 
 // Server-Sent Events pour le progrès de chargement
 app.get('/api/loading-progress', (req, res) => {
@@ -1021,7 +1254,10 @@ app.get('/api/loading-progress', (req, res) => {
       delete req.session.forceRefreshOnce;
       delete req.session.fullRebuildTriggered;
       
-      await buildPageData(reqLike, { forceRefreshOnce, allowFull });
+      // Utiliser le nouveau système de cache granulaire
+      const token = await loadToken();
+      const headers = traktHeaders(token?.access_token);
+      await buildPageDataGranular(headers);
     } catch (error) {
       console.error('Error during initial data loading:', error);
       res.write(`data: {"step": "final", "status": "error", "message": "Erreur: ${error.message}"}\n\n`);
@@ -1104,7 +1340,14 @@ app.listen(PORT, () => {
       headers: { host: await getPublicHost(PORT) },
       get(name){ return this.headers[String(name).toLowerCase()]; }
     };
-    await buildPageData(reqLike, { forceRefreshOnce: true, allowFull: false });
+    // Utiliser le nouveau système de cache granulaire pour le refresh
+    const token = await loadToken();
+    const headers = traktHeaders(token?.access_token);
+    if (!headers) {
+      console.log('[refresh] Skipping - Trakt credentials not configured');
+      return;
+    }
+    await buildPageDataGranular(headers);
   });
 
   // lance : 1ère exécution immédiate, puis toutes les heures
@@ -1112,11 +1355,15 @@ app.listen(PORT, () => {
   const JITTER = Math.floor(Math.random() * 5000); // petit jitter optionnel
   refresher.schedule({ intervalMs: EVERY, initialDelayMs: JITTER });
 
-  // Start activity monitor (5 minutes interval par défaut)
+  // Configure broadcast function for activity monitor
+  setBroadcastFunction(broadcastCardUpdate);
+  console.log('[monitor] Broadcast function configured for external change detection');
+  
+  // Start activity monitor (5 minutes par défaut, configurable via env)
   if (hasValidCredentials()) {
     const MONITOR_INTERVAL = Number(process.env.ACTIVITY_MONITOR_INTERVAL_MS || 300000); // 5 minutes par défaut
     startActivityMonitor(MONITOR_INTERVAL);
-    console.log(`[monitor] Activity monitor started (checking every ${MONITOR_INTERVAL / 1000}s)`);
+    console.log(`[monitor] Activity monitor started with LIVE UPDATES (checking every ${MONITOR_INTERVAL / 1000}s)`);
   } else {
     console.log('[monitor] Activity monitor not started (missing Trakt credentials)');
   }

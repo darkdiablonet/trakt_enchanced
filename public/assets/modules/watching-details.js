@@ -10,6 +10,27 @@ import i18n from './i18n.js';
 const watchingDetailsCache = new Map();
 
 /**
+ * Invalide le cache pour une série/film spécifique
+ * @param {string} traktId - ID Trakt de l'élément
+ * @param {string} kind - Type: 'movie' ou 'show'
+ */
+export function invalidateWatchingCache(traktId, kind) {
+  const cacheKey = `${kind}-${traktId}`;
+  if (watchingDetailsCache.has(cacheKey)) {
+    watchingDetailsCache.delete(cacheKey);
+    console.log(`[watchingDetails] Cache invalidated for ${kind} ${traktId}`);
+  }
+}
+
+/**
+ * Invalide tout le cache de watching details
+ */
+export function clearWatchingCache() {
+  watchingDetailsCache.clear();
+  console.log(`[watchingDetails] All cache cleared`);
+}
+
+/**
  * Récupère les détails de visionnage pour un élément
  * @param {string} traktId - ID Trakt de l'élément
  * @param {string} kind - Type: 'movie' ou 'show'
@@ -77,12 +98,14 @@ function generateMovieDetailsHTML(movieData) {
     
     return `
       <div class="p-3 bg-white/5 rounded-lg">
-        <div class="flex items-center gap-2 mb-2">
-          <i class="fa-solid fa-play text-green-400"></i>
-          <span class="text-sm font-medium">Regardé</span>
-        </div>
-        <div class="text-xs text-muted">
-          🗓️ ${datetime}
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-play text-green-400"></i>
+            <span class="text-sm font-medium">Regardé</span>
+          </div>
+          <div class="text-xs text-muted">
+            🗓️ ${datetime}
+          </div>
         </div>
       </div>
     `;

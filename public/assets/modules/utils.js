@@ -9,6 +9,15 @@ import i18n from './i18n.js';
 
 export function posterURL(u) {
   if (!u) return '';
+  // Si c'est déjà un chemin vers cache_imgs, extraire juste le nom du fichier
+  if (u.includes('/cache_imgs/')) {
+    const filename = u.split('/').pop(); // Récupère "trakt_123.jpg"
+    const retina = (window.devicePixelRatio || 1) > 1.25;
+    const preset = retina ? 'cardx2' : 'card';
+    const v = 'webp1';
+    return `/img/p/${preset}/${filename}?v=${v}`;
+  }
+  // Sinon, utiliser l'ancien comportement (au cas où)
   const retina = (window.devicePixelRatio || 1) > 1.25;
   const preset = retina ? 'cardx2' : 'card';
   const clean = u.replace(/^\/+/, '');

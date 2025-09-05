@@ -256,13 +256,12 @@ class HeaderButtons {
   createFullRebuildButton() {
     const button = document.createElement('button');
     button.id = 'openFullModal';
-    button.className = 'btn btn-outline';
+    button.className = 'btn btn-outline js-full-modal';
+    button.setAttribute('data-target', 'fullModal');
     button.innerHTML = `
       <i class="fa-solid fa-bolt"></i>
       <span>Full rebuild</span>
     `;
-    
-    // L'événement d'ouverture du modal sera géré par le module modal existant
     
     return button;
   }

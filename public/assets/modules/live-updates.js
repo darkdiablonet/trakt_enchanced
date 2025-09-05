@@ -1,210 +1,364 @@
 /**
- * Live Updates Module
- * Automatic updates when new data is available from monitor
+ * Module de mise à jour live via Server-Sent Events (SSE)
+ * Écoute les changements de cartes et met à jour l'interface en temps réel
+ * REMPLACEMENT COMPLET du système de polling par du VRAI LIVE
  */
 
-import { loadData } from './data.js';
-import { state } from './state.js';
+import { DATA } from './state.js';
 import { renderCurrent } from './rendering.js';
+import logger from './logger.js';
 
-let updateInterval = null;
-let lastActivityTimestamp = null;
-let isUpdating = false;
-
-// Configuration
-const CHECK_INTERVAL = 45000; // Check every 45 seconds
-const MIN_UPDATE_INTERVAL = 30000; // Minimum 30s between data reloads
-
-/**
- * Check if new data is available by comparing activity timestamps
- */
-async function checkForUpdates() {
-  if (isUpdating) {
-    return;
+class LiveUpdatesManager {
+  constructor() {
+    this.eventSource = null;
+    this.reconnectTimeout = null;
+    this.maxReconnectDelay = 30000; // 30 secondes max
+    this.reconnectDelay = 1000; // 1 seconde initial
+    this.isConnected = false;
   }
 
-  try {
-    // Check monitor status and last activities
-    const response = await fetch('/api/monitor-status', { cache: 'no-store' });
-    if (!response.ok) return;
-    
-    const monitorData = await response.json();
-    
-    if (!monitorData.ok || !monitorData.running) {
+  /**
+   * Démarre la connexion SSE avec fallback sur polling
+   */
+  start() {
+    if (this.eventSource) {
+      logger.liveUpdates('Already connected');
       return;
     }
 
-    // Get last activities to compare timestamps
-    const activitiesResponse = await fetch('/api/last-activities', { cache: 'no-store' });
-    if (!activitiesResponse.ok) return;
+    logger.liveUpdates('🔥 STARTING REAL LIVE SYSTEM WITH SSE');
+    this.connect();
     
-    const activitiesData = await activitiesResponse.json();
-    if (!activitiesData.ok) return;
-
-    // Check if there are new watch activities
-    const currentWatchedAt = Math.max(
-      new Date(activitiesData.activities?.episodes?.watched_at || 0).getTime(),
-      new Date(activitiesData.activities?.movies?.watched_at || 0).getTime()
-    );
-
-    // If we have a previous timestamp and it's different, reload data
-    if (lastActivityTimestamp !== null && currentWatchedAt > lastActivityTimestamp) {
-      await updateData();
-    } else if (Math.random() < 0.05) { // Log status occasionally (5% chance)
-    }
-    
-    lastActivityTimestamp = currentWatchedAt;
-    
-  } catch (error) {
-    console.error('[live-updates] Error checking for updates:', error.message);
-  }
-}
-
-/**
- * Wait for server rebuild to complete before updating data
- */
-async function waitForRebuildComplete(maxWaitTime = 15000) {
-  const startWait = Date.now();
-  
-  while (Date.now() - startWait < maxWaitTime) {
-    try {
-      const response = await fetch('/api/rebuild-status', { cache: 'no-store' });
-      if (!response.ok) break;
-      
-      const status = await response.json();
-      if (!status.isRebuilding) {
-        return true;
+    // Fallback: Si SSE ne marche pas, utiliser un polling intelligent
+    setTimeout(() => {
+      if (!this.isConnected) {
+        logger.liveUpdates('🔄 SSE failed, starting intelligent polling fallback...');
+        this.startPollingFallback();
       }
+    }, 5000);
+  }
+
+  /**
+   * Se connecte au stream SSE
+   */
+  connect() {
+    try {
+      // Utiliser toujours une URL relative pour que ça marche sur tous les environnements
+      const sseUrl = `/api/live-events`;
       
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      logger.liveUpdates(`Connecting to SSE at: ${sseUrl} (on ${window.location.origin})`);
+      this.eventSource = new EventSource(sseUrl);
+      
+      this.eventSource.onopen = () => {
+        logger.liveUpdates('🎉 SSE connection opened - LIVE UPDATES ACTIVE!');
+        this.isConnected = true;
+        this.reconnectDelay = 1000; // Reset reconnect delay on success
+        this.showConnectionStatus(true);
+      };
+
+      this.eventSource.onmessage = (event) => {
+        try {
+          logger.liveUpdates('📨 SSE EVENT RECEIVED:', event.data);
+          const data = JSON.parse(event.data);
+          logger.liveUpdates('📨 SSE PARSED DATA:', data);
+          this.handleEvent(data);
+        } catch (error) {
+          logger.liveUpdatesWarn('Invalid JSON received:', event.data);
+        }
+      };
+
+      this.eventSource.onerror = (error) => {
+        logger.liveUpdatesError('💥 SSE connection error:', error);
+        logger.liveUpdates('EventSource readyState:', this.eventSource.readyState);
+        this.isConnected = false;
+        this.showConnectionStatus(false);
+        this.scheduleReconnect();
+      };
+
+    } catch (error) {
+      logger.liveUpdatesError('Failed to create EventSource:', error);
+      this.scheduleReconnect();
+    }
+  }
+
+  /**
+   * Gère les événements reçus du serveur
+   */
+  handleEvent(data) {
+    logger.liveUpdates('🚀 HANDLING EVENT:', data);
+    
+    switch (data.type) {
+      case 'connected':
+        logger.liveUpdates('Connected to REAL LIVE updates');
+        break;
+        
+      case 'heartbeat':
+        logger.liveUpdates('💓 Heartbeat received');
+        break;
+        
+      case 'card-update':
+        logger.liveUpdates(`⚡ LIVE CARD UPDATE: ${data.cardType} ${data.traktId}`);
+        logger.liveUpdates('📦 Card data:', data.card);
+        this.updateCard(data.cardType, data.traktId, data.card);
+        break;
+        
+      default:
+        logger.liveUpdatesWarn('❓ Unknown event type:', data.type);
+    }
+  }
+
+  /**
+   * Met à jour une carte spécifique dans l'interface
+   */
+  async updateCard(cardType, traktId, cardData) {
+    const traktIdNum = parseInt(traktId);
+    
+    // Pour les changements externes, forcer un rechargement complet des données
+    // car les nouvelles données peuvent ne pas être dans le cache local
+    logger.liveUpdates(`⚡ External change detected for ${cardType} ${traktIdNum} - reloading fresh data...`);
+    
+    try {
+      // Import dynamique pour éviter les dépendances circulaires
+      const { loadData } = await import('./data.js');
+      
+      // Recharger toutes les données depuis le serveur
+      await loadData();
+      
+      // Re-rendre l'interface avec les nouvelles données
+      renderCurrent();
+      
+      logger.liveUpdates(`🔥 FULL DATA RELOAD COMPLETE FOR EXTERNAL CHANGE - ${cardType.toUpperCase()} ${traktIdNum} IS NOW UP TO DATE!`);
+      
+      // Feedback visuel pour montrer que la mise à jour est live
+      this.showLiveUpdateFeedback(cardType, traktIdNum);
+      this.showLiveUpdateNotification(cardType, traktIdNum);
       
     } catch (error) {
-      console.warn('[live-updates] Error checking rebuild status:', error.message);
-      break;
+      logger.liveUpdatesError(`Failed to reload data for external change:`, error);
+      
+      // Fallback: essayer la méthode originale de mise à jour de carte
+      this.updateCardFallback(cardType, traktId, cardData);
     }
   }
-  
-  return false;
-}
 
-/**
- * Update the page data and re-render
- */
-async function updateData() {
-  if (isUpdating) return;
-  
-  isUpdating = true;
-  
-  try {
-    
-    // Show updating notification
-    showUpdatingNotification();
-    
-    // Wait for server rebuild to complete
-    await waitForRebuildComplete();
-    
-    const startTime = Date.now();
-    
-    // Reload data
-    await loadData();
-    
-    // Re-render current tab
-    renderCurrent();
-    
-    // Show a subtle notification
-    showUpdateNotification();
-    
-    const duration = Date.now() - startTime;
-    
-  } catch (error) {
-    console.error('[live-updates] Error updating data:', error.message);
-  } finally {
-    isUpdating = false;
-  }
-}
+  /**
+   * Fallback: Met à jour une carte spécifique dans l'interface (méthode originale)
+   */
+  updateCardFallback(cardType, traktId, cardData) {
+    const traktIdNum = parseInt(traktId);
+    let updated = false;
 
-/**
- * Show updating notification
- */
-function showUpdatingNotification() {
-  const notification = document.createElement('div');
-  notification.id = 'updating-notification';
-  notification.className = 'fixed top-4 right-4 z-50 bg-blue-600/90 text-white px-4 py-2 rounded-lg shadow-lg text-sm backdrop-blur-sm';
-  notification.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Updating data...';
-  
-  document.body.appendChild(notification);
-  
-  // Animate in
-  notification.style.transform = 'translateX(100%)';
-  notification.style.transition = 'transform 0.3s ease-out';
-  
-  setTimeout(() => {
-    notification.style.transform = 'translateX(0)';
-  }, 10);
-  
-  return notification;
-}
-
-/**
- * Show a subtle notification that data was updated
- */
-function showUpdateNotification() {
-  // Remove updating notification if exists
-  const updatingNotification = document.getElementById('updating-notification');
-  if (updatingNotification) {
-    updatingNotification.remove();
-  }
-  
-  // Create success notification
-  const notification = document.createElement('div');
-  notification.className = 'fixed top-4 right-4 z-50 bg-green-600/90 text-white px-4 py-2 rounded-lg shadow-lg text-sm backdrop-blur-sm';
-  notification.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Data updated';
-  
-  document.body.appendChild(notification);
-  
-  // Animate in
-  notification.style.transform = 'translateX(100%)';
-  notification.style.transition = 'transform 0.3s ease-out';
-  
-  setTimeout(() => {
-    notification.style.transform = 'translateX(0)';
-  }, 10);
-  
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.transform = 'translateX(100%)';
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
+    if (cardType === 'show') {
+      // Mettre à jour dans toutes les sections de séries
+      const sections = ['showsRows', 'showsUnseenRows'];
+      for (const section of sections) {
+        const rows = DATA[section] || [];
+        const index = rows.findIndex(s => s.ids?.trakt === traktIdNum);
+        if (index !== -1) {
+          // Remplacer la carte existante par les nouvelles données
+          rows[index] = { ...cardData };
+          updated = true;
+          logger.liveUpdates(`⚡ Updated show ${traktIdNum} in ${section} (fallback)`);
+        }
       }
-    }, 300);
-  }, 3000);
+    } else if (cardType === 'movie') {
+      // Mettre à jour dans toutes les sections de films
+      const sections = ['moviesRows', 'moviesUnseenRows'];
+      for (const section of sections) {
+        const rows = DATA[section] || [];
+        const index = rows.findIndex(m => m.ids?.trakt === traktIdNum);
+        if (index !== -1) {
+          // Remplacer la carte existante par les nouvelles données
+          rows[index] = { ...cardData };
+          updated = true;
+          logger.liveUpdates(`⚡ Updated movie ${traktIdNum} in ${section} (fallback)`);
+        }
+      }
+    }
+
+    // Re-rendre l'interface si on a fait des changements
+    if (updated) {
+      renderCurrent();
+      logger.liveUpdates(`🔥 INTERFACE RE-RENDERED FOR ${cardType.toUpperCase()} ${traktIdNum} - FALLBACK UPDATE COMPLETE!`);
+      
+      // Feedback visuel pour montrer que la mise à jour est live
+      this.showLiveUpdateFeedback(cardType, traktIdNum);
+      this.showLiveUpdateNotification(cardType, traktIdNum);
+    } else {
+      logger.liveUpdatesWarn(`Card ${cardType} ${traktIdNum} not found in current data (fallback)`);
+    }
+  }
+
+  /**
+   * Affiche un feedback visuel pour les mises à jour live
+   */
+  showLiveUpdateFeedback(cardType, traktId) {
+    // Trouver la carte dans le DOM et la faire clignoter brièvement
+    const cardElement = document.querySelector(`[data-prefetch*="${traktId}"]`);
+    if (cardElement) {
+      cardElement.style.transition = 'box-shadow 0.5s ease';
+      cardElement.style.boxShadow = '0 0 25px rgba(34, 197, 94, 0.8)';
+      
+      setTimeout(() => {
+        cardElement.style.boxShadow = '';
+      }, 1500);
+    }
+  }
+
+  /**
+   * Affiche une notification live groupée
+   */
+  showLiveUpdateNotification(cardType, traktId) {
+    // Vérifier s'il y a déjà une notification live active
+    let existingNotification = document.querySelector('.live-update-notification');
+    
+    if (existingNotification) {
+      // Mettre à jour la notification existante
+      const content = existingNotification.querySelector('.notification-content');
+      if (content) {
+        content.innerHTML = `<i class="fa-solid fa-bolt mr-2 text-yellow-300"></i>⚡ LIVE DATA RELOADED - External changes detected`;
+      }
+      return;
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = 'live-update-notification fixed top-4 right-4 z-50 bg-green-500/95 text-white px-4 py-2 rounded-lg shadow-lg text-sm backdrop-blur-sm border-l-4 border-green-300';
+    
+    const content = document.createElement('div');
+    content.className = 'notification-content';
+    content.innerHTML = `<i class="fa-solid fa-bolt mr-2 text-yellow-300"></i>⚡ LIVE DATA RELOADED - External changes detected`;
+    
+    notification.appendChild(content);
+    document.body.appendChild(notification);
+    
+    // Animate in
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'transform 0.3s ease-out';
+    
+    setTimeout(() => {
+      notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
+  }
+
+  /**
+   * Affiche le statut de connexion
+   */
+  showConnectionStatus(connected) {
+    // On peut ajouter un indicateur visuel dans le header si nécessaire
+    const indicator = document.querySelector('.live-status');
+    if (indicator) {
+      indicator.className = `live-status ${connected ? 'connected' : 'disconnected'}`;
+      indicator.textContent = connected ? '⚡ Live' : '❌ Offline';
+    }
+  }
+
+  /**
+   * Programme une reconnexion automatique
+   */
+  scheduleReconnect() {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+    }
+
+    this.close();
+
+    logger.liveUpdates(`Reconnecting in ${this.reconnectDelay}ms...`);
+    this.reconnectTimeout = setTimeout(() => {
+      this.connect();
+    }, this.reconnectDelay);
+
+    // Augmenter le délai de reconnexion (backoff exponentiel)
+    this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, this.maxReconnectDelay);
+  }
+
+  /**
+   * Ferme la connexion SSE
+   */
+  close() {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+      this.isConnected = false;
+    }
+
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+  }
+
+  /**
+   * Fallback: Polling intelligent pour les mises à jour externes
+   */
+  startPollingFallback() {
+    logger.liveUpdates('📡 Starting intelligent polling fallback (every 2 minutes)');
+    this.isConnected = true; // On considère qu'on est "connecté" via polling
+    this.pollingInterval = setInterval(async () => {
+      try {
+        // Appeler l'API pour voir s'il y a eu des changements
+        const response = await fetch('/api/live-status', { cache: 'no-store' });
+        const data = await response.json();
+        
+        if (data.hasRecentChanges) {
+          logger.liveUpdates('🔄 External changes detected via polling - reloading data...');
+          
+          // Recharger les données comme avec SSE
+          const { loadData } = await import('./data.js');
+          await loadData();
+          const { renderCurrent } = await import('./rendering.js');
+          renderCurrent();
+          
+          this.showLiveUpdateNotification('external', 'changes');
+          logger.liveUpdates('🔄 Data reloaded successfully via polling fallback!');
+        }
+      } catch (error) {
+        logger.liveUpdatesWarn('Polling fallback error:', error.message);
+      }
+    }, 120000); // Polling toutes les 2 minutes
+  }
+
+  /**
+   * Arrête complètement le système de mise à jour live
+   */
+  stop() {
+    logger.liveUpdates('Stopping REAL LIVE updates...');
+    this.close();
+    
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
+    
+    this.showConnectionStatus(false);
+  }
 }
 
+// Instance globale du gestionnaire
+const liveUpdates = new LiveUpdatesManager();
+
 /**
- * Start live updates
+ * Start live updates (NOUVEAU système SSE)
  */
 export function startLiveUpdates() {
-  if (updateInterval) {
-    return;
-  }
-  
-  
-  // Initial check
-  checkForUpdates();
-  
-  // Set up interval
-  updateInterval = setInterval(checkForUpdates, CHECK_INTERVAL);
+  logger.liveUpdates('🔥 STARTING REAL LIVE SYSTEM WITH SSE');
+  liveUpdates.start();
 }
 
 /**
  * Stop live updates
  */
 export function stopLiveUpdates() {
-  if (updateInterval) {
-    clearInterval(updateInterval);
-    updateInterval = null;
-  }
+  liveUpdates.stop();
 }
 
 /**
@@ -212,13 +366,28 @@ export function stopLiveUpdates() {
  */
 export function getLiveUpdatesStatus() {
   return {
-    active: !!updateInterval,
-    lastCheck: lastActivityTimestamp,
-    isUpdating
+    active: liveUpdates.isConnected,
+    type: 'SSE (Server-Sent Events)',
+    isConnected: liveUpdates.isConnected
   };
 }
 
-// Manual update function for debugging
-export function forceUpdate() {
-  updateData();
+// Auto-start quand la page est chargée
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // Attendre un peu pour laisser l'app se charger
+    setTimeout(() => {
+      startLiveUpdates();
+    }, 2000);
+  });
+} else {
+  // Page déjà chargée, démarrer immédiatement
+  setTimeout(() => {
+    startLiveUpdates();
+  }, 2000);
 }
+
+// Nettoyer avant la fermeture de la page
+window.addEventListener('beforeunload', () => {
+  liveUpdates.stop();
+});

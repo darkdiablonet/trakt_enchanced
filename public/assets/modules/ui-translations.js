@@ -41,8 +41,6 @@ class UITranslations {
     this.translationMap.set('[value="year:asc"]', 'sort.year_asc');
     this.translationMap.set('[value="episodes:desc"]', 'sort.episodes_desc');
     this.translationMap.set('[value="plays:desc"]', 'sort.plays_desc');
-    this.translationMap.set('[value="collected_at:desc"]', 'sort.collected_at_desc');
-    this.translationMap.set('[value="collected_at:asc"]', 'sort.collected_at_asc');
     this.translationMap.set('[value="missing:desc"]', 'sort.missing_desc');
     this.translationMap.set('[value="missing:asc"]', 'sort.missing_asc');
   }
@@ -194,12 +192,6 @@ class UITranslations {
             break;
           case 'plays:desc':
             translationKey = 'sort.plays_desc';
-            break;
-          case 'collected_at:desc':
-            translationKey = 'sort.collected_at_desc';
-            break;
-          case 'collected_at:asc':
-            translationKey = 'sort.collected_at_asc';
             break;
           case 'missing:desc':
             translationKey = 'sort.missing_desc';

@@ -160,6 +160,21 @@ class I18n {
     }
     return this.t('time.minutes', { count: m });
   }
+
+  /**
+   * Get user timezone automatically or from translation
+   */
+  getTimezone() {
+    const configuredTz = this.t('stats.timezone');
+    if (configuredTz === 'auto' || !configuredTz) {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+      } catch (err) {
+        return 'UTC'; // fallback
+      }
+    }
+    return configuredTz;
+  }
 }
 
 // Create global instance
