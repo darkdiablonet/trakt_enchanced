@@ -8,6 +8,7 @@ import { state, DATA } from './state.js';
 import { invalidateWatchingCache } from './watching-details.js';
 import { renderCurrent } from './rendering.js';
 import i18n from './i18n.js';
+import indexedDBCache from './indexeddb-cache.js';
 
 // Fonction pour mettre à jour les données d'une série avec les données du serveur
 function updateShowDataWithServerCard(traktId, serverCard) {
@@ -452,6 +453,9 @@ document.addEventListener('click', async (e) => {
       btn.className = originalClass.replace('loading', '') + ' success';
       btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Vu ✓</span>';
       
+      // Invalider le cache IndexedDB car les données ont changé
+      await indexedDBCache.clearPageData();
+      
       // Invalider le cache de la modal des épisodes vus
       invalidateWatchingCache(traktId, 'show');
       
@@ -520,6 +524,9 @@ document.addEventListener('click', async (e) => {
       // Succès
       btn.className = originalClass.replace('loading', '') + ' success';
       btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Vu ✓</span>';
+      
+      // Invalider le cache IndexedDB car les données ont changé
+      await indexedDBCache.clearPageData();
       
       // Invalider le cache de la modal des visionnages
       invalidateWatchingCache(traktId, 'movie');
@@ -595,6 +602,9 @@ document.addEventListener('click', async (e) => {
     const result = await unmarkEpisodeWatched(traktId, season, number);
     
     if (result.ok) {
+      // Invalider le cache IndexedDB car les données ont changé
+      await indexedDBCache.clearPageData();
+      
       // Invalider le cache de la modal des épisodes vus
       invalidateWatchingCache(traktId, 'show');
       
