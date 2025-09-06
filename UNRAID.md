@@ -26,9 +26,6 @@ Network Type: bridge
 
 # Variables d'environnement optionnelles
 - PORT: 30009 (par défaut)
-- NODE_ENV: production
-- TZ: Europe/Paris (votre timezone)
-- PUBLIC_HOST: http://votre-ip:30009 (pour OAuth Trakt)
 
 # Ports
 - Container Port: 30009

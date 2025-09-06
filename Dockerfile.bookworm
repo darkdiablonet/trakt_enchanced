@@ -1,22 +1,22 @@
 # syntax=docker/dockerfile:1.7
-FROM node:20-alpine AS build
+FROM node:20-bookworm AS build
 
 # Build metadata
 LABEL org.opencontainers.image.title="Trakt Enhanced"
 LABEL org.opencontainers.image.description="Trakt Enhanced Node.js application"
-LABEL org.opencontainers.image.version="7.1.1"
+LABEL org.opencontainers.image.version="7.1.0"
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/diabolino/trakt_enhanced"
 LABEL org.opencontainers.image.documentation="https://github.com/diabolino/trakt-enhanced/blob/main/README.md"
 LABEL org.opencontainers.image.source="https://github.com/diabolino/trakt-enhanced"
 LABEL org.opencontainers.image.vendor="Trakt Enhanced"
 LABEL org.opencontainers.image.authors="matt"
 
-# Install build deps for Alpine
-# Include dependencies for sharp compilation from source
-RUN apk add --no-cache \
-	git ca-certificates build-base python3 curl \
-	vips-dev glib-dev expat-dev \
-	pkgconfig autoconf automake libtool nasm
+# Install build deps (fonts / build tools)
+# Include libvips dependencies for sharp compilation on older CPUs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	git ca-certificates build-essential python3 curl \
+	libvips-dev libglib2.0-dev libexpat1-dev \
+	&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 
@@ -37,6 +37,7 @@ RUN set -eux; \
 	  npm install --legacy-peer-deps --no-audit --progress=false --build-from-source=sharp; \
 	fi
 
+
 # copy full repo
 COPY . .
 
@@ -50,7 +51,7 @@ RUN npm run build
 RUN npm prune --production || true
 
 # runtime image
-FROM node:20-alpine AS runtime
+FROM node:20-bookworm-slim AS runtime
 ENV NODE_ENV=production
 ENV PORT=30009
 ENV TZ=UTC
@@ -59,15 +60,13 @@ ENV PUBLIC_HOST=""
 ENV DOCKER_HOST_IP=""
 ENV FULL_REBUILD_PASSWORD=""
 
-# minimal runtime deps for Alpine
-RUN apk add --no-cache ca-certificates tzdata curl \
-	# Required runtime libs for sharp
-	vips glib expat
+# minimal runtime deps
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata curl \
+	&& rm -rf /var/lib/apt/lists/*
 
 # create app user with Unraid compatible UID/GID (99:100)
-# Alpine uses different user management
-RUN addgroup -g 100 -S users 2>/dev/null || true && \
-    adduser -u 99 -G users -s /bin/sh -D -H app
+# Note: GID 100 (users) already exists in Debian, so we use it directly
+RUN useradd -u 99 -g 100 -m -s /bin/sh app
 
 WORKDIR /app
 

@@ -275,10 +275,7 @@ If you prefer to manually create the `.env` file, you can still do so:
 | Variable | Description | Default | Example |
 |----------|-------------|---------|---------|
 | `PORT` | Application listening port | `30009` | `30009` |
-| `TZ` | Timezone | `UTC` | `Europe/Paris` |
-| `SESSION_SECRET` | Secret for sessions (auto-generated if missing) | auto | `my_random_secret` |
-| `FULL_REBUILD_PASSWORD` | Password for complete rebuild | - | `rebuild123` |
-| `REFRESH_EVERY_MS` | Auto refresh interval (ms) | `3600000` | `1800000` |
+
 
 ## 🗂️ Volumes
 
