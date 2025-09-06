@@ -108,6 +108,7 @@ class UITranslations {
     this.translateTab('#tabBtnMoviesUnseen', 'navigation.movies_unseen');
     this.translateTab('#tabBtnPlayback', 'navigation.playback');
     this.translateTab('#tabBtnStats', 'navigation.stats');
+    this.translateTab('#tabBtnCalendar', 'navigation.calendar');
 
     // Buttons with spans - use proper DOM traversal
     this.translateButtonWithSpan('Rafraîchir', 'buttons.refresh');

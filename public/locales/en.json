@@ -12,7 +12,8 @@
     "shows_unseen": "Shows to watch",
     "movies_unseen": "Movies to watch",
     "playback": "In progress",
-    "stats": "Stats"
+    "stats": "Stats",
+    "calendar": "Calendar"
   },
   "tooltips": {
     "shows_unseen": "In collection with missing episodes",
@@ -112,7 +113,14 @@
     "no_viewings": "No viewings that day",
     "no_viewings_found": "No viewings found",
     "less": "Less",
-    "more": "More"
+    "more": "More",
+    "title": "Release Calendar",
+    "loading": "Loading calendar...",
+    "error": "Error loading calendar",
+    "retry": "Retry",
+    "no_episodes": "No episodes scheduled",
+    "prev_week": "Previous week",
+    "next_week": "Next week"
   },
   "modals": {
     "full_rebuild": {

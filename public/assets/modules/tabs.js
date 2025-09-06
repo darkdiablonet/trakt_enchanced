@@ -58,10 +58,11 @@ export function setTab(tab) {
   Object.entries(elements.tabBtns).forEach(([k,b]) => b?.classList.toggle('tab-btn-active', k===tab));
   Object.entries(elements.panels).forEach(([k,p]) => p?.classList.toggle('hidden', k!==tab));
 
-  // Cacher les filtres sur "stats" et "playback"
+  // Cacher les filtres sur "stats", "calendar" et "playback"
   const isStats = (tab === 'stats');
   const isPlayback = (tab === 'playback');
-  const hideFilters = isStats || isPlayback;
+  const isCalendar = (tab === 'calendar');
+  const hideFilters = isStats || isPlayback || isCalendar;
   
   // Masquer le bouton mobile et sa section
   document.getElementById('mobileFiltersToggle')?.classList.toggle('hidden', hideFilters);
@@ -75,6 +76,18 @@ export function setTab(tab) {
   if (isStats) {
     // Charger Pro Stats (qui génère aussi la heatmap depuis ses données)
     import('./pro-stats.js').then(({ loadStatsPro }) => loadStatsPro().catch(()=>{}));
+    return;
+  }
+
+  if (isCalendar) {
+    // Charger le calendrier
+    import('./calendar.js').then(({ initCalendar }) => {
+      try {
+        initCalendar();
+      } catch(e) {
+        console.error('Calendar initialization error:', e);
+      }
+    });
     return;
   }
 

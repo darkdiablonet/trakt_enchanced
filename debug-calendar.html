@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Calendar</title>
+</head>
+<body>
+    <h1>Debug Calendar Tab</h1>
+    
+    <script>
+        // Attendre que la page soit chargée
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                console.log('=== DEBUG CALENDAR TAB ===');
+                
+                // 1. Vérifier si l'élément existe
+                const calendarBtn = document.getElementById('tabBtnCalendar');
+                console.log('Calendar button exists:', calendarBtn);
+                console.log('Calendar button dataset:', calendarBtn?.dataset);
+                console.log('Calendar button classes:', calendarBtn?.classList.toString());
+                
+                // 2. Vérifier si l'élément panel existe
+                const calendarPanel = document.getElementById('panelCalendar');
+                console.log('Calendar panel exists:', calendarPanel);
+                
+                // 3. Vérifier les éléments DOM dans le module
+                if (window.elements) {
+                    console.log('Dom elements.tabBtns.calendar:', window.elements.tabBtns?.calendar);
+                    console.log('Dom elements.panels.calendar:', window.elements.panels?.calendar);
+                }
+                
+                // 4. Essayer de cliquer manuellement
+                if (calendarBtn) {
+                    console.log('Attempting manual click...');
+                    calendarBtn.click();
+                }
+                
+                // 5. Tester la fonction setTab directement
+                if (window.setTab) {
+                    console.log('Calling setTab("calendar") directly...');
+                    window.setTab('calendar');
+                }
+                
+            }, 2000); // Attendre 2 secondes après le chargement
+        });
+    </script>
+    
+    <!-- Pointer vers l'app principale -->
+    <iframe src="http://localhost:30009" width="100%" height="800px"></iframe>
+</body>
+</html>

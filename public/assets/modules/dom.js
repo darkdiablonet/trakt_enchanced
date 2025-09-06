@@ -20,6 +20,7 @@ export const elements = {
     movies_unseen: document.getElementById('tabBtnMoviesUnseen'),
     playback: document.getElementById('tabBtnPlayback'),
     stats: document.getElementById('tabBtnStats'),
+    calendar: document.getElementById('tabBtnCalendar'),
   },
   
   // Panels
@@ -30,6 +31,7 @@ export const elements = {
     movies_unseen: document.getElementById('panelMoviesUnseen'),
     playback: document.getElementById('panelPlayback'),
     stats: document.getElementById('panelStats'),
+    calendar: document.getElementById('panelCalendar'),
   },
   
   // Grids

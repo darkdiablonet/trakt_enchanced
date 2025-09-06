@@ -12,7 +12,8 @@
     "shows_unseen": "Séries à voir",
     "movies_unseen": "Films à voir",
     "playback": "En cours",
-    "stats": "Stats"
+    "stats": "Stats",
+    "calendar": "Calendrier"
   },
   "tooltips": {
     "shows_unseen": "En collection avec épisodes manquants",
@@ -112,7 +113,14 @@
     "no_viewings": "Aucun visionnage ce jour-là",
     "no_viewings_found": "Aucun visionnage trouvé",
     "less": "Moins",
-    "more": "Plus"
+    "more": "Plus",
+    "title": "Calendrier des sorties",
+    "loading": "Chargement du calendrier...",
+    "error": "Erreur lors du chargement du calendrier",
+    "retry": "Réessayer",
+    "no_episodes": "Aucun épisode prévu",
+    "prev_week": "Semaine précédente",
+    "next_week": "Semaine suivante"
   },
   "modals": {
     "full_rebuild": {

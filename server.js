@@ -15,7 +15,7 @@ import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddlewar
 import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection } from './lib/security.js';
 import { serverI18n } from './lib/i18n.js';
 
-import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASS, TITLE, reloadEnv } from './lib/config.js';
+import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASSWORD, TITLE, reloadEnv } from './lib/config.js';
 import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken } from './lib/trakt.js';
 // Ancien système de cache global supprimé - utilisation du cache granulaire uniquement
 import { buildPageDataGranular, getOrBuildShowCard, updateSpecificCard } from './lib/pageDataNew.js';
@@ -368,10 +368,10 @@ function clearTraktCache() {
 app.post('/refresh', csrfProtection, (req, res) => { req.session.forceRefreshOnce = true; res.redirect('/'); });
 app.post('/full_rebuild', csrfProtection, (req, res) => {
   const pwd = String(req.body.pwd || '');
-  if (!FULL_REBUILD_PASS) {
+  if (!FULL_REBUILD_PASSWORD) {
     req.session.flash = 'Mot de passe de full rebuild non configuré côté serveur.';
     res.redirect('/');
-  } else if (pwd !== FULL_REBUILD_PASS) {
+  } else if (pwd !== FULL_REBUILD_PASSWORD) {
     req.session.flash = 'Mot de passe incorrect.';
     res.redirect('/');
   } else {
@@ -1029,6 +1029,67 @@ app.get('/api/watchings-by-date/:date', performanceMiddleware('watchingsByDate')
     logger.error('Erreur API watchings-by-date:', err);
     res.status(500).json({ 
       error: 'Erreur interne du serveur' 
+    });
+  }
+}));
+
+// API: Calendrier des sorties Trakt
+app.get('/api/calendar', performanceMiddleware('calendar'), asyncHandler(async (req, res) => {
+  try {
+    if (!hasValidCredentials()) {
+      return res.status(412).json({ 
+        ok: false, 
+        error: 'Missing configuration',
+        needsSetup: true 
+      });
+    }
+
+    // Récupérer les paramètres de date
+    const startDate = req.query.start_date || new Date().toISOString().slice(0, 10);
+    const days = parseInt(req.query.days) || 7;
+
+    // Valider les paramètres
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+      return res.status(400).json({ 
+        error: 'Format de date invalide. Utilisez YYYY-MM-DD' 
+      });
+    }
+
+    if (days < 1 || days > 31) {
+      return res.status(400).json({ 
+        error: 'Le nombre de jours doit être entre 1 et 31' 
+      });
+    }
+
+    // Appeler l'API Trakt calendars/my/shows
+    const calendarData = await get(`/calendars/my/shows/${startDate}/${days}`);
+    
+    // Enrichir avec les posters si possible
+    if (calendarData && Array.isArray(calendarData)) {
+      const { posterFromTraktId } = await import('./lib/tmdb.js');
+      
+      for (const dayEntry of calendarData) {
+        if (dayEntry.show && dayEntry.show.ids && dayEntry.show.ids.trakt) {
+          const poster = await posterFromTraktId(dayEntry.show.ids.trakt, 'show');
+          if (poster) {
+            dayEntry.show.poster = poster;
+          }
+        }
+      }
+    }
+
+    res.json({
+      ok: true,
+      start_date: startDate,
+      days,
+      calendar: calendarData || []
+    });
+    
+  } catch (err) {
+    logger.error('Erreur API calendar:', err);
+    res.status(500).json({ 
+      error: 'Erreur lors de la récupération du calendrier',
+      details: err.message 
     });
   }
 }));
