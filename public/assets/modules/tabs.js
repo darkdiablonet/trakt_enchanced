@@ -25,6 +25,7 @@ export function rebuildSortOptions(tab) {
   const getTranslationKey = (value) => {
     const translationMap = {
       'watched_at:desc': 'sort.watched_at_desc',
+      'collected_at:desc': 'sort.collected_at_desc',
       'title:asc': 'sort.title_asc',
       'title:desc': 'sort.title_desc',
       'year:desc': 'sort.year_desc',

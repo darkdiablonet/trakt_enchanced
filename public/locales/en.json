@@ -48,13 +48,14 @@
   "sort": {
     "label": "Sort",
     "watched_at_desc": "Recently watched",
+    "collected_at_desc": "Recently watched/added",
     "title_asc": "Title A→Z",
     "title_desc": "Title Z→A",
     "year_desc": "Year ↓",
     "year_asc": "Year ↑",
     "episodes_desc": "Episodes watched ↓",
     "plays_desc": "Watched ↓",
-    "collected_at_desc": "Recently added ↓",
+    "collected_at_desc": "Recently watched/added",
     "collected_at_asc": "Oldest added ↑",
     "missing_desc": "Missing episodes ↓",
     "missing_asc": "Missing episodes ↑"

@@ -48,13 +48,13 @@
   "sort": {
     "label": "Tri",
     "watched_at_desc": "Derniers vus",
+    "collected_at_desc": "Derniers vus/ajoutés",
     "title_asc": "Titre A→Z",
     "title_desc": "Titre Z→A",
     "year_desc": "Année ↓",
     "year_asc": "Année ↑",
     "episodes_desc": "Épisodes vus ↓",
     "plays_desc": "Vus ↓",
-    "collected_at_desc": "Ajoutés récemment ↓",
     "collected_at_asc": "Ajoutés anciennement ↑",
     "missing_desc": "Épisodes manquants ↓",
     "missing_asc": "Épisodes manquants ↑"
