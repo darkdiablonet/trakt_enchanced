@@ -1,10 +1,9 @@
 /**
- * Script de chargement - Suit le VRAI processus de l'application
- * Appelle /api/data et surveille son état comme le fait data.js
+ * Script de chargement - Utilise le VRAI système SSE 
+ * Se connecte à /api/loading-progress qui appelle buildPageDataGranular()
  */
 
-let isLoading = false;
-let currentStep = '';
+let eventSource = null;
 
 // Helper pour récupérer les traductions avec interpolation
 function getTranslation(key, fallback = '', vars = {}) {
@@ -79,133 +78,119 @@ function updateProgress(percent) {
 }
 
 /**
- * Le vrai processus de chargement qui suit exactement ce que fait data.js
+ * Démarre la connexion SSE vers /api/loading-progress
+ * C'est le VRAI système qui appelle buildPageDataGranular()
  */
-async function startRealLoading() {
-  if (isLoading) return;
-  isLoading = true;
+async function startLoading() {
+  console.log('[loading] Starting REAL SSE connection to /api/loading-progress');
   
-  console.log('[loading] Starting REAL loading process matching data.js');
+  // Se connecter au vrai endpoint SSE
+  eventSource = new EventSource('/api/loading-progress');
   
-  // Étape 1: Authentification vérifiée (loading.html n'est affiché que si on passe les vérifications)
-  updateStep('auth', 'completed', getTranslation('loading.step_auth_completed', 'Authentication validated'));
-  updateProgress(5);
+  eventSource.onopen = function() {
+    console.log('[loading] SSE connection opened successfully');
+  };
   
-  try {
-    // Étape 2: Début du chargement - on appelle l'API comme le fait data.js
-    currentStep = 'shows';
-    updateStep('shows', 'active', getTranslation('loading.step_shows_loading', 'Retrieving Trakt data...'));
-    updateProgress(10);
-    
-    console.log('[loading] Calling /api/data - this is what data.js does');
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-    
-    const response = await fetch('/api/data', { 
-      cache: 'no-store',
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
+  eventSource.onmessage = function(event) {
+    try {
+      const data = JSON.parse(event.data);
+      console.log('[loading] SSE data received:', data);
+      
+      // Mettre à jour les étapes
+      if (data.step) {
+        let translatedMessage = data.message || '';
+        
+        // Traduire les messages avec contexte
+        switch(data.step) {
+          case 'auth':
+            if (data.status === 'completed') {
+              translatedMessage = getTranslation('loading.step_auth_completed', 'Token verified');
+            }
+            break;
+          case 'shows':
+            if (data.status === 'loading') {
+              translatedMessage = getTranslation('loading.step_shows_loading', 'Retrieving shows...');
+            } else if (data.status === 'completed') {
+              // Extraire le nombre depuis le message si possible
+              const count = data.message?.match(/(\d+)/)?.[1] || '0';
+              translatedMessage = getTranslation('loading.step_shows_completed', `${count} shows loaded`, {count});
+            }
+            break;
+          case 'movies':
+            if (data.status === 'loading') {
+              translatedMessage = getTranslation('loading.step_movies_loading', 'Processing movies...');
+            } else if (data.status === 'completed') {
+              const count = data.message?.match(/(\d+)/)?.[1] || '0';
+              translatedMessage = getTranslation('loading.step_movies_completed', `${count} movies loaded`, {count});
+            }
+            break;
+          case 'progress':
+            if (data.status === 'loading') {
+              translatedMessage = getTranslation('loading.step_progress_loading', 'Calculating progress...');
+            } else if (data.status === 'completed') {
+              const count = data.message?.match(/(\d+)/)?.[1] || '0';
+              translatedMessage = getTranslation('loading.step_progress_completed', `${count} unseen items`, {count});
+            }
+            break;
+          case 'collection':
+            if (data.status === 'loading') {
+              translatedMessage = getTranslation('loading.step_collection_loading', 'Finalizing collection...');
+            } else if (data.status === 'completed') {
+              translatedMessage = getTranslation('loading.step_collection_completed', 'Collection organized');
+            }
+            break;
+          case 'final':
+            if (data.status === 'loading') {
+              translatedMessage = getTranslation('loading.step_final_loading', 'Finalizing...');
+            } else if (data.status === 'completed') {
+              translatedMessage = getTranslation('loading.step_final_completed', 'Loading complete!');
+            } else if (data.status === 'error') {
+              translatedMessage = getTranslation('loading.error_api', `Error: ${data.message}`, {message: data.message});
+            }
+            break;
+        }
+        
+        updateStep(data.step, data.status, translatedMessage);
+      }
+      
+      // Mettre à jour la barre de progression
+      if (data.progress !== undefined) {
+        updateProgress(data.progress);
+      }
+      
+      // Redirection si terminé
+      if (data.completed) {
+        console.log('[loading] Loading completed - redirecting to main page');
+        eventSource.close();
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      }
+      
+    } catch (error) {
+      console.error('[loading] Error parsing SSE data:', error, 'Raw data:', event.data);
     }
+  };
+  
+  eventSource.onerror = function(error) {
+    console.error('[loading] SSE error:', error);
+    console.log('[loading] EventSource readyState:', eventSource?.readyState);
     
-    updateProgress(25);
-    const data = await response.json();
-    console.log('[loading] API data received:', {
-      hasShows: data.showsRows?.length || 0,
-      hasMovies: data.moviesRows?.length || 0,
-      needsAuth: data.needsAuth,
-      needsSetup: data.needsSetup,
-      builtAt: data.built_at
-    });
-    
-    // Vérifier les redirections comme le fait data.js
-    if (data.needsSetup) {
-      console.log('[loading] Needs setup - redirecting');
-      window.location.href = '/setup';
-      return;
-    }
-    
-    if (data.needsAuth) {
-      console.log('[loading] Needs auth - redirecting to auth flow');
-      window.location.href = '/';
-      return;
-    }
-    
-    // Étape 3: Traitement des séries
-    updateStep('shows', 'completed', getTranslation('loading.step_shows_completed', `${data.showsRows?.length || 0} shows loaded`, {count: data.showsRows?.length || 0}));
-    updateStep('movies', 'active', getTranslation('loading.step_movies_loading', 'Processing movies...'));
-    updateProgress(40);
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Étape 4: Traitement des films
-    updateStep('movies', 'completed', getTranslation('loading.step_movies_completed', `${data.moviesRows?.length || 0} movies loaded`, {count: data.moviesRows?.length || 0}));
-    updateStep('progress', 'active', getTranslation('loading.step_progress_loading', 'Calculating progress...'));
-    updateProgress(60);
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Étape 5: Progression
-    const unseenShows = data.showsUnseenRows?.length || 0;
-    const unseenMovies = data.moviesUnseenRows?.length || 0;
-    updateStep('progress', 'completed', getTranslation('loading.step_progress_completed', `${unseenShows + unseenMovies} unseen items`, {count: unseenShows + unseenMovies}));
-    updateStep('collection', 'active', getTranslation('loading.step_collection_loading', 'Finalizing collection...'));
-    updateProgress(80);
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Étape 6: Collection
-    updateStep('collection', 'completed', getTranslation('loading.step_collection_completed', 'Collection organized'));
-    updateStep('final', 'active', getTranslation('loading.step_final_loading', 'Finalizing...'));
-    updateProgress(90);
-    
-    // Vérifier que les données sont cohérentes (comme le fait data.js)
-    if (!data.built_at) {
-      console.warn('[loading] No built_at timestamp - data may be incomplete');
-    }
-    
-    updateStep('final', 'completed', getTranslation('loading.step_final_completed', 'Loading complete!'));
-    updateProgress(100);
-    
-    // Redirection après un court délai
-    console.log('[loading] Loading complete - redirecting to main page');
+    // Fallback: rediriger après 10s si SSE échoue complètement
     setTimeout(() => {
-      window.location.href = '/';
-    }, 1000);
-    
-  } catch (error) {
-    console.error('[loading] Loading failed:', error);
-    
-    // Gestion des erreurs spécifiques
-    if (error.name === 'AbortError') {
-      updateStep(currentStep, 'error', getTranslation('loading.error_timeout', 'Timeout - loading too long'));
-    } else {
-      updateStep(currentStep, 'error', getTranslation('loading.error_api', `Error: ${error.message}`, {message: error.message}));
-    }
-    
-    // Essayer de rediriger quand même après un délai
-    setTimeout(() => {
-      console.log('[loading] Redirecting despite error');
-      window.location.href = '/';
-    }, 5000);
-  }
+      if (eventSource?.readyState !== EventSource.OPEN) {
+        console.log('[loading] SSE failed - redirecting anyway');
+        window.location.href = '/';
+      }
+    }, 10000);
+  };
 }
 
-// Surveiller les logs du serveur si possible (dev uniquement)
-if (window.location.hostname === 'localhost') {
-  console.log('[loading] Development mode - will show detailed logs');
-}
-
-// Démarrer le vrai processus au chargement de la page
-window.addEventListener('load', startRealLoading);
+// Démarrer le chargement au load de la page
+window.addEventListener('load', startLoading);
 
 // Fallback si rien ne se passe après 45 secondes
 setTimeout(() => {
-  if (isLoading) {
-    console.warn('[loading] Fallback redirect after 45 seconds');
-    window.location.href = '/';
-  }
+  console.warn('[loading] Fallback redirect after 45 seconds');
+  window.location.href = '/';
 }, 45000);
