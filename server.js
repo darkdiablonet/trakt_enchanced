@@ -15,8 +15,8 @@ import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddlewar
 import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection } from './lib/security.js';
 import { serverI18n } from './lib/i18n.js';
 
-import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASSWORD, TITLE, reloadEnv } from './lib/config.js';
-import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken } from './lib/trakt.js';
+import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASSWORD, TITLE, reloadEnv, OAUTH_REDIRECT_URI } from './lib/config.js';
+import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken, getOAuthAuthorizeUrl, exchangeCodeForToken } from './lib/trakt.js';
 // Ancien système de cache global supprimé - utilisation du cache granulaire uniquement
 import { buildPageDataGranular, getOrBuildShowCard, updateSpecificCard } from './lib/pageDataNew.js';
 import { makeRefresher, loadDeviceCode, saveDeviceCode, clearDeviceCode, getPublicHost, jsonLoad } from './lib/util.js';
@@ -342,6 +342,57 @@ app.get('/oauth/new', asyncHandler(async (req, res) => {
   res.redirect('/'); 
 }));
 
+// New OAuth authorization flow
+app.get('/auth', asyncHandler(async (req, res) => {
+  // Generate a random state for CSRF protection
+  const state = crypto.randomBytes(16).toString('hex');
+  req.session.oauth_state = state;
+  
+  // Redirect to Trakt OAuth authorization page
+  const authUrl = getOAuthAuthorizeUrl(state);
+  res.redirect(authUrl);
+}));
+
+// OAuth callback handler
+app.get('/auth/callback', asyncHandler(async (req, res) => {
+  const { code, state } = req.query;
+  
+  // Verify state for CSRF protection
+  if (!state || state !== req.session.oauth_state) {
+    logger.warn('OAuth callback: Invalid state parameter');
+    return res.status(400).send('Invalid state parameter');
+  }
+  
+  // Clear the state from session
+  delete req.session.oauth_state;
+  
+  if (!code) {
+    logger.warn('OAuth callback: No authorization code received');
+    return res.status(400).send('No authorization code received');
+  }
+  
+  try {
+    // Exchange the code for an access token
+    const token = await exchangeCodeForToken(code);
+    
+    if (token && token.access_token) {
+      // Save the token
+      await saveToken(token);
+      req.session.trakt = token;
+      
+      logger.info('OAuth: Successfully authenticated user');
+      
+      // Redirect to loading page which will handle the rest
+      res.redirect('/loading?auth=success');
+    } else {
+      throw new Error('Invalid token response');
+    }
+  } catch (error) {
+    logger.error('OAuth callback error:', error);
+    res.status(500).send('Authentication failed. Please try again.');
+  }
+}));
+
 // Fonction pour effacer le dossier de cache Trakt
 function clearTraktCache() {
   try {
@@ -415,44 +466,18 @@ app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async 
   const headers = traktHeaders(token?.access_token);
   
   if (!token?.access_token) {
-    // On a les credentials mais pas de token - il faut générer un device prompt
-    const dc = req.session.device_code || await loadDeviceCode();
-    if (!dc?.device_code) {
-      // Générer un nouveau device code
-      try {
-        const newDc = await deviceCode();
-        if (newDc?.device_code) {
-          req.session.device_code = newDc;
-          await saveDeviceCode(newDc);
-          
-          return res.json({
-            title: TITLE,
-            flash,
-            needsAuth: true,
-            devicePrompt: newDc,
-            showsRows: [],
-            moviesRows: [],
-            showsUnseenRows: [],
-            moviesUnseenRows: []
-          });
-        }
-      } catch (error) {
-        console.error('[api/data] Error generating device code:', error);
-        return res.status(500).json({ error: 'Failed to generate device code' });
-      }
-    } else {
-      // Device code existant
-      return res.json({
-        title: TITLE,
-        flash,
-        needsAuth: true,
-        devicePrompt: dc,
-        showsRows: [],
-        moviesRows: [],
-        showsUnseenRows: [],
-        moviesUnseenRows: []
-      });
-    }
+    // OAuth flow - n'envoyer que needsAuth sans générer de device code
+    // L'interface affichera le bouton OAuth
+    return res.json({
+      title: TITLE,
+      flash,
+      needsAuth: true,
+      devicePrompt: null, // Pas de device code = bouton OAuth
+      showsRows: [],
+      moviesRows: [],
+      showsUnseenRows: [],
+      moviesUnseenRows: []
+    });
   }
 
   // On a les credentials et le token - construire les données normalement
@@ -1349,6 +1374,7 @@ app.post('/setup', csrfProtection, asyncHandler(async (req, res) => {
       process.env.TMDB_API_KEY = config.tmdbApiKey || '';
       process.env.LANGUAGE = config.language || 'fr-FR';
       if (config.fullRebuildPassword) process.env.FULL_REBUILD_PASSWORD = config.fullRebuildPassword;
+      if (config.oauthRedirectUri) process.env.OAUTH_REDIRECT_URI = config.oauthRedirectUri;
       // Recharger les exports dynamiques du module config
       try { reloadEnv(); } catch {}
       

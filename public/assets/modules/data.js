@@ -20,6 +20,20 @@ let lastDevicePromptData = null;
 function renderDevicePrompt(devicePrompt) {
   lastDevicePromptData = devicePrompt;
   
+  // Option OAuth - méthode recommandée
+  if (!devicePrompt || !devicePrompt.user_code) {
+    return `
+      <h2 class="text-lg font-semibold mb-2">${i18n.t('device_auth.title')}</h2>
+      <p class="text-secondary text-sm mb-4">${i18n.t('device_auth.oauth_instructions')}</p>
+      <div class="mt-3 flex items-center gap-2">
+        <a href="/auth" class="btn btn-primary bg-sky-600 hover:bg-sky-700">
+          <i class="fa-solid fa-right-to-bracket mr-2"></i>${i18n.t('device_auth.oauth_button')}
+        </a>
+      </div>
+    `;
+  }
+  
+  // Fallback device code si présent
   const expiryDate = new Date(devicePrompt.expires_in * 1000 + Date.now()).toLocaleString();
   const url = devicePrompt.verification_url;
   
@@ -137,7 +151,15 @@ function applyUIFromData(js) {
   }
 
   // Device prompt pour authentification
-  if (js.devicePrompt && js.devicePrompt.user_code) {
+  if (js.needsAuth) {
+    // Afficher OAuth prompt si besoin d'auth (avec ou sans device code)
+    elements.deviceBox.innerHTML = renderDevicePrompt(js.devicePrompt);
+    elements.deviceBox.classList.remove('hidden');
+    if (js.devicePrompt && js.devicePrompt.user_code) {
+      setupDevicePromptEvents();
+    }
+  } else if (js.devicePrompt && js.devicePrompt.user_code) {
+    // Ancien comportement pour device code uniquement
     elements.deviceBox.innerHTML = renderDevicePrompt(js.devicePrompt);
     elements.deviceBox.classList.remove('hidden');
     setupDevicePromptEvents();

@@ -44,19 +44,35 @@ class SetupI18n {
     this.translateLabel('port', 'setup.port');
     this.translateLabel('traktClientId', 'setup.trakt_client_id');
     this.translateLabel('traktClientSecret', 'setup.trakt_client_secret');
+    this.translateLabel('oauthRedirectUri', 'setup.oauth_redirect_uri');
     this.translateLabel('tmdbApiKey', 'setup.tmdb_api_key');
     this.translateLabel('fullRebuildPassword', 'setup.rebuild_password');
 
     // Translate placeholders
     this.translatePlaceholder('traktClientId', 'setup.trakt_client_id_placeholder');
     this.translatePlaceholder('traktClientSecret', 'setup.trakt_client_secret_placeholder');
+    this.translatePlaceholder('oauthRedirectUri', 'setup.oauth_redirect_uri_placeholder');
     this.translatePlaceholder('tmdbApiKey', 'setup.tmdb_api_key_placeholder');
     this.translatePlaceholder('fullRebuildPassword', 'setup.rebuild_password_placeholder');
 
     // Translate help texts
-    const help = document.querySelector('input[name="fullRebuildPassword"] + p');
-    if (help) {
-      help.textContent = this.i18n.t('setup.rebuild_password_help');
+    const oauthHelp = document.querySelector('input[name="oauthRedirectUri"] + p');
+    if (oauthHelp) {
+      oauthHelp.textContent = this.i18n.t('setup.oauth_redirect_uri_help');
+    }
+    
+    const passwordHelp = document.querySelector('input[name="fullRebuildPassword"] + p');
+    if (passwordHelp) {
+      passwordHelp.textContent = this.i18n.t('setup.rebuild_password_help');
+    }
+
+    // Translate OAuth redirect URI warning
+    const oauthWarning = document.getElementById('oauth-redirect-warning');
+    if (oauthWarning) {
+      oauthWarning.innerHTML = `
+        <i class="fa-solid fa-exclamation-triangle mr-2 text-amber-400"></i>
+        ${this.i18n.t('setup.oauth_redirect_uri_warning')}
+      `;
     }
 
     // Translate info boxes
@@ -126,6 +142,7 @@ class SetupI18n {
         steps[0].innerHTML = `${this.i18n.t('setup.trakt_step1')} <a href="https://trakt.tv/oauth/applications" target="_blank" class="text-sky-400 underline">trakt.tv/oauth/applications</a>`;
         steps[1].textContent = this.i18n.t('setup.trakt_step2');
         steps[2].textContent = this.i18n.t('setup.trakt_step3');
+        steps[3].textContent = this.i18n.t('setup.trakt_step4');
       }
     }
   }

@@ -161,16 +161,21 @@
     "trakt_info": "To get your Trakt API keys:",
     "trakt_step1": "1. Go to",
     "trakt_step2": "2. Create a new application",
-    "trakt_step3": "3. Copy the Client ID and Client Secret",
+    "trakt_step3": "3. Set redirect uri as http(s)://yoursite.com/auth/callback",
+    "trakt_step4": "4. Copy the Client ID and Client Secret",
     "trakt_client_id": "Trakt Client ID *",
     "trakt_client_secret": "Trakt Client Secret *",
     "trakt_client_id_placeholder": "Your Trakt Client ID",
     "trakt_client_secret_placeholder": "Your Trakt Client Secret",
+    "oauth_redirect_uri": "OAuth Redirect URI *",
+    "oauth_redirect_uri_placeholder": "https://yoursite.com/auth/callback",
+    "oauth_redirect_uri_help": "The URL must exactly match the one configured in your Trakt app",
+    "oauth_redirect_uri_warning": "The URL must exactly match the one configured in your Trakt app",
     "tmdb_api": "TMDB API (Required)",
     "tmdb_info": "To get your TMDB API key:",
     "tmdb_step1": "1. Create an account on",
     "tmdb_step2": "2. Go to Settings > API",
-    "tmdb_step3": "3. Copy your \"API Read Access Token\"",
+    "tmdb_step3": "3. Copy your \"API key\"",
     "tmdb_api_key": "TMDB API Key *",
     "tmdb_api_key_placeholder": "Your TMDB API key",
     "security": "Security",
@@ -237,6 +242,8 @@
     "connected": "Connected! Initial loading...",
     "error": "Error: {error}",
     "waiting": "Still waiting, please try again.",
-    "network_error": "Network error."
+    "network_error": "Network error.",
+    "oauth_instructions": "Click the button below to authenticate with Trakt",
+    "oauth_button": "Authenticate with Trakt"
   }
 }

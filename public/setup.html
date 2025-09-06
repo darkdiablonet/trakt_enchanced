@@ -86,7 +86,8 @@
                 <ol class="text-sm text-gray-400 space-y-1 ml-4">
                   <li>1. Allez sur <a href="https://trakt.tv/oauth/applications" target="_blank" class="text-sky-400 underline">trakt.tv/oauth/applications</a></li>
                   <li>2. Créez une nouvelle application</li>
-                  <li>3. Copiez le Client ID et Client Secret</li>
+                  <li>3. Mettre comme redirect uri http(s)://votresite.com/auth/callback</li>
+                  <li>4. Copiez le Client ID et Client Secret</li>
                 </ol>
               </div>
               
@@ -101,6 +102,19 @@
                 <input type="password" id="traktClientSecret" name="traktClientSecret" required
                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
                        placeholder="Votre Client Secret Trakt">
+              </div>
+              <div>
+                <label for="oauthRedirectUri" class="block text-sm font-medium text-gray-300 mb-1">OAuth Redirect URI *</label>
+                <input type="url" id="oauthRedirectUri" name="oauthRedirectUri" required
+                       class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                       placeholder="https://votresite.com/auth/callback"
+                       value="http://localhost:30009/auth/callback">
+                <div class="mt-2 p-2 bg-amber-900/30 border border-amber-600/50 rounded-md">
+                  <p class="text-xs text-amber-300 flex items-center" id="oauth-redirect-warning">
+                    <i class="fa-solid fa-exclamation-triangle mr-2 text-amber-400"></i>
+                    L'URL doit correspondre exactement à celle configurée dans votre app Trakt
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -178,6 +192,7 @@
   </div>
 
   <script src="/assets/modules/i18n-lite.js"></script>
+  <script src="/assets/setup-url-detection.js"></script>
   <script src="/assets/setup-i18n.js"></script>
   <script src="/assets/setup.js" data-csrf-token="<!-- CSRF_TOKEN -->"></script>
 </body>

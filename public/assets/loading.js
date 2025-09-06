@@ -84,6 +84,16 @@ function updateProgress(percent) {
 async function startLoading() {
   console.log('[loading] Starting REAL SSE connection to /api/loading-progress');
   
+  // Check if we're coming from OAuth callback
+  const urlParams = new URLSearchParams(window.location.search);
+  const authStatus = urlParams.get('auth');
+  
+  if (authStatus === 'success') {
+    console.log('[loading] OAuth authentication successful');
+    // Update the auth step immediately
+    updateStep('auth', 'completed', getTranslation('loading.step_auth_completed', 'Authentication successful'));
+  }
+  
   // Se connecter au vrai endpoint SSE
   eventSource = new EventSource('/api/loading-progress');
   
