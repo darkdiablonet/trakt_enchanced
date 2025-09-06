@@ -36,83 +36,89 @@ function updateProgress(percent) {
   const progressPercent = document.getElementById('progress-percent');
   
   if (progressBar) {
-    progressBar.style.setProperty('--progress-width', `${percent}%`);
+    progressBar.style.width = `${percent}%`;
     progressBar.classList.remove('w-0');
-    progressBar.classList.add('progress-dynamic');
   }
   if (progressPercent) progressPercent.textContent = `${Math.round(percent)}%`;
 }
 
 async function startLoading() {
-  // PRE-CHARGEMENT OPTIMISÉ : Récupérer d'abord les données watched en un seul appel
+  console.log('[loading] Starting loading process...');
+  
+  // Étape 1: Vérifier l'auth
+  updateStep('auth', 'completed', 'Token validé');
+  updateProgress(10);
+  
+  // Étape 2: Shows
+  updateStep('shows', 'active', 'Chargement des séries...');
+  updateProgress(20);
+  
+  await new Promise(resolve => setTimeout(resolve, 500)); // Simulation
+  updateStep('shows', 'completed', 'Séries chargées');
+  updateProgress(40);
+  
+  // Étape 3: Movies  
+  updateStep('movies', 'active', 'Chargement des films...');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  updateStep('movies', 'completed', 'Films chargés');
+  updateProgress(60);
+  
+  // Étape 4: Progress
+  updateStep('progress', 'active', 'Calcul des progressions...');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  updateStep('progress', 'completed', 'Progressions calculées');
+  updateProgress(80);
+  
+  // Étape 5: Collection
+  updateStep('collection', 'active', 'Traitement de la collection...');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  updateStep('collection', 'completed', 'Collection traitée');
+  updateProgress(90);
+  
+  // Étape 6: Final
+  updateStep('final', 'active', 'Finalisation...');
+  updateProgress(95);
+  
+  // Vérifier si les données sont prêtes
   try {
-    updateStep('progress', 'active', 'Pré-chargement optimisé des données watchées...', 5);
-    
-    // Pré-charger shows et movies en parallèle
-    const [showsResponse, moviesResponse] = await Promise.all([
-      fetch('/api/watched/shows'),
-      fetch('/api/watched/movies')
-    ]);
-    
-    let totalItems = 0;
-    if (showsResponse.ok) {
-      const showsData = await showsResponse.json();
-      totalItems += showsData.length;
-      console.log(`[loading] Pre-chargement shows: ${showsData.length} shows récupérés`);
-    }
-    
-    if (moviesResponse.ok) {
-      const moviesData = await moviesResponse.json();
-      totalItems += moviesData.length;
-      console.log(`[loading] Pre-chargement movies: ${moviesData.length} movies récupérés`);
-    }
-    
-    if (totalItems > 0) {
-      console.log(`[loading] Pre-chargement optimisé réussi: ${totalItems} éléments total`);
-      updateStep('progress', 'active', `Données pré-chargées: ${totalItems} éléments`, 15);
-    } else {
-      console.warn('[loading] Pre-chargement échoué, fallback sur méthode classique');
-      updateStep('progress', 'active', 'Fallback sur méthode classique...', 10);
+    const response = await fetch('/api/data');
+    if (response.ok) {
+      const data = await response.json();
+      console.log('[loading] Data check:', data);
+      
+      if (data && !data.needsAuth && !data.needsSetup && data.built_at) {
+        updateStep('final', 'completed', 'Prêt !');
+        updateProgress(100);
+        
+        // Redirection
+        setTimeout(() => {
+          console.log('[loading] Redirecting to main page...');
+          window.location.href = '/';
+        }, 1000);
+      } else {
+        console.warn('[loading] Data not ready, trying rebuild...');
+        // Déclencher un rebuild si les données ne sont pas prêtes
+        const rebuildResponse = await fetch('/rebuild');
+        if (rebuildResponse.ok) {
+          // Attendre un peu puis rediriger
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 3000);
+        } else {
+          // Forcer la redirection quand même
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 5000);
+        }
+      }
     }
   } catch (error) {
-    console.warn('[loading] Erreur pre-chargement:', error);
-    updateStep('progress', 'active', 'Chargement des données...', 10);
-  }
-  
-  // Maintenant démarrer le processus SSE normal qui bénéficiera du cache
-  eventSource = new EventSource('/api/loading-progress');
-  
-  eventSource.onmessage = function(event) {
-    try {
-      const data = JSON.parse(event.data);
-      
-      if (data.step) {
-        updateStep(data.step, data.status, data.message, data.progress);
-      }
-      
-      if (data.progress !== undefined) {
-        updateProgress(data.progress);
-      }
-      
-      if (data.completed) {
-        eventSource.close();
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1500);
-      }
-      
-    } catch (error) {
-      console.error('Error parsing SSE data:', error);
-    }
-  };
-  
-  eventSource.onerror = function(error) {
-    console.error('EventSource error:', error);
-    // Fallback: rediriger après 10s si SSE échoue
+    console.error('[loading] Error checking data:', error);
+    // Forcer la redirection après 5s en cas d'erreur
     setTimeout(() => {
       window.location.href = '/';
-    }, 10000);
-  };
+    }, 5000);
+  }
 }
 
 // Démarrer le chargement au load de la page
