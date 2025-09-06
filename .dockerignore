@@ -58,3 +58,5 @@ data/*.json
 
 # Test files
 test-*.js
+
+_BACKUP

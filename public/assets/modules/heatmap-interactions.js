@@ -3,7 +3,6 @@
  * Gestion des clics sur les cellules et affichage modal
  */
 
-import { posterURL } from './utils.js';
 import i18n from './i18n.js';
 
 // Cache des données de visionnages par date
@@ -94,7 +93,8 @@ function generateWatchingsHTML(watchings) {
   return watchings.map(watching => {
     const time = formatWatchedTime(watching.watched_at);
     const posterRaw = String(watching.poster || '');
-    const poster = posterRaw ? posterURL(posterRaw) : '/assets/placeholder-poster.svg';
+    // Servir directement depuis cache_imgs sans traitement
+    const poster = posterRaw ? posterRaw : '/assets/placeholder-poster.svg';
     
     return `
       <div class="flex items-start gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
