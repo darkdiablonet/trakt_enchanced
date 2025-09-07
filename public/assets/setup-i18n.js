@@ -138,7 +138,7 @@ class SetupI18n {
       }
 
       const steps = infoBox.querySelectorAll('li');
-      if (steps.length >= 3) {
+      if (steps.length >= 4) {
         steps[0].innerHTML = `${this.i18n.t('setup.trakt_step1')} <a href="https://trakt.tv/oauth/applications" target="_blank" class="text-sky-400 underline">trakt.tv/oauth/applications</a>`;
         steps[1].textContent = this.i18n.t('setup.trakt_step2');
         steps[2].textContent = this.i18n.t('setup.trakt_step3');
