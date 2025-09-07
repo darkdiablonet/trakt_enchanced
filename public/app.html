@@ -104,8 +104,60 @@
       <div id="playbackContainer" class="grid-default"></div>
     </section>
     <section id="panelStats" class="hidden">
-      <!-- tuiles stats -->
-    
+      <!-- Global Stats from Trakt API -->
+      <div id="globalStats" class="mb-6">
+        <!-- Stats Summary Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <!-- Movies Stats -->
+          <div class="glass rounded-xl p-4 hover:bg-white/5 transition-colors">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fa-solid fa-film text-purple-400"></i>
+              <span class="text-xs text-muted" data-i18n="stats.movies_watched">Movies watched</span>
+            </div>
+            <div class="text-2xl font-bold" id="moviesWatched">—</div>
+            <div class="text-xs text-muted mt-1">
+              <span id="moviesCollected">—</span> <span data-i18n="stats.collected">collected</span>
+            </div>
+          </div>
+          
+          <!-- Shows Stats -->
+          <div class="glass rounded-xl p-4 hover:bg-white/5 transition-colors">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fa-solid fa-tv text-sky-400"></i>
+              <span class="text-xs text-muted" data-i18n="stats.shows_watched">Shows watched</span>
+            </div>
+            <div class="text-2xl font-bold" id="showsWatched">—</div>
+            <div class="text-xs text-muted mt-1">
+              <span id="showsCollected">—</span> <span data-i18n="stats.collected">collected</span>
+            </div>
+          </div>
+          
+          <!-- Episodes Stats -->
+          <div class="glass rounded-xl p-4 hover:bg-white/5 transition-colors">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fa-solid fa-list-ol text-green-400"></i>
+              <span class="text-xs text-muted" data-i18n="stats.episodes">Episodes</span>
+            </div>
+            <div class="text-2xl font-bold" id="episodesWatched">—</div>
+            <div class="text-xs text-muted mt-1">
+              <span id="episodesCollected">—</span> <span data-i18n="stats.collected">collected</span>
+            </div>
+          </div>
+          
+          <!-- Watch Time -->
+          <div class="glass rounded-xl p-4 hover:bg-white/5 transition-colors">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fa-solid fa-clock text-orange-400"></i>
+              <span class="text-xs text-muted" data-i18n="stats.watch_time">Watch time</span>
+            </div>
+            <div class="text-2xl font-bold" id="totalMinutes">—</div>
+            <div class="text-xs text-muted mt-1" id="totalTime">—</div>
+          </div>
+          
+        </div>
+        
+      </div>
+      
       <!-- Stats Pro — contrôles -->
       <div class="glass rounded-xl p-3 mt-6 mb-4 flex flex-wrap items-center gap-3">
         <label class="text-sm"><span data-i18n="stats.type">Type</span>

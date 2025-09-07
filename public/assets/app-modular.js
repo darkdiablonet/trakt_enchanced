@@ -27,6 +27,7 @@ import './modules/header-buttons.js';
 import './modules/modals.js';
 import './modules/pro-stats.js';
 import './modules/charts.js';
+import { loadGlobalStats } from './modules/global-stats.js';
 import './modules/markWatched.js';
 import { initScrollToTop } from './modules/scroll-to-top.js';
 import { initWatchingProgress, stopWatchingProgress, applyWidthToProgressBarExternal } from './modules/watching-progress.js';

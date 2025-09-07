@@ -75,6 +75,8 @@ export function setTab(tab) {
   }
 
   if (isStats) {
+    // Charger les statistiques globales depuis l'API Trakt
+    import('./global-stats.js').then(({ loadGlobalStats }) => loadGlobalStats().catch(()=>{}));
     // Charger Pro Stats (qui génère aussi la heatmap depuis ses données)
     import('./pro-stats.js').then(({ loadStatsPro }) => loadStatsPro().catch(()=>{}));
     return;
