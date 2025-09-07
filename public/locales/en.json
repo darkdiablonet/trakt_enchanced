@@ -254,5 +254,12 @@
     "network_error": "Network error.",
     "oauth_instructions": "Click the button below to authenticate with Trakt",
     "oauth_button": "Authenticate with Trakt"
+  },
+  "playback": {
+    "paused": "Paused",
+    "playing": "Playing"
+  },
+  "fullrebuild": {
+    "description": "Enter the password to launch a full rebuild of the master Trakt cache."
   }
 }

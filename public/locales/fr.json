@@ -253,5 +253,12 @@
     "network_error": "Erreur réseau.",
     "oauth_instructions": "Cliquez sur le bouton ci-dessous pour vous connecter avec Trakt",
     "oauth_button": "Se connecter avec Trakt"
+  },
+  "playback": {
+    "paused": "En pause",
+    "playing": "En cours"
+  },
+  "fullrebuild": {
+    "description": "Entrez le mot de passe pour lancer un full rebuild du cache master Trakt."
   }
 }

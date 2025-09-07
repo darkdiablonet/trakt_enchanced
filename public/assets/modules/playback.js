@@ -179,11 +179,11 @@ function renderPlaybackCard(item) {
         </span>
         ${item.paused_at ? `
           <span class="chip chip--warn">
-            <i class="fa-solid fa-pause mr-1"></i>En pause
+            <i class="fa-solid fa-pause mr-1"></i>${i18n.t('playback.paused')}
           </span>
         ` : `
           <span class="chip">
-            <i class="fa-solid fa-play mr-1"></i>En cours
+            <i class="fa-solid fa-play mr-1"></i>${i18n.t('playback.playing')}
           </span>
         `}
       </div>

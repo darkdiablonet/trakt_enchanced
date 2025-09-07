@@ -748,8 +748,8 @@ app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (re
   const t = String(req.query.type || 'all');
   const type = (t === 'movies') ? 'movies' : (t === 'shows' ? 'shows' : 'all');
 
-  // 1) essaie le cache (TTL 24h)
-  const cached = await readGraphCache(type, year, 24 * 3600 * 1000);
+  // 1) essaie le cache (TTL 2h)
+  const cached = await readGraphCache(type, year, 2 * 3600 * 1000);
   if (cached) {
     return res.json({ ok: true, data: cached, cached: true });
   }

@@ -4,6 +4,7 @@
  */
 
 import { state } from './state.js';
+import i18n from './i18n.js';
 
 let watchingInterval = null;
 let currentWatching = null;
@@ -187,7 +188,7 @@ function showProgressBar(watching) {
   // Choisir l'icône et le statut selon l'état
   const icon = watching.isPaused ? 'fa-pause' : 'fa-play';
   const iconColor = watching.isPaused ? 'text-orange-400' : 'text-sky-400';
-  const statusText = watching.isPaused ? 'En pause' : 'En cours';
+  const statusText = watching.isPaused ? i18n.t('playback.paused') : i18n.t('playback.playing');
   const progressBarColor = watching.isPaused ? 'from-orange-500 to-red-600' : 'from-sky-500 to-blue-600';
   
   // Construire le HTML de la barre sans styles inline
@@ -305,7 +306,7 @@ function calculateProgress(watching) {
   if (watching.isPaused) {
     const elapsed = formatDuration(elapsedMs);
     const total = formatDuration(totalDurationMs);
-    const timeInfo = `${elapsed} / ${total} (En pause)`;
+    const timeInfo = `${elapsed} / ${total} (${i18n.t('playback.paused')})`;
     return { progress, timeInfo, isExpired };
   }
   

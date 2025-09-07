@@ -308,7 +308,7 @@
           <h3 id="fullModal-title" class="text-lg font-semibold">Full rebuild</h3>
           <button id="closeFullModal" class="btn text-xs" aria-label="Fermer la modale de full rebuild"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Fermer</span></button>
         </div>
-        <p id="fullModal-desc" class="text-muted text-sm mt-2">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
+        <p id="fullModal-desc" class="text-muted text-sm mt-2" data-i18n="fullrebuild.description">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
         <form method="post" action="/full_rebuild" class="mt-4 space-y-3">
           <input type="hidden" name="csrf" value="<!-- CSRF_TOKEN -->">
           <label for="fullRebuildPwd" class="block text-xs uppercase tracking-wide text-muted">Mot de passe</label>
