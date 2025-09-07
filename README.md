@@ -49,7 +49,7 @@ docker run -d \
 ## ‼️ IMPORTANT — Paramétrage Trakt
 
 Crée une application sur **Trakt → Settings → Your API Apps** et récupère **Client ID** / **Client Secret** pour les variables d’environnement.  
-Utilise le **Device Code Flow** (pas besoin d’URL de redirection).
+Utiliser votre url de type http(s)://votre-site.com/auth/callback au niveau de de l'ur de redirection.
 
 ![Trakt api](docs/img/trakt-api.png)
 
@@ -231,6 +231,7 @@ docker run -d \
 
 Create an application on **Trakt → Settings → Your API Apps** and get **Client ID** / **Client Secret** for environment variables.  
 Use the **Device Code Flow** (no redirect URL needed).
+use your url http(s)://your-site.com/auth/callback for redirect URI.
 
 ![Trakt api](docs/img/trakt-api.png)
 
