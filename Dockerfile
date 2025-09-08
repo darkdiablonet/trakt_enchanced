@@ -83,7 +83,7 @@ RUN mkdir -p /app/data \
     chmod 666 /app/data/.docker_initialized
 
 # Enhanced entrypoint script with better permission handling
-COPY docker-entrypoint-fixed.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Declare volumes for persistent data
