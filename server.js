@@ -14,6 +14,7 @@ import { logger } from './lib/logger.js';
 import { requestLoggingMiddleware, errorHandlingMiddleware, performanceMiddleware, asyncHandler } from './lib/middleware.js';
 import { securityHeaders, csrfTokenMiddleware, csrfProtection, attackDetection } from './lib/security.js';
 import { serverI18n } from './lib/i18n.js';
+import { requireAuth, checkAuth } from './lib/authMiddleware.js';
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASSWORD, TITLE, reloadEnv, OAUTH_REDIRECT_URI } from './lib/config.js';
 import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken, getOAuthAuthorizeUrl, exchangeCodeForToken } from './lib/trakt.js';
@@ -530,7 +531,7 @@ app.get('/api/data', performanceMiddleware('buildPageData'), async (req, res) =>
   }
 });
 
-app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
+app.get('/api/stats', requireAuth, performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -550,7 +551,7 @@ app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (re
 }));
 
 // API: Get monitor status
-app.get('/api/monitor-status', performanceMiddleware('monitorStatus'), asyncHandler(async (req, res) => {
+app.get('/api/monitor-status', requireAuth, performanceMiddleware('monitorStatus'), asyncHandler(async (req, res) => {
   try {
     const status = getMonitorStatus();
     res.json({ 
@@ -565,10 +566,10 @@ app.get('/api/monitor-status', performanceMiddleware('monitorStatus'), asyncHand
 }));
 
 // API: Get rate limit stats
-app.get('/api/rate-limits', performanceMiddleware('rateLimits'), getRateLimitStats);
+app.get('/api/rate-limits', requireAuth, performanceMiddleware('rateLimits'), getRateLimitStats);
 
 // API: Check if rebuild is in progress
-app.get('/api/rebuild-status', performanceMiddleware('rebuildStatus'), asyncHandler(async (req, res) => {
+app.get('/api/rebuild-status', requireAuth, performanceMiddleware('rebuildStatus'), asyncHandler(async (req, res) => {
   try {
     const status = getMonitorStatus();
     res.json({ 
@@ -583,7 +584,7 @@ app.get('/api/rebuild-status', performanceMiddleware('rebuildStatus'), asyncHand
 }));
 
 // API: Control activity monitor
-app.post('/api/monitor/:action', performanceMiddleware('monitorControl'), asyncHandler(async (req, res) => {
+app.post('/api/monitor/:action', requireAuth, performanceMiddleware('monitorControl'), asyncHandler(async (req, res) => {
   try {
     const { action } = req.params;
     
@@ -650,7 +651,7 @@ app.get('/api/token-status', performanceMiddleware('tokenStatus'), asyncHandler(
 }));
 
 // API: Refresh Trakt token
-app.post('/api/refresh-token', performanceMiddleware('refreshToken'), asyncHandler(async (req, res) => {
+app.post('/api/refresh-token', requireAuth, performanceMiddleware('refreshToken'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -702,7 +703,7 @@ app.post('/api/refresh-token', performanceMiddleware('refreshToken'), asyncHandl
 }));
 
 // API: Get last activities from Trakt
-app.get('/api/last-activities', performanceMiddleware('lastActivities'), asyncHandler(async (req, res) => {
+app.get('/api/last-activities', requireAuth, performanceMiddleware('lastActivities'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -728,7 +729,7 @@ app.get('/api/last-activities', performanceMiddleware('lastActivities'), asyncHa
 }));
 
 // API: Get watch history from Trakt
-app.get('/api/history', performanceMiddleware('history'), asyncHandler(async (req, res) => {
+app.get('/api/history', requireAuth, performanceMiddleware('history'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -778,7 +779,7 @@ app.get('/api/history', performanceMiddleware('history'), asyncHandler(async (re
   }
 }));
 
-app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (req, res) => {
+app.get('/api/graph', requireAuth, performanceMiddleware('graphData'), asyncHandler(async (req, res) => {
   if (!hasValidCredentials()) {
     return res.status(412).json({ 
       ok: false, 
@@ -806,7 +807,7 @@ app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (re
   return res.json({ ok: true, data, cached: false });
 }));
 
-app.get('/api/stats/pro', performanceMiddleware('proStats'), asyncHandler(async (req, res) => {
+app.get('/api/stats/pro', requireAuth, performanceMiddleware('proStats'), asyncHandler(async (req, res) => {
   if (!hasValidCredentials()) {
     return res.status(412).json({ 
       ok: false, 
@@ -834,7 +835,7 @@ app.get('/api/stats/pro', performanceMiddleware('proStats'), asyncHandler(async 
 }));
 
 // API: Test endpoint pour /users/{id}/watching
-app.get('/api/watching/:userId?', performanceMiddleware('watching'), asyncHandler(async (req, res) => {
+app.get('/api/watching/:userId?', requireAuth, performanceMiddleware('watching'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -868,7 +869,7 @@ app.get('/api/watching/:userId?', performanceMiddleware('watching'), asyncHandle
 }));
 
 // API: Marquer un épisode comme vu
-app.post('/api/mark-watched', csrfProtection, asyncHandler(async (req, res) => {
+app.post('/api/mark-watched', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
   const { trakt_id, season, number } = req.body;
   
   if (!trakt_id || !season || !number) {
@@ -914,7 +915,7 @@ app.post('/api/mark-watched', csrfProtection, asyncHandler(async (req, res) => {
 }));
 
 // Endpoint pour retirer un épisode de l'historique
-app.post('/api/unmark-watched', csrfProtection, asyncHandler(async (req, res) => {
+app.post('/api/unmark-watched', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
   const { trakt_id, season, number } = req.body;
   
   if (!trakt_id || !season || !number) {
@@ -961,7 +962,7 @@ app.post('/api/unmark-watched', csrfProtection, asyncHandler(async (req, res) =>
 }));
 
 // Endpoint pour récupérer les shows/movies watched
-app.get('/api/watched/:type', asyncHandler(async (req, res) => {
+app.get('/api/watched/:type', requireAuth, asyncHandler(async (req, res) => {
   const { type } = req.params;
   const validTypes = ['shows', 'movies'];
   
@@ -979,7 +980,7 @@ app.get('/api/watched/:type', asyncHandler(async (req, res) => {
 }));
 
 // Endpoint optimisé avec le nouveau système granulaire
-app.get('/api/show-data/:traktId', asyncHandler(async (req, res) => {
+app.get('/api/show-data/:traktId', requireAuth, asyncHandler(async (req, res) => {
   const { traktId } = req.params;
   const traktIdNum = parseInt(traktId);
   
@@ -1016,7 +1017,7 @@ app.get('/api/show-data/:traktId', asyncHandler(async (req, res) => {
   }
 }));
 
-app.post('/api/mark-movie-watched', csrfProtection, asyncHandler(async (req, res) => {
+app.post('/api/mark-movie-watched', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
   const { trakt_id } = req.body;
   
   if (!trakt_id) {
@@ -1086,7 +1087,7 @@ app.get('/loading', asyncHandler(async (req, res) => {
 }));
 
 // API pour récupérer les visionnages d'une date
-app.get('/api/watchings-by-date/:date', performanceMiddleware('watchingsByDate'), asyncHandler(async (req, res) => {
+app.get('/api/watchings-by-date/:date', requireAuth, performanceMiddleware('watchingsByDate'), asyncHandler(async (req, res) => {
   const { date } = req.params;
   
   // Validation format date YYYY-MM-DD
@@ -1114,7 +1115,7 @@ app.get('/api/watchings-by-date/:date', performanceMiddleware('watchingsByDate')
 }));
 
 // API: Calendrier des sorties Trakt
-app.get('/api/calendar', performanceMiddleware('calendar'), asyncHandler(async (req, res) => {
+app.get('/api/calendar', requireAuth, performanceMiddleware('calendar'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -1175,7 +1176,7 @@ app.get('/api/calendar', performanceMiddleware('calendar'), asyncHandler(async (
 }));
 
 // API: Récupérer la progression de lecture (playback progress)
-app.get('/api/playback', performanceMiddleware('playback'), asyncHandler(async (req, res) => {
+app.get('/api/playback', requireAuth, performanceMiddleware('playback'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -1267,7 +1268,7 @@ app.delete('/api/playback/:id', performanceMiddleware('playback-remove'), asyncH
 }));
 
 // Debug cache stats (développement uniquement)
-app.get('/api/watchings-cache-stats', (req, res) => {
+app.get('/api/watchings-cache-stats', requireAuth, (req, res) => {
   if (process.env.NODE_ENV !== 'production') {
     res.json(getCacheStats());
   } else {
@@ -1276,7 +1277,7 @@ app.get('/api/watchings-cache-stats', (req, res) => {
 });
 
 // API: Détails de visionnage pour films et séries
-app.get('/api/watching-details/:kind/:traktId', asyncHandler(async (req, res) => {
+app.get('/api/watching-details/:kind/:traktId', requireAuth, asyncHandler(async (req, res) => {
   const { kind, traktId } = req.params;
   
   // Validation des paramètres
@@ -1315,7 +1316,7 @@ app.get('/api/watching-details/:kind/:traktId', asyncHandler(async (req, res) =>
 }));
 
 // Server-Sent Events pour les mises à jour live de cartes
-app.get('/api/live-events', (req, res) => {
+app.get('/api/live-events', requireAuth, (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -1358,7 +1359,7 @@ app.get('/api/live-events', (req, res) => {
 });
 
 // API pour vérifier s'il y a des changements récents (fallback pour SSE)
-app.get('/api/live-status', (req, res) => {
+app.get('/api/live-status', requireAuth, (req, res) => {
   try {
     console.log('[API] /live-status called, getting monitor status...');
     const status = getMonitorStatus();
@@ -1380,7 +1381,7 @@ app.get('/api/live-status', (req, res) => {
 });
 
 // Server-Sent Events pour le progrès de chargement
-app.get('/api/loading-progress', (req, res) => {
+app.get('/api/loading-progress', requireAuth, (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',

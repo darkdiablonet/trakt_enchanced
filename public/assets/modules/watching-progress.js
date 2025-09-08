@@ -369,9 +369,10 @@ window.addEventListener('languageChanged', () => {
   }
 });
 
-// Auto-initialisation quand le DOM est prêt (avec protection contre double init)
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initWatchingProgress);
-} else {
-  initWatchingProgress();
-}
+// Auto-initialisation DÉSACTIVÉE - doit être contrôlée par app-modular.js
+// pour éviter les appels API non autorisés
+// if (document.readyState === 'loading') {
+//   document.addEventListener('DOMContentLoaded', initWatchingProgress);
+// } else {
+//   initWatchingProgress();
+// }

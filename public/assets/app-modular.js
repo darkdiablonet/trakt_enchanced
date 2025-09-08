@@ -6,6 +6,9 @@
 // Imports des modules - I18N EN PREMIER
 import i18n from './modules/i18n.js';
 
+// Auth Guard - PRIORITÉ ABSOLUE
+import { checkAuthStatus } from './modules/auth-guard.js';
+
 // Modules de base (pas de dépendance i18n)
 import { elements } from './modules/dom.js';
 import { state, saveState } from './modules/state.js';
@@ -39,7 +42,11 @@ import { initCalendar } from './modules/calendar.js';
 // Initialisation principale de l'application
 async function initializeApp() {
   
-  // Attendre que i18n soit complètement initialisé
+  // Vérifier l'authentification en premier
+  console.log('[App] Checking authentication status...');
+  const isAuthenticated = await checkAuthStatus();
+  
+  // Attendre que i18n soit complètement initialisé (toujours nécessaire)
   await new Promise((resolve) => {
     if (i18n.translations && Object.keys(i18n.translations).length > 0) {
       resolve();
@@ -48,13 +55,18 @@ async function initializeApp() {
     }
   });
   
-  
   // Appliquer immédiatement les traductions UI
   uiTranslations.translateUI();
   
+  if (!isAuthenticated) {
+    console.log('[App] Not authenticated - showing auth interface only');
+    // L'interface de connexion est déjà affichée par auth-guard
+    // On n'a pas besoin de charger les données
+    return;
+  }
+  
   // Appliquer la largeur avec traductions
   applyWidth();
-  
   
   // Maintenant charger les données avec i18n pleinement initialisé
   await loadData();
@@ -64,10 +76,14 @@ async function initializeApp() {
     uiTranslations.translateSortOptions();
   }, 100);
   
-  // Démarrer les mises à jour en temps réel
+  // Démarrer les mises à jour en temps réel (seulement si authentifié)
   setTimeout(() => {
     startLiveUpdates();
   }, 2000); // Attendre 2s après le chargement initial
+  
+  // Initialiser le calendrier et watching progress maintenant qu'on est authentifié
+  initCalendar();
+  initWatchingProgress();
 }
 
 // Charger la version de l'application
@@ -197,12 +213,13 @@ if (!('IntersectionObserver' in window)) {
 window.lazyManager = lazyManager;
 window.animationManager = animationManager;
 
-// Initialiser les fonctionnalités au démarrage
+// Initialiser les fonctionnalités de base au démarrage
 loadAppVersion();
 initScrollToTop();
 initHeatmapInteractions();
 initWatchingDetails();
-initCalendar();
+// NE PAS initialiser le calendrier automatiquement - sera fait après auth
+// initCalendar();
 languageSelector.init();
 
 // Initialiser les traductions UI après que i18n soit initialisé

@@ -12,6 +12,7 @@ import { applyWidth } from './utils.js';
 import { setTab } from './tabs.js';
 import i18n from './i18n.js';
 import indexedDBCache from './indexeddb-cache.js';
+import { guardedFetch } from './auth-guard.js';
 
 // Variable pour stocker les dernières données device prompt pour re-render
 let lastDevicePromptData = null;
@@ -108,7 +109,7 @@ export async function loadData() {
 async function fetchAPIData() {
   try {
     console.time('[LoadData] API fetch time');
-    const resp = await fetch('/api/data', { cache: 'no-store' });
+    const resp = await guardedFetch('/api/data', { cache: 'no-store' });
     const js = await resp.json();
     console.timeEnd('[LoadData] API fetch time');
     
