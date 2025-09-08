@@ -442,7 +442,8 @@ app.post('/full_rebuild', csrfProtection, (req, res) => {
 });
 
 // API: Page data JSON
-app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async (req, res) => {
+app.get('/api/data', performanceMiddleware('buildPageData'), async (req, res) => {
+  try {
   const flash = req.session.flash || null;
   delete req.session.flash;
 
@@ -489,11 +490,26 @@ app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async 
   } catch (error) {
     logger.error('Error building page data', { error: error.message });
     
-    // Check if it's an authentication error
-    if (error.message?.includes('authentication') || error.message?.includes('re-authenticate') || 
-        error.status === 401 || error.statusCode === 401) {
+    // Check if it's an authentication error (multiple possible patterns)
+    const isAuthError = error.message?.includes('authentication') || 
+                        error.message?.includes('re-authenticate') || 
+                        error.message?.includes('401') ||
+                        error.message?.includes('Unauthorized') ||
+                        error.status === 401 || 
+                        error.statusCode === 401 ||
+                        (error.message && error.message.includes('Response code 401'));
+                        
+    console.log('[api/data] Error details:', {
+      message: error.message,
+      status: error.status,
+      statusCode: error.statusCode,
+      isAuthError
+    });
+                        
+    if (isAuthError) {
       // Token is invalid, clear it and ask for re-authentication
       await saveToken(null);
+      console.log('[api/data] Authentication error detected, returning needsAuth: true');
       return res.json({
         title: TITLE,
         flash: 'Your authentication has expired. Please reconnect to Trakt.',
@@ -509,7 +525,15 @@ app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async 
     // Other errors
     throw error;
   }
-}));
+  } catch (middlewareError) {
+    // Fallback error handling
+    console.error('[api/data] Unhandled error:', middlewareError.message);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: middlewareError.message 
+    });
+  }
+});
 
 app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
   try {
@@ -1475,14 +1499,40 @@ app.listen(PORT, () => {
       headers: { host: await getPublicHost(PORT) },
       get(name){ return this.headers[String(name).toLowerCase()]; }
     };
-    // Utiliser le nouveau système de cache granulaire pour le refresh
-    const token = await loadToken();
-    const headers = traktHeaders(token?.access_token);
-    if (!headers) {
+    
+    // 🚨 SURVEILLANCE PROACTIVE DES TOKENS
+    console.log(`[refresh] Starting refresh cycle (${reason})`);
+    
+    if (!hasValidCredentials()) {
       console.log('[refresh] Skipping - Trakt credentials not configured');
       return;
     }
-    await buildPageDataGranular(headers);
+    
+    try {
+      // Vérifier et rafraîchir le token AVANT de faire les appels API
+      console.log('[refresh] Checking token validity...');
+      const validToken = await ensureValidToken();
+      
+      if (!validToken?.access_token) {
+        console.warn('[refresh] No valid token available - skipping data refresh');
+        return;
+      }
+      
+      console.log('[refresh] Token is valid, proceeding with data refresh');
+      const headers = traktHeaders(validToken.access_token);
+      await buildPageDataGranular(headers);
+      
+    } catch (error) {
+      console.error('[refresh] Token validation/refresh failed:', error.message);
+      
+      // Si c'est une erreur d'authentification, ne pas faire planter le refresh
+      if (error.message?.includes('authentication') || error.message?.includes('re-authenticate')) {
+        console.warn('[refresh] Authentication error - users will need to re-authenticate');
+      } else {
+        // Pour les autres erreurs, les remonter
+        throw error;
+      }
+    }
   });
 
   // lance : 1ère exécution immédiate, puis toutes les heures
