@@ -481,10 +481,34 @@ app.get('/api/data', performanceMiddleware('buildPageData'), asyncHandler(async 
   }
 
   // On a les credentials et le token - construire les données normalement
-  const pageData = await buildPageDataGranular(headers);
-  
-  res.setHeader('Cache-Control', 'no-store');
-  res.json({ title: TITLE, flash, ...pageData });
+  try {
+    const pageData = await buildPageDataGranular(headers);
+    
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ title: TITLE, flash, ...pageData });
+  } catch (error) {
+    logger.error('Error building page data', { error: error.message });
+    
+    // Check if it's an authentication error
+    if (error.message?.includes('authentication') || error.message?.includes('re-authenticate') || 
+        error.status === 401 || error.statusCode === 401) {
+      // Token is invalid, clear it and ask for re-authentication
+      await saveToken(null);
+      return res.json({
+        title: TITLE,
+        flash: 'Your authentication has expired. Please reconnect to Trakt.',
+        needsAuth: true,
+        devicePrompt: null,
+        showsRows: [],
+        moviesRows: [],
+        showsUnseenRows: [],
+        moviesUnseenRows: []
+      });
+    }
+    
+    // Other errors
+    throw error;
+  }
 }));
 
 app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
@@ -808,6 +832,18 @@ app.get('/api/watching/:userId?', performanceMiddleware('watching'), asyncHandle
     res.json({ ok: true, watching });
   } catch (error) {
     logger.error('Error fetching watching data', { error: error.message, userId: req.params.userId });
+    
+    // Check for authentication errors
+    if (error.message?.includes('authentication') || error.message?.includes('re-authenticate') || 
+        error.status === 401 || error.statusCode === 401) {
+      return res.status(401).json({ 
+        ok: false, 
+        error: 'Authentication expired', 
+        needsAuth: true,
+        message: 'Please re-authenticate with Trakt'
+      });
+    }
+    
     res.status(500).json({ ok: false, error: 'Failed to fetch watching data' });
   }
 }));
@@ -1159,6 +1195,18 @@ app.get('/api/playback', performanceMiddleware('playback'), asyncHandler(async (
     res.json({ ok: true, playback });
   } catch (error) {
     logger.error('Error fetching playback progress', { error: error.message });
+    
+    // Check for authentication errors
+    if (error.message?.includes('authentication') || error.message?.includes('re-authenticate') || 
+        error.status === 401 || error.statusCode === 401) {
+      return res.status(401).json({ 
+        ok: false, 
+        error: 'Authentication expired', 
+        needsAuth: true,
+        message: 'Please re-authenticate with Trakt'
+      });
+    }
+    
     res.status(500).json({ ok: false, error: 'Failed to fetch playback progress' });
   }
 }));

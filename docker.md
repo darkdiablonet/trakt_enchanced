@@ -81,10 +81,7 @@ Si vous préférez créer manuellement le fichier `.env`, vous pouvez toujours l
 | Variable | Description | Défaut | Exemple |
 |----------|-------------|--------|---------|
 | `PORT` | Port d'écoute de l'application | `30009` | `30009` |
-| `TZ` | Fuseau horaire | `UTC` | `Europe/Paris` |
-| `SESSION_SECRET` | Secret pour les sessions (généré auto si absent) | auto | `mon_secret_aleatoire` |
-| `FULL_REBUILD_PASSWORD` | Mot de passe pour le rebuild complet | - | `rebuild123` |
-| `REFRESH_EVERY_MS` | Intervalle de refresh auto (ms) | `3600000` | `1800000` |
+
 
 ## 🗂️ Volumes
 

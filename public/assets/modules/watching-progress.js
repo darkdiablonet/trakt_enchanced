@@ -60,6 +60,21 @@ export function applyWidthToProgressBarExternal() {
 async function fetchWatchingData() {
   try {
     const response = await fetch('/api/watching', { cache: 'no-store' });
+    
+    // Check for 401 authentication error
+    if (response.status === 401) {
+      const data = await response.json();
+      console.error('[watching-progress] Authentication expired:', data.message);
+      // Redirect to main page to show auth prompt
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      } else {
+        // Reload to trigger auth flow
+        window.location.reload();
+      }
+      return null;
+    }
+    
     const data = await response.json();
     
     if (!data.ok) {
@@ -77,6 +92,20 @@ async function fetchWatchingData() {
 async function fetchPlaybackData() {
   try {
     const response = await fetch('/api/playback', { cache: 'no-store' });
+    
+    // Check for 401 authentication error
+    if (response.status === 401) {
+      const data = await response.json();
+      console.error('[watching-progress] Authentication expired:', data.message);
+      // Redirect to main page to show auth prompt
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      } else {
+        // Reload to trigger auth flow
+        window.location.reload();
+      }
+      return [];
+    }
     
     // Vérifier que la réponse est bien du JSON
     const contentType = response.headers.get('content-type');
@@ -203,7 +232,7 @@ function showProgressBar(watching) {
             <div class="font-medium text-adaptive">${statusText} : ${watching.movie?.title || watching.episode?.title || 'Contenu'}</div>
             <div class="text-xs text-muted">
               ${watching.type === 'movie' ? `Film ${watching.movie?.year || ''}` : 
-                `${watching.show?.title || ''} S${watching.episode?.season || '?'}E${watching.episode?.number || '?'}`}
+                `${watching.show?.title || ''} S${String(watching.episode?.season || '?').padStart(2, '0')}E${String(watching.episode?.number || '?').padStart(2, '0')}`}
             </div>
           </div>
         </div>
@@ -331,6 +360,14 @@ function formatDuration(ms) {
     return `${minutes}m${(seconds % 60).toString().padStart(2, '0')}s`;
   }
 }
+
+// Re-render watching progress when language changes
+window.addEventListener('languageChanged', () => {
+  // Force immediate update if there's a current watching item
+  if (currentWatching && watchingInterval) {
+    updateWatchingDisplay();
+  }
+});
 
 // Auto-initialisation quand le DOM est prêt (avec protection contre double init)
 if (document.readyState === 'loading') {

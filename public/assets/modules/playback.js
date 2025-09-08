@@ -24,6 +24,21 @@ export async function loadPlayback() {
     `;
 
     const response = await fetch('/api/playback', { cache: 'no-store' });
+    
+    // Check for 401 authentication error
+    if (response.status === 401) {
+      const data = await response.json();
+      console.error('[playback] Authentication expired:', data.message);
+      // Redirect to main page to show auth prompt
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      } else {
+        // Reload to trigger auth flow
+        window.location.reload();
+      }
+      return;
+    }
+    
     const data = await response.json();
 
     if (!data.ok) {
@@ -217,4 +232,13 @@ async function removePlaybackItem(id) {
     alert(`Erreur lors de la suppression: ${error.message}`);
   }
 }
+
+// Re-render playback items when language changes
+window.addEventListener('languageChanged', () => {
+  // Re-render playback if it's currently shown
+  const playbackContainer = document.getElementById('playbackContainer');
+  if (playbackContainer && !playbackContainer.closest('#panelPlayback').classList.contains('hidden')) {
+    loadPlayback();
+  }
+});
 
