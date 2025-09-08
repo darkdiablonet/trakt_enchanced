@@ -4,7 +4,7 @@ FROM node:20-alpine AS build
 # Build metadata
 LABEL org.opencontainers.image.title="Trakt Enhanced"
 LABEL org.opencontainers.image.description="Trakt Enhanced Node.js application"
-LABEL org.opencontainers.image.version="7.5.6"
+LABEL org.opencontainers.image.version="7.5.7"
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/diabolino/trakt_enhanced"
 LABEL org.opencontainers.image.documentation="https://github.com/diabolino/trakt-enhanced/blob/main/README.md"
 LABEL org.opencontainers.image.source="https://github.com/diabolino/trakt-enhanced"
@@ -54,14 +54,11 @@ ENV SESSION_SECRET=""
 ENV PUBLIC_HOST=""
 ENV DOCKER_HOST_IP=""
 ENV FULL_REBUILD_PASSWORD=""
+ENV PUID=99
+ENV PGID=100
 
-# minimal runtime deps for Alpine
-RUN apk add --no-cache ca-certificates tzdata curl
-
-# create app user with Unraid compatible UID/GID (99:100)
-# Alpine uses different user management
-RUN addgroup -g 100 -S users 2>/dev/null || true && \
-    adduser -u 99 -G users -s /bin/sh -D -H app
+# IMPORTANT: Install su-exec for privilege dropping
+RUN apk add --no-cache ca-certificates tzdata curl su-exec
 
 WORKDIR /app
 
@@ -71,22 +68,33 @@ COPY --from=build /src /app
 # copy logo for metadata/branding
 COPY --from=build /src/public/assets/favicon.svg /app/logo.svg
 
-# ensure data and config folders exist & set correct permissions for Unraid
-RUN mkdir -p /app/data /app/config && \
-    chown -R 99:100 /app
+# IMPORTANT: Créer TOUS les dossiers nécessaires avec les bonnes permissions
+# Ces dossiers seront créés dans l'image elle-même
+RUN mkdir -p /app/data \
+             /app/data/logs \
+             /app/data/.cache_trakt \
+             /app/data/.secrets \
+             /app/data/sessions \
+             /app/config && \
+    # Donner les permissions à tout le monde (sera restreint par l'entrypoint)
+    chmod -R 777 /app/data /app/config && \
+    # Créer un fichier témoin pour vérifier les permissions
+    touch /app/data/.docker_initialized && \
+    chmod 666 /app/data/.docker_initialized
+
+# Enhanced entrypoint script with better permission handling
+COPY docker-entrypoint-fixed.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Declare volumes for persistent data
 VOLUME ["/app/data", "/app/config"]
-
-# small entrypoint that will drop privileges; we provide the script inline for simplicity
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 30009
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD curl -f http://127.0.0.1:${PORT:-30009}/health || exit 1
 
-USER app
+# IMPORTANT: Ne PAS définir USER ici, laisser l'entrypoint gérer
+# Cela permet à l'entrypoint de créer les dossiers si nécessaire
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "server.js"]
