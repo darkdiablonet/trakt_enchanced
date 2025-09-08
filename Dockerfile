@@ -4,7 +4,7 @@ FROM node:20-alpine AS build
 # Build metadata
 LABEL org.opencontainers.image.title="Trakt Enhanced"
 LABEL org.opencontainers.image.description="Trakt Enhanced Node.js application"
-LABEL org.opencontainers.image.version="7.5.4"
+LABEL org.opencontainers.image.version="7.5.5"
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/diabolino/trakt_enhanced"
 LABEL org.opencontainers.image.documentation="https://github.com/diabolino/trakt-enhanced/blob/main/README.md"
 LABEL org.opencontainers.image.source="https://github.com/diabolino/trakt-enhanced"
@@ -12,29 +12,25 @@ LABEL org.opencontainers.image.vendor="Trakt Enhanced"
 LABEL org.opencontainers.image.authors="matt"
 
 # Install build deps for Alpine
-# Include dependencies for sharp compilation from source
 RUN apk add --no-cache \
-	git ca-certificates build-base python3 curl \
-	vips-dev glib-dev expat-dev \
-	pkgconfig autoconf automake libtool nasm
+	git ca-certificates curl
 
 WORKDIR /src
 
 # copy package files first for caching
 COPY package*.json ./
 
-# Install dependencies with special handling for sharp
-# Build sharp from source to support older CPUs without AVX2
+# Install dependencies
 RUN set -eux; \
-	echo "[build] Installing dependencies with sharp built from source for CPU compatibility"; \
+	echo "[build] Installing dependencies"; \
 	if [ -f package-lock.json ]; then \
-	  echo "[build] running npm ci (with legacy-peer-deps and sharp from source)"; \
-	  npm ci --legacy-peer-deps --build-from-source=sharp --verbose || \
+	  echo "[build] running npm ci (with legacy-peer-deps)"; \
+	  npm ci --legacy-peer-deps --verbose || \
 	  (echo "[build] npm ci failed, falling back to npm install" && \
-	   npm install --legacy-peer-deps --no-audit --progress=false --build-from-source=sharp); \
+	   npm install --legacy-peer-deps --no-audit --progress=false); \
 	else \
-	  echo "[build] no package-lock.json, running npm install with sharp from source"; \
-	  npm install --legacy-peer-deps --no-audit --progress=false --build-from-source=sharp; \
+	  echo "[build] no package-lock.json, running npm install"; \
+	  npm install --legacy-peer-deps --no-audit --progress=false; \
 	fi
 
 # copy full repo
@@ -60,9 +56,7 @@ ENV DOCKER_HOST_IP=""
 ENV FULL_REBUILD_PASSWORD=""
 
 # minimal runtime deps for Alpine
-RUN apk add --no-cache ca-certificates tzdata curl \
-	# Required runtime libs for sharp
-	vips glib expat
+RUN apk add --no-cache ca-certificates tzdata curl
 
 # create app user with Unraid compatible UID/GID (99:100)
 # Alpine uses different user management

@@ -21,7 +21,6 @@ import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken,
 import { buildPageDataGranular, getOrBuildShowCard, updateSpecificCard } from './lib/pageDataNew.js';
 import { makeRefresher, loadDeviceCode, saveDeviceCode, clearDeviceCode, getPublicHost, jsonLoad } from './lib/util.js';
 import { dailyCounts } from './lib/graph.js';
-import { imageProxyRouter } from './lib/sharp.js';
 import { readGraphCache, writeGraphCache } from './lib/graphCache.js';
 import { computeStatsPro } from './lib/statsPro.js';
 import { readStatsCache, writeStatsCache } from './lib/statsCache.js';
@@ -203,10 +202,6 @@ app.use('/cache_imgs', express.static(CACHE_IMGS_DIR, {
   }
 }));
 
-app.use('/img', imageProxyRouter({
-  cacheDir: path.resolve(process.cwd(), 'data', 'processed_imgs'),
-  allowedPrefixes: ['/cache_imgs/', 'https://image.tmdb.org/t/p/']
-}));
 
 
 // Assets statiques avec cache optimisé pour CSS/JS

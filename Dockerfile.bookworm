@@ -12,10 +12,8 @@ LABEL org.opencontainers.image.vendor="Trakt Enhanced"
 LABEL org.opencontainers.image.authors="matt"
 
 # Install build deps (fonts / build tools)
-# Include libvips dependencies for sharp compilation on older CPUs
 RUN apt-get update && apt-get install -y --no-install-recommends \
-	git ca-certificates build-essential python3 curl \
-	libvips-dev libglib2.0-dev libexpat1-dev \
+	git ca-certificates curl \
 	&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
@@ -23,18 +21,17 @@ WORKDIR /src
 # copy package files first for caching
 COPY package*.json ./
 
-# Install dependencies with special handling for sharp
-# Build sharp from source to support older CPUs without AVX2
+# Install dependencies
 RUN set -eux; \
-	echo "[build] Installing dependencies with sharp built from source for CPU compatibility"; \
+	echo "[build] Installing dependencies"; \
 	if [ -f package-lock.json ]; then \
-	  echo "[build] running npm ci (with legacy-peer-deps and sharp from source)"; \
-	  npm ci --legacy-peer-deps --build-from-source=sharp --verbose || \
+	  echo "[build] running npm ci (with legacy-peer-deps)"; \
+	  npm ci --legacy-peer-deps --verbose || \
 	  (echo "[build] npm ci failed, falling back to npm install" && \
-	   npm install --legacy-peer-deps --no-audit --progress=false --build-from-source=sharp); \
+	   npm install --legacy-peer-deps --no-audit --progress=false); \
 	else \
-	  echo "[build] no package-lock.json, running npm install with sharp from source"; \
-	  npm install --legacy-peer-deps --no-audit --progress=false --build-from-source=sharp; \
+	  echo "[build] no package-lock.json, running npm install"; \
+	  npm install --legacy-peer-deps --no-audit --progress=false; \
 	fi
 
 

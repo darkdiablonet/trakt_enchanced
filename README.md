@@ -79,30 +79,6 @@ REFRESH_EVERY_MS=3600000
 
 ---
 
-## 🗂️ Arborescence (résumé)
-
-```
-public/
-  app.html                # l’UI éditable
-  assets/
-    tailwind.css          # CSS généré
-    fa/                   # Font Awesome local (css + webfonts)
-data/
-  .secrets                # trackt secret
-  .cache_tmdb             # json TMDB 
-  cache_imgs/             # posters TMDB (si fallback local)
-  .cache_trakt/
-    progress/             # JSON par série: watched_<traktId>.json
-lib/
-  pageData.js             # construit les 4 listes et la réponse API
-  trakt.js                # appels Trakt + enrichissement progress (par lots + cache)
-  tmdb.js                 # métadonnées + cache posters, URL locales /cache_imgs
-  util.js                 # scheduler (auto-refresh), helpers JSON, baseUrl tolérant
-server.js                 # Express: routes, statiques, scheduler
-```
-
----
-
 ## 🌐 Endpoints utiles
 
 - `GET /` → page HTML
