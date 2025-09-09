@@ -17,19 +17,6 @@ App web pour parcourir ton historique **Trakt** avec :
 - **Rafraîchissement automatique** au démarrage puis à intervalle régulier
 - **Build CSS** Tailwind (sans CDN) + Font Awesome locaux
 
-
-## 🚀 Installation rapide
-
-### Installation classique (Node.js)
-
-```bash
-git clone https://github.com/diabolino/trakt_enhanced
-cd trakt_enhanced
-npm install
-npm run build
-npm start
-```
-
 ### Installation Docker
 
 📦 **[Documentation complète Docker](docker.md)**
@@ -174,18 +161,6 @@ Web app to browse your **Trakt** history with:
 - **Cards** with TMDB posters cached locally
 - **Automatic refresh** at startup then at regular intervals
 - **CSS build** Tailwind (without CDN) + local Font Awesome
-
-## 🚀 Quick Installation
-
-### Classic Installation (Node.js)
-
-```bash
-git clone https://github.com/diabolino/trakt_enhanced
-cd trakt_enhanced
-npm install
-npm run build
-npm start
-```
 
 ### Docker Installation
 
