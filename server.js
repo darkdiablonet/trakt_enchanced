@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
+import { WebSocketServer } from 'ws';
 import session from 'express-session';
 import FileStore from 'session-file-store';
 import morgan from 'morgan';
@@ -38,6 +39,8 @@ dotenv.config();
 
 // Système de broadcast pour Server-Sent Events (SSE)
 const liveClients = new Set();
+// Serveur WebSocket (initialisé après app.listen)
+let wss = null;
 
 function broadcastCardUpdate(type, traktId, cardData) {
   const eventData = {
@@ -59,7 +62,22 @@ function broadcastCardUpdate(type, traktId, cardData) {
     }
   });
   
-  console.log(`[SSE] Broadcasted ${type} ${traktId} update to ${liveClients.size} clients`);
+  // Broadcast via WebSocket si disponible
+  try {
+    if (wss) {
+      const json = JSON.stringify(eventData);
+      wss.clients.forEach(ws => {
+        // ws.OPEN constant is on ws instance
+        if (ws.readyState === ws.OPEN) {
+          ws.send(json);
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('[WS] Broadcast error:', e.message);
+  }
+  
+  console.log(`[SSE/WS] Broadcasted ${type} ${traktId} update to ${liveClients.size} SSE + ${wss?.clients?.size || 0} WS clients`);
 }
 
 // Invalider TOUS les caches globaux (les 3 fichiers de merde qui restent)
@@ -1539,7 +1557,7 @@ app.get('/', asyncHandler(async (req, res) => {
 // Middleware de gestion d'erreurs (doit être le dernier)
 app.use(errorHandlingMiddleware);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`Server started successfully`, {
     port: PORT,
     environment: process.env.NODE_ENV || 'development',
@@ -1617,6 +1635,43 @@ app.listen(PORT, () => {
     res.json({ ok: true, timestamp: new Date().toISOString() });
   }));
 });
+
+// Initialiser le serveur WebSocket sur le même serveur HTTP
+wss = new WebSocketServer({ server, path: '/ws/live' });
+
+const WS_CLOSE = { AUTH_REQUIRED: 4001 };
+
+wss.on('connection', async (ws, req) => {
+  try {
+    // Vérifier l'authentification (mono-utilisateur global)
+    const token = await ensureValidToken().catch(() => null);
+    if (!token?.access_token) {
+      try { ws.close(WS_CLOSE.AUTH_REQUIRED, 'auth-required'); } catch {}
+      return;
+    }
+
+    // Marquer comme vivant et envoyer un message de connexion
+    ws.isAlive = true;
+    try { ws.send(JSON.stringify({ type: 'connected', timestamp: Date.now() })); } catch {}
+
+    ws.on('pong', () => { ws.isAlive = true; });
+    ws.on('message', () => { /* no-op for now */ });
+  } catch (err) {
+    try { ws.close(1011, 'server-error'); } catch {}
+  }
+});
+
+// Heartbeat: ping régulier pour nettoyer les connexions mortes
+const wsHeartbeat = setInterval(() => {
+  if (!wss) return;
+  wss.clients.forEach(ws => {
+    if (ws.isAlive === false) return ws.terminate();
+    ws.isAlive = false;
+    try { ws.ping(); } catch { /* ignore */ }
+  });
+}, 30000);
+
+wss.on('close', () => clearInterval(wsHeartbeat));
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

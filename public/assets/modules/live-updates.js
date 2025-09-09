@@ -16,27 +16,108 @@ class LiveUpdatesManager {
     this.maxReconnectDelay = 30000; // 30 secondes max
     this.reconnectDelay = 1000; // 1 seconde initial
     this.isConnected = false;
+
+    // WebSocket support
+    this.socket = null;
+    this.wsReconnectTimeout = null;
+    this.wsReconnectDelay = 1000;
+    this.wsMaxReconnectDelay = 30000;
+    this.preferWS = true; // Tenter WS d'abord
   }
 
   /**
    * Démarre la connexion SSE avec fallback sur polling
    */
   start() {
-    if (this.eventSource) {
+    if (this.eventSource || this.socket) {
       logger.liveUpdates('Already connected');
       return;
     }
 
-    logger.liveUpdates('🔥 STARTING REAL LIVE SYSTEM WITH SSE');
-    this.connect();
-    
-    // Fallback: Si SSE ne marche pas, utiliser un polling intelligent
+    logger.liveUpdates('🔥 STARTING REAL LIVE SYSTEM (WS preferred)');
+
+    if (this.preferWS) {
+      this.connectWebSocket();
+      // Fallback rapide vers SSE si WS ne se connecte pas assez vite
+      setTimeout(() => {
+        if (!this.isConnected && !this.eventSource) {
+          this.fallbackToSSE();
+        }
+      }, 3000);
+    } else {
+      this.connect(); // SSE direct
+    }
+
+    // Fallback: Si WS/SSE ne marche pas, utiliser un polling intelligent
     setTimeout(() => {
       if (!this.isConnected) {
-        logger.liveUpdates('🔄 SSE failed, starting intelligent polling fallback...');
+        logger.liveUpdates('🔄 WS/SSE failed, starting intelligent polling fallback...');
         this.startPollingFallback();
       }
-    }, 5000);
+    }, 8000);
+  }
+
+  /**
+   * Connexion WebSocket (préférée)
+   */
+  connectWebSocket() {
+    try {
+      const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/live';
+      logger.liveUpdates(`Connecting WebSocket at: ${wsUrl}`);
+      this.socket = new WebSocket(wsUrl);
+
+      this.socket.onopen = () => {
+        logger.liveUpdates('🎉 WS connection opened - LIVE UPDATES ACTIVE!');
+        this.isConnected = true;
+        this.reconnectDelay = 1000; // Reset SSE backoff
+        this.wsReconnectDelay = 1000; // Reset WS backoff
+        this.showConnectionStatus(true);
+      };
+
+      this.socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          logger.liveUpdates('📨 WS EVENT RECEIVED:', data);
+          this.handleEvent(data);
+        } catch (e) {
+          logger.liveUpdatesWarn('Invalid WS JSON:', event.data);
+        }
+      };
+
+      this.socket.onerror = (err) => {
+        logger.liveUpdatesError('💥 WS connection error:', err);
+      };
+
+      this.socket.onclose = (evt) => {
+        this.isConnected = false;
+        this.showConnectionStatus(false);
+
+        // 4001 = auth requise → bascule immédiate vers SSE
+        if (evt.code === 4001) {
+          logger.liveUpdatesWarn('WS closed (auth-required) → falling back to SSE');
+          this.fallbackToSSE();
+          return;
+        }
+        this.scheduleWsReconnect();
+      };
+    } catch (error) {
+      logger.liveUpdatesError('Failed to create WebSocket:', error);
+      this.fallbackToSSE();
+    }
+  }
+
+  scheduleWsReconnect() {
+    if (this.wsReconnectTimeout) clearTimeout(this.wsReconnectTimeout);
+    logger.liveUpdates(`WS reconnecting in ${this.wsReconnectDelay}ms...`);
+    this.wsReconnectTimeout = setTimeout(() => this.connectWebSocket(), this.wsReconnectDelay);
+    this.wsReconnectDelay = Math.min(this.wsReconnectDelay * 1.5, this.wsMaxReconnectDelay);
+  }
+
+  fallbackToSSE() {
+    if (!this.eventSource) {
+      logger.liveUpdates('Switching to SSE fallback…');
+      this.connect();
+    }
   }
 
   /**
@@ -293,12 +374,20 @@ class LiveUpdatesManager {
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
-      this.isConnected = false;
     }
+    if (this.socket) {
+      try { this.socket.close(); } catch {}
+      this.socket = null;
+    }
+    this.isConnected = false;
 
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
+    }
+    if (this.wsReconnectTimeout) {
+      clearTimeout(this.wsReconnectTimeout);
+      this.wsReconnectTimeout = null;
     }
   }
 
