@@ -63,7 +63,6 @@ export async function loadData() {
       Object.assign(DATA, cachedData);
       applyUIFromData(cachedData);
       cacheServed = true;
-      console.timeEnd('[LoadData] Cache served in');
     }
   } catch (error) {
     console.warn('[LoadData] IndexedDB cache failed:', error);

@@ -40,11 +40,9 @@ export function initCalendar() {
   
   // Éviter l'initialisation multiple
   if (isCalendarInitialized) {
-    console.log('[DEBUG] Calendar already initialized, skipping');
     return;
   }
   
-  console.log('[DEBUG] Initializing calendar...');
   isCalendarInitialized = true;
   
   // Écouter les clics sur les boutons de mode
@@ -80,11 +78,9 @@ export function initCalendar() {
     const newPrevButton = document.getElementById('calendarPrevWeek');
     
     newPrevButton.addEventListener('click', () => {
-      console.log('[DEBUG] Previous button clicked');
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
       currentDate = new Date(year, month - 1, 1);
-      console.log('[DEBUG] Previous month:', currentDate.toISOString().slice(0, 10));
       loadCalendarData();
     });
   }
@@ -95,11 +91,9 @@ export function initCalendar() {
     const newNextButton = document.getElementById('calendarNextWeek');
     
     newNextButton.addEventListener('click', () => {
-      console.log('[DEBUG] Next button clicked');
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
       currentDate = new Date(year, month + 1, 1);
-      console.log('[DEBUG] Next month:', currentDate.toISOString().slice(0, 10));
       loadCalendarData();
     });
   }
@@ -308,11 +302,11 @@ function displayHistoryCalendar(watchingsData, daysInMonth) {
             <img src="${posterImg}" 
                  alt="${showTitle}" 
                  class="w-12 h-16 object-cover rounded flex-shrink-0"
-                 loading="lazy"
+                 loading="lazy">
             <div class="flex-1 min-w-0">
-              <div class="font-medium truncate text-xs">${showTitle}</div>
-              <div class="text-muted truncate text-xs">${mediaInfo}</div>
-              <div class="text-muted truncate text-xs">🕐 ${watchTime}</div>
+              <div class="font-medium truncate">${showTitle}</div>
+              <div class="text-muted truncate">${mediaInfo}</div>
+              <div class="text-muted truncate">🕐 ${watchTime}</div>
             </div>
           </div>
         `;
@@ -437,7 +431,7 @@ function displayCalendar(calendarData, daysInMonth) {
             <img src="${posterImg}" 
                  alt="${showTitle}" 
                  class="w-12 h-16 object-cover rounded flex-shrink-0"
-                 loading="lazy"
+                 loading="lazy">
             <div class="flex-1 min-w-0">
               <div class="font-medium truncate">${showTitle}</div>
               <div class="text-muted truncate">${episodeInfo}</div>

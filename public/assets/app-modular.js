@@ -115,35 +115,24 @@ if (playbackBtn && !elements.tabBtns.playback) {
   elements.panels.playback = document.getElementById('panelPlayback');
 }
 
-// DEBUG: Vérifier et corriger le bouton calendar s'il est null
+// Vérifier et corriger le bouton calendar s'il est null
 const calendarBtn = document.getElementById('tabBtnCalendar');
 if (calendarBtn && !elements.tabBtns.calendar) {
-  console.log('[DEBUG] Calendar button was null in dom.js, fixing it');
   elements.tabBtns.calendar = calendarBtn;
   elements.panels.calendar = document.getElementById('panelCalendar');
 }
 
-// DEBUG: Log pour vérifier les éléments
-console.log('[DEBUG] All tab buttons:', Object.keys(elements.tabBtns).map(k => ({
-  key: k, 
-  exists: !!elements.tabBtns[k], 
-  id: elements.tabBtns[k]?.id
-})));
 
-// DEBUG: Forcer la traduction du calendrier
+// Forcer la traduction du calendrier
 setTimeout(() => {
-  console.log('[DEBUG] Current lang:', i18n.currentLang);
-  console.log('[DEBUG] Calendar translation:', i18n.t('navigation.calendar'));
-  
   // Forcer manuellement la traduction du calendrier
   const calendarBtn = document.getElementById('tabBtnCalendar');
   if (calendarBtn) {
     const icon = calendarBtn.querySelector('i');
     const iconHtml = icon ? icon.outerHTML : '';
     const translatedText = i18n.t('navigation.calendar');
-    console.log('[DEBUG] Forcing calendar translation to:', translatedText);
     
-    // Approche 1 : Remplacer tout le contenu sauf l'icône
+    // Remplacer tout le contenu sauf l'icône
     calendarBtn.innerHTML = `${iconHtml}${translatedText}`;
   }
 }, 1000);
