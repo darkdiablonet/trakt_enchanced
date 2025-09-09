@@ -47,7 +47,6 @@ class IndexedDBCache {
 
       request.onsuccess = () => {
         this.db = request.result;
-        console.log('[IndexedDBCache] Database opened successfully');
         resolve(true);
       };
 
@@ -65,7 +64,6 @@ class IndexedDBCache {
           db.createObjectStore(STORES.METADATA, { keyPath: 'key' });
         }
 
-        console.log('[IndexedDBCache] Database schema created/updated');
       };
     });
   }
@@ -76,31 +74,36 @@ class IndexedDBCache {
   async setPageData(data, ttl = DEFAULT_TTL) {
     if (!await this.init()) return false;
 
-    const transaction = this.db.transaction([STORES.PAGE_DATA], 'readwrite');
-    const store = transaction.objectStore(STORES.PAGE_DATA);
+    try {
+      const transaction = this.db.transaction([STORES.PAGE_DATA], 'readwrite');
+      const store = transaction.objectStore(STORES.PAGE_DATA);
     
-    const cacheEntry = {
-      key: 'main_page_data',
-      data: data,
-      timestamp: Date.now(),
-      expires: Date.now() + ttl,
-      version: DB_VERSION
-    };
+      const cacheEntry = {
+        key: 'main_page_data',
+        data: data,
+        timestamp: Date.now(),
+        expires: Date.now() + ttl,
+        version: DB_VERSION
+      };
 
-    return new Promise((resolve, reject) => {
-      const request = store.put(cacheEntry);
-      
-      request.onsuccess = () => {
-        console.log('[IndexedDBCache] Page data saved to cache');
-        resolve(true);
-      };
-      
-      request.onerror = () => {
-        console.error('[IndexedDBCache] Failed to save page data:', request.error);
-        reject(request.error);
-      };
-    });
+      return new Promise((resolve, reject) => {
+        const request = store.put(cacheEntry);
+        
+        request.onsuccess = () => {
+          resolve(true);
+        };
+        
+        request.onerror = () => {
+          console.error('[IndexedDBCache] Failed to save page data:', request.error);
+          reject(request.error);
+        };
+      });
+    } catch (error) {
+      console.error('[IndexedDBCache] Transaction error in setPageData:', error);
+      return false;
+    }
   }
+
 
   /**
    * Récupérer les données de page (avec vérification TTL)
@@ -108,39 +111,41 @@ class IndexedDBCache {
   async getPageData() {
     if (!await this.init()) return null;
 
-    const transaction = this.db.transaction([STORES.PAGE_DATA], 'readonly');
-    const store = transaction.objectStore(STORES.PAGE_DATA);
+    try {
+      const transaction = this.db.transaction([STORES.PAGE_DATA], 'readonly');
+      const store = transaction.objectStore(STORES.PAGE_DATA);
 
-    return new Promise((resolve, reject) => {
-      const request = store.get('main_page_data');
-      
-      request.onsuccess = () => {
-        const result = request.result;
+      return new Promise((resolve, reject) => {
+        const request = store.get('main_page_data');
         
-        if (!result) {
-          console.log('[IndexedDBCache] No cached page data found');
-          resolve(null);
-          return;
-        }
+        request.onsuccess = () => {
+          const result = request.result;
+          
+          if (!result) {
+            resolve(null);
+            return;
+          }
 
-        // Vérifier expiration
-        if (Date.now() > result.expires) {
-          console.log('[IndexedDBCache] Cached page data expired');
-          // Nettoyer le cache expiré
-          this.clearPageData();
-          resolve(null);
-          return;
-        }
+          // Vérifier expiration
+          if (Date.now() > result.expires) {
+            // Nettoyer le cache expiré
+            this.clearPageData();
+            resolve(null);
+            return;
+          }
 
-        console.log('[IndexedDBCache] Valid cached page data found');
-        resolve(result.data);
-      };
-      
-      request.onerror = () => {
-        console.error('[IndexedDBCache] Failed to get page data:', request.error);
-        resolve(null); // Fallback silencieux
-      };
-    });
+          resolve(result.data);
+        };
+        
+        request.onerror = () => {
+          console.error('[IndexedDBCache] Failed to get page data:', request.error);
+          resolve(null); // Fallback silencieux
+        };
+      });
+    } catch (error) {
+      console.error('[IndexedDBCache] Transaction error in getPageData:', error);
+      return null;
+    }
   }
 
   /**
@@ -233,7 +238,6 @@ class IndexedDBCache {
       const request = store.delete('main_page_data');
       
       request.onsuccess = () => {
-        console.log('[IndexedDBCache] Page data cache cleared');
         resolve(true);
       };
       
@@ -263,7 +267,6 @@ class IndexedDBCache {
         const entry = cursor.value;
         if (now > entry.expires) {
           cursor.delete();
-          console.log(`[IndexedDBCache] Removed expired entry: ${entry.key}`);
         }
         cursor.continue();
       }
@@ -318,7 +321,6 @@ class IndexedDBCache {
     if (this.db) {
       this.db.close();
       this.db = null;
-      console.log('[IndexedDBCache] Database connection closed');
     }
   }
 }

@@ -18,7 +18,6 @@ export function invalidateWatchingCache(traktId, kind) {
   const cacheKey = `${kind}-${traktId}`;
   if (watchingDetailsCache.has(cacheKey)) {
     watchingDetailsCache.delete(cacheKey);
-    console.log(`[watchingDetails] Cache invalidated for ${kind} ${traktId}`);
   }
 }
 
@@ -27,7 +26,6 @@ export function invalidateWatchingCache(traktId, kind) {
  */
 export function clearWatchingCache() {
   watchingDetailsCache.clear();
-  console.log(`[watchingDetails] All cache cleared`);
 }
 
 /**
@@ -101,7 +99,7 @@ function generateMovieDetailsHTML(movieData) {
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-play text-green-400"></i>
-            <span class="text-sm font-medium">Regardé</span>
+            <span class="text-sm font-medium">${i18n.t('watched')}</span>
           </div>
           <div class="text-xs text-muted">
             🗓️ ${datetime}
@@ -163,7 +161,7 @@ function showWatchingDetailsModal(title, kind, data, traktId) {
     ? generateMovieDetailsHTML(data)
     : generateShowDetailsHTML(data, traktId);
   
-  const kindLabel = kind === 'movie' ? 'Film' : 'Série';
+  const kindLabel = kind === 'movie' ? i18n.t('movie') : i18n.t('show');
   const count = data.watchings?.length || 0;
   
   // Créer la modal

@@ -52,14 +52,12 @@ function renderDevicePrompt(devicePrompt) {
 }
 
 export async function loadData() {
-  console.time('[LoadData] Total load time');
   
   // Phase 1: Essayer de servir depuis IndexedDB immédiatement
   let cacheServed = false;
   try {
     const cachedData = await indexedDBCache.getPageData();
     if (cachedData && !cachedData.needsAuth && !cachedData.needsSetup) {
-      console.log('[LoadData] Serving from IndexedDB cache - instant load!');
       Object.assign(DATA, cachedData);
       applyUIFromData(cachedData);
       cacheServed = true;
@@ -82,12 +80,10 @@ export async function loadData() {
       console.warn('[LoadData] Background refresh failed:', error);
     });
     
-    console.timeEnd('[LoadData] Total load time');
     return; // Sortie rapide avec cache
   }
   
   // Phase 3: Pas de cache valide - attendre l'API (première visite)
-  console.log('[LoadData] No cache available - waiting for API...');
   const freshData = await apiPromise;
   if (freshData) {
     Object.assign(DATA, freshData);
@@ -98,8 +94,6 @@ export async function loadData() {
       await indexedDBCache.setPageData(freshData);
     }
   }
-  
-  console.timeEnd('[LoadData] Total load time');
 }
 
 /**
@@ -107,10 +101,8 @@ export async function loadData() {
  */
 async function fetchAPIData() {
   try {
-    console.time('[LoadData] API fetch time');
     const resp = await guardedFetch('/api/data', { cache: 'no-store' });
     const js = await resp.json();
-    console.timeEnd('[LoadData] API fetch time');
     
     // Vérifications critiques
     if (js.needsSetup) {
@@ -214,7 +206,6 @@ async function handleBackgroundRefresh(freshData) {
     const hasChanges = indexedDBCache.comparePageData(cachedData, freshData);
     
     if (hasChanges) {
-      console.log('[LoadData] Background refresh detected changes - updating UI');
       
       // Mettre à jour les données et l'interface
       Object.assign(DATA, freshData);
@@ -232,7 +223,6 @@ async function handleBackgroundRefresh(freshData) {
       // Notification utilisateur subtile
       showBackgroundUpdateNotification();
     } else {
-      console.log('[LoadData] Background refresh - no changes detected');
       
       // Même si pas de changements, rafraîchir le TTL du cache
       if (!freshData.needsAuth && !freshData.needsSetup) {

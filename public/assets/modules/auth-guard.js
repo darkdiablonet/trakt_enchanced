@@ -31,7 +31,6 @@ export async function checkAuthStatus() {
 
 async function performAuthCheck() {
   try {
-    console.log('[AuthGuard] Checking authentication status...');
     
     // Faire un appel minimal pour vérifier l'auth
     const response = await fetch('/api/data', { 
@@ -44,7 +43,6 @@ async function performAuthCheck() {
     
     if (!response.ok && response.status === 412) {
       // Needs setup
-      console.log('[AuthGuard] Setup required, redirecting...');
       window.location.href = '/setup';
       return false;
     }
@@ -53,7 +51,6 @@ async function performAuthCheck() {
     
     // Vérifier si on a besoin d'authentification
     if (data.needsAuth === true) {
-      console.log('[AuthGuard] Authentication required - showing auth prompt');
       isAuthenticated = false;
       showAuthPrompt(data);
       // IMPORTANT: Ne pas déclencher de reload, juste afficher le prompt
@@ -61,7 +58,6 @@ async function performAuthCheck() {
     }
     
     // Token valide
-    console.log('[AuthGuard] Authentication valid');
     isAuthenticated = true;
     hideAuthPrompt();
     return true;
@@ -78,7 +74,6 @@ async function performAuthCheck() {
  * Affiche uniquement l'interface de connexion
  */
 function showAuthPrompt(data) {
-  console.log('[AuthGuard] Showing auth prompt, hiding main interface');
   
   // Cacher l'interface principale
   const mainContainer = document.getElementById('mainContainer');
@@ -168,7 +163,6 @@ export async function guardedFetch(url, options = {}) {
   const isExempt = authExemptUrls.some(exempt => url.startsWith(exempt));
   
   if (!isExempt && !isAuthenticated) {
-    console.log(`[AuthGuard] Blocking API call to ${url} - not authenticated`);
     // Vérifier l'auth une fois de plus
     const authValid = await checkAuthStatus();
     if (!authValid) {
@@ -181,7 +175,6 @@ export async function guardedFetch(url, options = {}) {
   
   // Si on reçoit une erreur 401, invalider l'auth
   if (response.status === 401) {
-    console.log('[AuthGuard] Received 401, invalidating authentication');
     isAuthenticated = false;
     await checkAuthStatus(); // Re-vérifier et afficher le prompt
     throw new Error('Authentication expired');

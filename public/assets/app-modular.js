@@ -43,7 +43,6 @@ import { initCalendar } from './modules/calendar.js';
 async function initializeApp() {
   
   // Vérifier l'authentification en premier
-  console.log('[App] Checking authentication status...');
   const isAuthenticated = await checkAuthStatus();
   
   // Attendre que i18n soit complètement initialisé (toujours nécessaire)
@@ -59,7 +58,6 @@ async function initializeApp() {
   uiTranslations.translateUI();
   
   if (!isAuthenticated) {
-    console.log('[App] Not authenticated - showing auth interface only');
     // L'interface de connexion est déjà affichée par auth-guard
     // On n'a pas besoin de charger les données
     return;

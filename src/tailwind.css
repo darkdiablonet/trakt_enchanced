@@ -12,6 +12,119 @@
 /* tes styles custom dans la couche components */
 @layer components {
   :root{ --card-w:220px; }
+
+  /* ==== STYLES DES BARRES DE DÉFILEMENT ==== */
+  /* Pour WebKit (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--bg-secondary);
+  }
+
+  /* Styles pour Firefox */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: #0ea5e9 var(--bg-secondary);
+  }
+
+  /* ==== STYLES DES CURSEURS ==== */
+  /* Curseur par défaut pour les éléments cliquables */
+  button, 
+  [role="button"],
+  .btn,
+  .chip-clickable,
+  .badge-next,
+  .ov-btn,
+  .tabs-group button,
+  .scroll-to-top-btn,
+  a,
+  [href],
+  input[type="submit"],
+  input[type="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select,
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  /* Curseur pour les liens */
+  a:hover {
+    cursor: pointer;
+  }
+
+  /* Curseur pour les champs de saisie */
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  [contenteditable="true"] {
+    cursor: text;
+  }
+
+  /* Curseur pour les éléments désactivés */
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled,
+  .chip-clickable.loading,
+  .badge-next.loading,
+  .cursor-not-allowed {
+    cursor: not-allowed;
+  }
+
+  /* Curseur pour les éléments redimensionnables */
+  .resize,
+  textarea {
+    cursor: text;
+  }
+
+  /* Curseur pour les éléments de sélection */
+  .select-none {
+    cursor: default;
+    user-select: none;
+  }
+
+  /* Curseurs pour les actions spécifiques */
+  .cursor-grab {
+    cursor: grab;
+  }
+
+  .cursor-grabbing {
+    cursor: grabbing;
+  }
+
+  .cursor-help {
+    cursor: help;
+  }
+
+  .cursor-wait {
+    cursor: wait;
+  }
+
+  .cursor-progress {
+    cursor: progress;
+  }
   
   /* ==== THÈME SOMBRE (par défaut) ==== */
   html, body { min-height: 100%; background-color:#020617; }
@@ -450,6 +563,12 @@
     opacity: 0;
     animation: heatmapAppear 0.6s ease-out forwards;
     animation-delay: var(--cell-delay, 0s);
+    cursor: pointer;
+  }
+
+  /* Curseur normal pour les cellules sans données */
+  .heatmap-cell[data-count="0"] {
+    cursor: default;
   }
   
   @keyframes heatmapAppear {
@@ -626,6 +745,30 @@
   .topcard .row:hover .rank {
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
+  }
+
+  /* Styles pour les boutons du calendrier */
+  .calendar-mode-btn {
+    color: var(--text-muted);
+    background: transparent;
+    transition: all 0.3s ease;
+  }
+
+  .calendar-mode-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .calendar-mode-btn.active {
+    color: white;
+    background: #0ea5e9;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    font-weight: 600;
+  }
+
+  .calendar-mode-btn.active:hover {
+    background: #0284c7;
+    box-shadow: 0 6px 16px rgba(14, 165, 233, 0.4);
   }
   
   /* Animations pour le popover synopsis */

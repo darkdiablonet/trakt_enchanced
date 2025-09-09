@@ -26,14 +26,12 @@ function updateShowDataWithServerCard(traktId, serverCard) {
       // Remplacer complètement avec les données serveur
       rows[showIndex] = { ...serverCard };
       updated = true;
-      console.log(`[updateShowDataWithServerCard] Updated show ${traktIdNum} in ${section}`);
     }
   }
   
   if (updated) {
     // Déclencher un re-rendu complet de l'interface avec les nouvelles données
     renderCurrent();
-    console.log(`[updateShowDataWithServerCard] Interface re-rendered for show ${traktIdNum}`);
   }
 }
 
@@ -50,11 +48,9 @@ function updateMovieDataWithServerCard(traktId, serverCard) {
     // Ajouter aux films vus avec les données serveur
     DATA.moviesRows.unshift({ ...serverCard });
     
-    console.log(`[updateMovieDataWithServerCard] Moved movie ${traktIdNum} from unseen to seen`);
     
     // Déclencher un re-rendu complet de l'interface
     renderCurrent();
-    console.log(`[updateMovieDataWithServerCard] Interface re-rendered after moving movie ${traktIdNum}`);
   } else {
     // Mettre à jour dans la section appropriée
     const sections = ['moviesRows', 'moviesUnseenRows'];
@@ -64,11 +60,9 @@ function updateMovieDataWithServerCard(traktId, serverCard) {
       
       if (movieIndex !== -1) {
         rows[movieIndex] = { ...serverCard };
-        console.log(`[updateMovieDataWithServerCard] Updated movie ${traktIdNum} in ${section}`);
         
         // Déclencher un re-rendu complet de l'interface
         renderCurrent();
-        console.log(`[updateMovieDataWithServerCard] Interface re-rendered for movie ${traktIdNum}`);
         break;
       }
     }
@@ -78,7 +72,6 @@ function updateMovieDataWithServerCard(traktId, serverCard) {
 // Fonction pour récupérer seulement les données d'une série spécifique
 async function refreshShowData(traktId) {
   try {
-    console.log(`[refreshShow] Refreshing data for show ${traktId}`);
     
     // Récupérer les nouvelles données depuis le serveur
     const response = await fetch(`/api/show-data/${traktId}`);
@@ -105,7 +98,6 @@ async function refreshShowData(traktId) {
           ids: oldShow.ids // Garder les IDs originaux
         };
         updated = true;
-        console.log(`[refreshShow] Updated show in ${section}`);
       }
     }
     
@@ -113,7 +105,6 @@ async function refreshShowData(traktId) {
       // Mettre à jour l'affichage
       updateNextEpisodeButtonDisplay(traktId);
       updateShowCardMetrics(traktId);
-      console.log(`[refreshShow] Display updated for show ${traktId}`);
     }
     
     return true;
