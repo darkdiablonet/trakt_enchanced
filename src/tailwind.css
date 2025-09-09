@@ -388,6 +388,28 @@
   .ov-panel.ov-at-bottom .ov-arrow{ top: -6px; }
   .ov-panel.ov-at-top    .ov-arrow{ bottom: -6px; }
   .topcard{background:linear-gradient(180deg,rgba(15,23,42,.4),rgba(2,6,23,.4));border:1px solid #0b2942;border-radius:.75rem;padding:.5rem}
+  
+  /* Adaptation des topcard pour le thème clair */
+  .theme-light .topcard {
+    background: linear-gradient(180deg, rgba(255,255,255,.8), rgba(248,250,252,.8)) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    backdrop-filter: blur(8px);
+  }
+  
+  .theme-light .topcard .rank {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    color: white !important;
+  }
+  
+  .theme-light .topcard .bar {
+    background: rgba(0,0,0,0.1) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+  }
+  
+  .theme-light .topcard .row:hover {
+    background: rgba(14, 165, 233, 0.1) !important;
+  }
   .toplist{display:flex;flex-direction:column;gap:.25rem}
   .toplist .row{display:grid;grid-template-columns:1.75rem 1fr auto;align-items:center;gap:.5rem;padding:.45rem .5rem;border-radius:.6rem}
   .toplist .row:hover{background:rgba(14,165,233,.08)}
@@ -561,7 +583,7 @@
   /* Animation pour les cellules de heatmap */
   .heatmap-cell {
     opacity: 0;
-    animation: heatmapAppear 0.6s ease-out forwards;
+    animation: heatmapAppear 0.4s ease-out forwards;
     animation-delay: var(--cell-delay, 0s);
     cursor: pointer;
   }
@@ -1125,4 +1147,170 @@
 
 .animate-progress-pulse {
   animation: progress-pulse 2s ease-in-out infinite;
+}
+
+/* Animation de pulsation subtile pour la date d'aujourd'hui dans le calendrier */
+@keyframes calendar-today-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+    transform: scale(1.02);
+  }
+}
+
+.calendar-today {
+  animation: calendar-today-pulse 3s ease-in-out infinite;
+}
+
+.calendar-today:hover {
+  animation-play-state: paused;
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3) !important;
+}
+
+/* Styles pour les dates passées dans le calendrier */
+.calendar-past {
+  filter: grayscale(60%) blur(1px);
+}
+
+.calendar-past:hover {
+  opacity: 0.5 !important;
+  filter: grayscale(30%) blur(0px);
+  transform: scale(1.01);
+}
+
+/* Styles spécifiques pour le thème clair */
+.theme-light .calendar-today {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border: 2px solid #22c55e !important;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25) !important;
+}
+
+.theme-light .calendar-today .bg-green-500 {
+  background: #16a34a !important;
+}
+
+.theme-light .calendar-past {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #6b7280 !important;
+  filter: grayscale(50%) opacity(0.4);
+}
+
+.theme-light .calendar-past:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  opacity: 0.6 !important;
+  filter: grayscale(25%) opacity(0.6);
+}
+
+/* Cellules normales en thème clair */
+.theme-light .min-h-40.bg-white\/5 {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.theme-light .min-h-40.bg-white\/5:hover {
+  background: rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* En-têtes des jours de la semaine en thème clair */
+.theme-light .bg-white\/10 {
+  background: rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Améliorer le contraste des textes en thème clair */
+.theme-light .text-muted {
+  color: #64748b !important;
+}
+
+.theme-light .text-gray-500 {
+  color: #64748b !important;
+}
+
+.theme-light .text-green-400 {
+  color: #059669 !important;
+  font-weight: 700;
+}
+
+/* Ajustements pour le contenu des cellules */
+.theme-light .bg-white\/10.rounded {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.theme-light .bg-white\/5.rounded {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Animation de pulsation adaptée pour le thème clair */
+.theme-light .calendar-today {
+  animation: calendar-today-pulse-light 3s ease-in-out infinite;
+}
+
+@keyframes calendar-today-pulse-light {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+    transform: scale(1.02);
+  }
+}
+
+.theme-light .calendar-today:hover {
+  animation-play-state: paused;
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4) !important;
+}
+
+/* Adaptations des inputs et sélecteurs pour le thème clair */
+.theme-light input[type="search"],
+.theme-light input[type="text"],
+.theme-light input[type="number"],
+.theme-light select {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-light input[type="search"]:focus,
+.theme-light input[type="text"]:focus,
+.theme-light input[type="number"]:focus,
+.theme-light select:focus {
+  border-color: rgba(14, 165, 233, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1) !important;
+  background: rgba(255, 255, 255, 1) !important;
+}
+
+.theme-light input::placeholder {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Spécifiquement pour les inputs de recherche et tri */
+.theme-light #qActive,
+.theme-light #sortActive {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(8px);
+}
+
+/* Bouton filtres mobile */
+.theme-light #mobileFiltersToggle {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-light #mobileFiltersToggle:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
 }

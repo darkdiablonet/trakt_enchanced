@@ -20,20 +20,45 @@ export function fillYearsSelect(selectEl, minYear = 2010) {
   }
 }
 
+// Fonction pour détecter le thème actuel
+function getCurrentTheme() {
+  return document.documentElement.classList.contains('theme-light') ? 'light' : 'dark';
+}
+
 // Palette de couleurs unifiée pour toute l'application
 export const UNIFIED_PALETTE = {
-  colors: [
-    '#0b1220',  // 0: empty (très sombre)
-    '#1e3a5f',  // 1: bleu sombre 
-    '#2563eb',  // 2: bleu moyen
-    '#22c55e',  // 3: vert vif
-    '#f59e0b'   // 4: orange/amber (max activité)
-  ],
-  // Couleurs supplémentaires pour cohérence
-  background: '#0b1220',
-  text: '#94a3b8',
-  textMuted: '#64748b',
-  border: '#1e293b',
+  get colors() {
+    if (getCurrentTheme() === 'light') {
+      return [
+        '#f1f5f9',  // 0: empty (très clair)
+        '#cbd5e1',  // 1: gris clair
+        '#94a3b8',  // 2: gris moyen
+        '#64748b',  // 3: gris foncé
+        '#1e293b'   // 4: très foncé (max activité)
+      ];
+    } else {
+      return [
+        '#0b1220',  // 0: empty (très sombre)
+        '#1e3a5f',  // 1: bleu sombre 
+        '#2563eb',  // 2: bleu moyen
+        '#22c55e',  // 3: vert vif
+        '#f59e0b'   // 4: orange/amber (max activité)
+      ];
+    }
+  },
+  // Couleurs adaptatives selon le thème
+  get background() {
+    return getCurrentTheme() === 'light' ? '#f8fafc' : '#0b1220';
+  },
+  get text() {
+    return getCurrentTheme() === 'light' ? '#334155' : '#94a3b8';
+  },
+  get textMuted() {
+    return getCurrentTheme() === 'light' ? '#64748b' : '#64748b';
+  },
+  get border() {
+    return getCurrentTheme() === 'light' ? '#e2e8f0' : '#1e293b';
+  },
   primary: '#22c55e',     // Vert principal
   primaryDark: '#16a34a',  // Vert sombre
   secondary: '#2563eb',    // Bleu
@@ -132,7 +157,7 @@ export function renderHeatmapSVG({ year, max, days }, { cell=12, gap=3, top=28, 
     const fill = colorFor(lvl);
     const viewingText = count === 1 ? i18n.t('calendar.viewing') : i18n.t('calendar.viewings');
     const title = `${utcKey} · ${count} ${viewingText}`;
-    const delay = (ci * 7 + ri) * 20; // Animation progressive plus lente
+    const delay = (ci * 7 + ri) * 10; // Animation progressive accélérée
     svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" ry="2" 
              fill="${fill}" class="svg-interactive heatmap-cell" data-delay="${delay}" data-date="${utcKey}" data-count="${count}">
       <title>${title}</title>
@@ -268,4 +293,29 @@ window.addEventListener('languageChanged', () => {
       heatmapContainer.innerHTML = svg;
     }
   }
+});
+
+// Re-render la heatmap quand le thème change
+document.addEventListener('DOMContentLoaded', function() {
+  // Observer pour détecter les changements de thème
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        // Le thème a changé, régénérer la heatmap si elle existe
+        if (lastHeatmapData && lastHeatmapOptions) {
+          const heatmapContainer = document.getElementById('graphContainer');
+          if (heatmapContainer) {
+            const svg = renderHeatmapSVG(lastHeatmapData, lastHeatmapOptions);
+            heatmapContainer.innerHTML = svg;
+          }
+        }
+      }
+    });
+  });
+
+  // Observer les changements de classe sur html
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
 });

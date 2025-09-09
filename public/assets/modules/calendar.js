@@ -270,13 +270,43 @@ function displayHistoryCalendar(watchingsData, daysInMonth) {
   }
   
   // Générer les jours du mois
+  const today = new Date().toLocaleDateString('sv-SE'); // Format YYYY-MM-DD en local
+  
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(firstDay.getFullYear(), firstDay.getMonth(), day);
     const dateKey = formatDate(date);
     const dayWatchings = dataByDate[dateKey] || [];
+    const isToday = dateKey === today;
     
-    let dayHTML = `<div class="min-h-40 p-2 bg-white/5 rounded-lg">`;
-    dayHTML += `<div class="text-sm font-semibold mb-2">${day}</div>`;
+    // Calculer si c'est une date passée
+    const todayDate = new Date();
+    const daysDiff = Math.floor((todayDate - date) / (1000 * 60 * 60 * 24));
+    const isPast = daysDiff > 0;
+    
+    // Déterminer les classes CSS selon la date
+    let cellClasses = 'min-h-40 p-2 rounded-lg transition-all';
+    let dayNumberClasses = 'text-sm font-semibold mb-2';
+    
+    if (isToday) {
+      cellClasses += ' bg-green-500/10 ring-2 ring-green-500 shadow-lg shadow-green-500/20 calendar-today';
+      dayNumberClasses += ' text-green-400';
+    } else if (isPast) {
+      cellClasses += ' bg-white/2 opacity-30 calendar-past';
+      dayNumberClasses += ' text-gray-500';
+    } else {
+      cellClasses += ' bg-white/5';
+    }
+    
+    let dayHTML = `<div class="${cellClasses}">`;
+    
+    // Badge "Aujourd'hui" si c'est le jour actuel
+    if (isToday) {
+      dayHTML += `<div class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full mb-1 inline-block font-medium">
+        ${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}
+      </div>`;
+    }
+    
+    dayHTML += `<div class="${dayNumberClasses}">${day}</div>`;
     
     if (dayWatchings.length === 0) {
       // Jour vide - juste le numéro
@@ -406,13 +436,43 @@ function displayCalendar(calendarData, daysInMonth) {
   }
   
   // Générer les jours du mois
+  const today = new Date().toLocaleDateString('sv-SE'); // Format YYYY-MM-DD en local
+  
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(firstDay.getFullYear(), firstDay.getMonth(), day);
     const dateKey = formatDate(date);
     const dayEntries = dataByDate[dateKey] || [];
+    const isToday = dateKey === today;
     
-    let dayHTML = `<div class="min-h-40 p-2 bg-white/5 rounded-lg">`;
-    dayHTML += `<div class="text-sm font-semibold mb-2">${day}</div>`;
+    // Calculer si c'est une date passée
+    const todayDate = new Date();
+    const daysDiff = Math.floor((todayDate - date) / (1000 * 60 * 60 * 24));
+    const isPast = daysDiff > 0;
+    
+    // Déterminer les classes CSS selon la date
+    let cellClasses = 'min-h-40 p-2 rounded-lg transition-all';
+    let dayNumberClasses = 'text-sm font-semibold mb-2';
+    
+    if (isToday) {
+      cellClasses += ' bg-green-500/10 ring-2 ring-green-500 shadow-lg shadow-green-500/20 calendar-today';
+      dayNumberClasses += ' text-green-400';
+    } else if (isPast) {
+      cellClasses += ' bg-white/2 opacity-30 calendar-past';
+      dayNumberClasses += ' text-gray-500';
+    } else {
+      cellClasses += ' bg-white/5';
+    }
+    
+    let dayHTML = `<div class="${cellClasses}">`;
+    
+    // Badge "Aujourd'hui" si c'est le jour actuel
+    if (isToday) {
+      dayHTML += `<div class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full mb-1 inline-block font-medium">
+        ${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}
+      </div>`;
+    }
+    
+    dayHTML += `<div class="${dayNumberClasses}">${day}</div>`;
     
     if (dayEntries.length === 0) {
       // Jour vide - juste le numéro
@@ -493,7 +553,8 @@ function updateMonthRange() {
  * Formate une date au format YYYY-MM-DD
  */
 function formatDate(date) {
-  return date.toISOString().slice(0, 10);
+  // Utiliser la date locale au lieu d'UTC pour être cohérent avec today
+  return date.toLocaleDateString('sv-SE');
 }
 
 /**
