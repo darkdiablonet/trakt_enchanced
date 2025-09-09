@@ -263,9 +263,18 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-sky-400"></i>
-            <span data-i18n="calendar.title">Calendrier des sorties</span>
+            <span id="calendarTitle" data-i18n="calendar.title">Calendrier des sorties</span>
           </h2>
           <div class="flex items-center gap-2">
+            <!-- Toggle mode calendrier -->
+            <div class="flex bg-white/5 rounded-lg p-1 mr-3">
+              <button id="calendarModeReleases" class="calendar-mode-btn active px-3 py-1 text-xs rounded transition-colors">
+                <i class="fa-solid fa-rocket mr-1"></i>Sorties
+              </button>
+              <button id="calendarModeHistory" class="calendar-mode-btn px-3 py-1 text-xs rounded transition-colors">
+                <i class="fa-solid fa-history mr-1"></i>Historique
+              </button>
+            </div>
             <button id="calendarPrevWeek" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
               <i class="fa-solid fa-chevron-left"></i>
             </button>

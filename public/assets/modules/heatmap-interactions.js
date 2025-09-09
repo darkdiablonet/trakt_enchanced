@@ -4,6 +4,7 @@
  */
 
 import i18n from './i18n.js';
+import { posterURL } from './utils.js';
 
 // Cache des données de visionnages par date
 const watchingsCache = new Map();
@@ -92,9 +93,12 @@ function generateWatchingsHTML(watchings) {
 
   return watchings.map(watching => {
     const time = formatWatchedTime(watching.watched_at);
-    const posterRaw = String(watching.poster || '');
-    // Servir directement depuis cache_imgs sans traitement
-    const poster = posterRaw ? posterRaw : '/assets/placeholder-poster.svg';
+    const posterRaw = watching.poster;
+    // Utiliser posterURL pour traiter correctement les chemins
+    const poster = posterRaw ? posterURL(posterRaw) : '/assets/placeholder-poster.svg';
+    
+    // Debug: afficher les chemins
+    console.log('[DEBUG] Watching:', watching.show, 'posterRaw:', posterRaw, 'poster final:', poster);
     
     return `
       <div class="flex items-start gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
@@ -232,6 +236,13 @@ async function handleHeatmapCellClick(event) {
     if (data.error) {
       console.error('Erreur API:', data.error);
       return;
+    }
+    
+    // Debug: afficher les données reçues
+    console.log('[DEBUG] Données reçues pour', date, ':', data);
+    if (data.watchings && data.watchings.length > 0) {
+      console.log('[DEBUG] Premier watching:', data.watchings[0]);
+      console.log('[DEBUG] Premier poster:', data.watchings[0].poster);
     }
     
     // Afficher la modal

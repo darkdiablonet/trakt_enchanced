@@ -1,6 +1,6 @@
 {
   "name": "trakt_enhanced",
-  "version": "7.5.7",
+  "version": "7.6.0",
   "description": "Trakt Enhanced (Node.js, modular, HTML separated)",
   "type": "module",
   "main": "server.js",

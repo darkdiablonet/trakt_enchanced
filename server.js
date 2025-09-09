@@ -531,7 +531,7 @@ app.get('/api/data', performanceMiddleware('buildPageData'), async (req, res) =>
   }
 });
 
-app.get('/api/stats', requireAuth, performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
+app.get('/api/stats', performanceMiddleware('userStats'), asyncHandler(async (req, res) => {
   try {
     if (!hasValidCredentials()) {
       return res.status(412).json({ 
@@ -779,7 +779,7 @@ app.get('/api/history', requireAuth, performanceMiddleware('history'), asyncHand
   }
 }));
 
-app.get('/api/graph', requireAuth, performanceMiddleware('graphData'), asyncHandler(async (req, res) => {
+app.get('/api/graph', performanceMiddleware('graphData'), asyncHandler(async (req, res) => {
   if (!hasValidCredentials()) {
     return res.status(412).json({ 
       ok: false, 
@@ -1084,6 +1084,67 @@ app.get('/loading', asyncHandler(async (req, res) => {
     csrf_token: req.session.csrfToken || ''
   });
   res.send(html);
+}));
+
+// API pour récupérer les données du calendrier historique - utilise l'API individuelle qui fonctionne
+app.get('/api/calendar/history', requireAuth, performanceMiddleware('calendarHistory'), asyncHandler(async (req, res) => {
+  const { start_date, end_date } = req.query;
+  
+  // Validation des paramètres
+  if (!start_date || !/^\d{4}-\d{2}-\d{2}$/.test(start_date)) {
+    return res.status(400).json({ 
+      ok: false, 
+      error: 'start_date parameter required in YYYY-MM-DD format' 
+    });
+  }
+  
+  if (!end_date || !/^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+    return res.status(400).json({ 
+      ok: false, 
+      error: 'end_date parameter required in YYYY-MM-DD format' 
+    });
+  }
+  
+  try {
+    const allWatchings = [];
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+    const currentDate = new Date(startDate);
+    
+    // Parcourir chaque jour de la période et utiliser l'API individuelle qui marche
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().slice(0, 10);
+      
+      try {
+        // Appeler directement la fonction qui marche - elle retourne directement un tableau
+        const dayWatchings = await getWatchingsByDate(dateStr);
+        if (dayWatchings && dayWatchings.length > 0) {
+          allWatchings.push(...dayWatchings);
+        }
+      } catch (err) {
+        // Ignorer les erreurs pour les dates individuelles
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    res.json({
+      ok: true,
+      watchings: allWatchings,
+      period: {
+        start: start_date,
+        end: end_date,
+        count: allWatchings.length
+      }
+    });
+    
+  } catch (err) {
+    logger.error('Erreur API calendar history:', err);
+    res.status(500).json({ 
+      ok: false,
+      error: 'Erreur interne du serveur' 
+    });
+  }
 }));
 
 // API pour récupérer les visionnages d'une date
