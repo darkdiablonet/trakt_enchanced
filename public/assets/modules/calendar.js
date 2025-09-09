@@ -309,7 +309,6 @@ function displayHistoryCalendar(watchingsData, daysInMonth) {
                  alt="${showTitle}" 
                  class="w-12 h-16 object-cover rounded flex-shrink-0"
                  loading="lazy"
-                 onerror="this.src='/assets/placeholder-poster.svg'">
             <div class="flex-1 min-w-0">
               <div class="font-medium truncate text-xs">${showTitle}</div>
               <div class="text-muted truncate text-xs">${mediaInfo}</div>
@@ -343,6 +342,13 @@ function displayHistoryCalendar(watchingsData, daysInMonth) {
     expandBtn.addEventListener('click', () => {
       const dateKey = expandBtn.dataset.day;
       showAllWatchings(expandBtn, dateKey);
+    });
+  });
+  
+  // Attacher les event listeners pour les erreurs d'images
+  grid.querySelectorAll('img').forEach(img => {
+    img.addEventListener('error', () => {
+      img.src = '/assets/placeholder-poster.svg';
     });
   });
 }
@@ -432,7 +438,6 @@ function displayCalendar(calendarData, daysInMonth) {
                  alt="${showTitle}" 
                  class="w-12 h-16 object-cover rounded flex-shrink-0"
                  loading="lazy"
-                 onerror="this.src='/assets/placeholder-poster.svg'">
             <div class="flex-1 min-w-0">
               <div class="font-medium truncate">${showTitle}</div>
               <div class="text-muted truncate">${episodeInfo}</div>
@@ -465,6 +470,13 @@ function displayCalendar(calendarData, daysInMonth) {
     expandBtn.addEventListener('click', () => {
       const dateKey = expandBtn.dataset.day;
       showAllEpisodes(expandBtn, dateKey);
+    });
+  });
+  
+  // Attacher les event listeners pour les erreurs d'images
+  grid.querySelectorAll('img').forEach(img => {
+    img.addEventListener('error', () => {
+      img.src = '/assets/placeholder-poster.svg';
     });
   });
 }
@@ -540,7 +552,7 @@ function showAllWatchings(element, dateKey) {
              alt="${showTitle}" 
              class="w-12 h-16 object-cover rounded flex-shrink-0"
              loading="lazy"
-             onerror="this.src='/assets/placeholder-poster.svg'">
+>
         <div class="flex-1 min-w-0">
           <div class="font-medium">${showTitle}</div>
           <div class="text-muted text-sm">${mediaInfo}</div>
@@ -577,6 +589,13 @@ function showAllWatchings(element, dateKey) {
           fullModal.classList.add('hidden');
         });
       }
+      
+      // Attacher les event listeners pour les erreurs d'images dans la modal
+      modalContainer.querySelectorAll('img').forEach(img => {
+        img.addEventListener('error', () => {
+          img.src = '/assets/placeholder-poster.svg';
+        });
+      });
       
       // Fermeture en cliquant sur le backdrop
       const backdrop = fullModal.querySelector('.absolute.inset-0');
@@ -634,7 +653,7 @@ function showAllEpisodes(element, dateKey) {
              alt="${showTitle}" 
              class="w-12 h-16 object-cover rounded flex-shrink-0"
              loading="lazy"
-             onerror="this.src='/assets/placeholder-poster.svg'">
+>
         <div class="flex-1 min-w-0">
           <div class="font-medium">${showTitle}</div>
           <div class="text-muted text-sm">${episodeInfo}</div>
@@ -671,6 +690,13 @@ function showAllEpisodes(element, dateKey) {
           fullModal.classList.add('hidden');
         });
       }
+      
+      // Attacher les event listeners pour les erreurs d'images dans la modal
+      modalContainer.querySelectorAll('img').forEach(img => {
+        img.addEventListener('error', () => {
+          img.src = '/assets/placeholder-poster.svg';
+        });
+      });
       
       // Fermeture en cliquant sur le backdrop
       const backdrop = fullModal.querySelector('.absolute.inset-0');
