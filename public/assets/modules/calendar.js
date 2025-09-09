@@ -290,23 +290,25 @@ function displayHistoryCalendar(watchingsData, daysInMonth) {
     if (isToday) {
       cellClasses += ' bg-green-500/10 ring-2 ring-green-500 shadow-lg shadow-green-500/20 calendar-today';
       dayNumberClasses += ' text-green-400';
-    } else if (isPast) {
-      cellClasses += ' bg-white/2 opacity-30 calendar-past';
-      dayNumberClasses += ' text-gray-500';
     } else {
       cellClasses += ' bg-white/5';
     }
+
+    
     
     let dayHTML = `<div class="${cellClasses}">`;
     
     // Badge "Aujourd'hui" si c'est le jour actuel
     if (isToday) {
-      dayHTML += `<div class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full mb-1 inline-block font-medium">
-        ${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}
+      dayHTML += `<div class="flex items-baseline gap-2 mb-2">
+        <div class="${dayNumberClasses}">${day}</div>
+        <div class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full inline-block font-medium -mb-0.5">
+          ${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}
+        </div>
       </div>`;
+    } else {
+      dayHTML += `<div class="${dayNumberClasses}">${day}</div>`;
     }
-    
-    dayHTML += `<div class="${dayNumberClasses}">${day}</div>`;
     
     if (dayWatchings.length === 0) {
       // Jour vide - juste le numéro
@@ -467,12 +469,15 @@ function displayCalendar(calendarData, daysInMonth) {
     
     // Badge "Aujourd'hui" si c'est le jour actuel
     if (isToday) {
-      dayHTML += `<div class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full mb-1 inline-block font-medium">
-        ${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}
+      dayHTML += `<div class="flex items-baseline gap-2 mb-2">
+        <div class="${dayNumberClasses}">${day}</div>
+        <div class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full inline-block font-medium -mb-0.5">
+          ${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}
+        </div>
       </div>`;
+    } else {
+      dayHTML += `<div class="${dayNumberClasses}">${day}</div>`;
     }
-    
-    dayHTML += `<div class="${dayNumberClasses}">${day}</div>`;
     
     if (dayEntries.length === 0) {
       // Jour vide - juste le numéro
