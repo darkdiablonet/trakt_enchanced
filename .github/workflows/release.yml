@@ -84,11 +84,6 @@ jobs:
             docker.io/diabolino/trakt_enhanced:$VERSION
           \`\`\`
           
-          ### Manual Installation
-          1. Download and extract the source code
-          2. Run \`npm install && npm run build && npm start\`
-          3. Open http://localhost:30009
-          
           ## 🔧 Configuration
           Visit the setup page on first run to configure your Trakt and TMDB API keys.
           EOF

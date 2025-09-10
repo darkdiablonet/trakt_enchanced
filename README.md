@@ -213,29 +213,6 @@ REFRESH_EVERY_MS=3600000
 
 ---
 
-## 🗂️ Directory Structure (summary)
-
-```
-public/
-  app.html                # editable UI
-  assets/
-    tailwind.css          # generated CSS
-    fa/                   # local Font Awesome (css + webfonts)
-data/
-  .secrets                # trakt secret
-  .cache_tmdb             # TMDB json 
-  cache_imgs/             # TMDB posters (if local fallback)
-  .cache_trakt/
-    progress/             # JSON per series: watched_<traktId>.json
-lib/
-  pageData.js             # builds the 4 lists and API response
-  trakt.js                # Trakt calls + progress enrichment (batched + cached)
-  tmdb.js                 # metadata + poster cache, local URLs /cache_imgs
-  util.js                 # scheduler (auto-refresh), JSON helpers, tolerant baseUrl
-server.js                 # Express: routes, static files, scheduler
-```
-
----
 
 ## 🌐 Useful Endpoints
 
