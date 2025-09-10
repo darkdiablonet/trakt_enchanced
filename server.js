@@ -31,6 +31,7 @@ import { generateRealHeatmapData } from './lib/heatmapData.js';
 import { getMovieWatchingDetails, getShowWatchingDetails } from './lib/watchingDetails.js';
 import { renderTemplate } from './lib/template.js';
 import { checkEnvFile, generateEnvFile } from './lib/setup.js';
+import { verifyPassword } from './lib/auth.js';
 import { addProgressConnection, sendProgress, sendCompletion } from './lib/progressTracker.js';
 import { startActivityMonitor, stopActivityMonitor, getMonitorStatus, setBroadcastFunction } from './lib/activityMonitor.js';
 import { getRateLimitStats } from './lib/apiRateLimiter.js';
@@ -174,17 +175,67 @@ app.use(session({
   cookie: { 
     maxAge: 24*60*60*1000, // 24h
     httpOnly: true,
-    secure: false, // Force HTTP pour compatibilité Unraid
+    secure: 'auto', // Express détecte automatiquement HTTPS
     sameSite: 'lax' // Plus permissif pour Docker
   },
   name: 'trakt.sid' // Nom personnalisé pour masquer Express
 }));
+
+// Middleware d'authentification basique
+const authMiddleware = (req, res, next) => {
+  // Routes qui n'ont pas besoin d'authentification  
+  const publicPaths = [
+    '/login',
+    '/setup',
+    '/oauth',
+    '/auth',
+    '/assets',
+    '/locales',
+    '/cache_imgs',
+    '/api/progress',
+    '/health',
+    '/debug'
+  ];
+  
+  // Vérifier si la route est publique
+  const isPublic = publicPaths.some(path => req.path.startsWith(path));
+  if (isPublic) {
+    return next();
+  }
+  
+  // Si AUTH_ENABLED n'est pas défini ou n'est pas configuré, rediriger vers setup
+  if (process.env.AUTH_ENABLED === undefined || process.env.AUTH_ENABLED === '') {
+    return res.redirect('/setup');
+  }
+  
+  // Si l'authentification n'est pas activée (false), passer au suivant
+  if (process.env.AUTH_ENABLED !== 'true') {
+    return next();
+  }
+  
+  // Si AUTH_USERNAME ou AUTH_PASSWORD est vide, rediriger vers setup
+  if (!process.env.AUTH_USERNAME || !process.env.AUTH_PASSWORD) {
+    return res.redirect('/setup');
+  }
+  
+  // Vérifier si l'utilisateur est authentifié
+  if (req.session && req.session.authenticated) {
+    return next();
+  }
+  
+  // Rediriger vers la page de login
+  const returnUrl = encodeURIComponent(req.originalUrl);
+  res.redirect(`/login?returnUrl=${returnUrl}`);
+};
 
 // Middleware CSRF après les sessions
 app.use(csrfTokenMiddleware);
 
 // I18n middleware
 app.use(serverI18n.middleware());
+
+// Appliquer le middleware d'authentification
+app.use(authMiddleware);
 
 // --- Chemin du cache images
 const ABS_CACHE_DIR   = '/data/cache_imgs';
@@ -298,7 +349,7 @@ app.get('/debug/csrf', (req, res) => {
     session: {
       id: req.sessionID,
       exists: !!req.session,
-      csrf_token: req.session?.csrf_token,
+      csrf_token: req.session?.csrfToken,
       cookie: req.session?.cookie
     },
     headers: {
@@ -436,7 +487,7 @@ app.post('/full_rebuild', csrfProtection, (req, res) => {
   if (!FULL_REBUILD_PASSWORD) {
     req.session.flash = 'Mot de passe de full rebuild non configuré côté serveur.';
     res.redirect('/');
-  } else if (pwd !== FULL_REBUILD_PASSWORD) {
+  } else if (!verifyPassword(pwd, FULL_REBUILD_PASSWORD)) {
     req.session.flash = 'Mot de passe incorrect.';
     res.redirect('/');
   } else {
@@ -1088,9 +1139,24 @@ app.get('/setup', asyncHandler(async (req, res) => {
     return res.redirect('/');
   }
   
+  // Préparer les valeurs par défaut depuis les variables d'environnement existantes
+  const currentConfig = {
+    port: process.env.PORT || '30009',
+    traktclientid: process.env.TRAKT_CLIENT_ID || '',
+    traktclientsecret: process.env.TRAKT_CLIENT_SECRET || '',
+    oauthredirecturi: process.env.OAUTH_REDIRECT_URI || '',
+    tmdbapikey: process.env.TMDB_API_KEY || '',
+    language: process.env.LANGUAGE || 'fr-FR',
+    fullrebuildpassword: '', // Ne pas pré-remplir les mots de passe pour la sécurité
+    enableauth: process.env.AUTH_ENABLED === 'true',
+    authusername: process.env.AUTH_USERNAME || '',
+    authpassword: '' // Ne pas pré-remplir les mots de passe
+  };
+  
   const templatePath = path.resolve('public/setup.html');
   const html = await renderTemplate(templatePath, {
-    csrf_token: req.session.csrfToken || ''
+    csrf_token: req.session.csrfToken || '',
+    ...currentConfig
   });
   res.send(html);
 }));
@@ -1522,6 +1588,15 @@ app.post('/setup', csrfProtection, asyncHandler(async (req, res) => {
       process.env.LANGUAGE = config.language || 'fr-FR';
       if (config.fullRebuildPassword) process.env.FULL_REBUILD_PASSWORD = config.fullRebuildPassword;
       if (config.oauthRedirectUri) process.env.OAUTH_REDIRECT_URI = config.oauthRedirectUri;
+      
+      // Gestion de l'authentification
+      const authEnabled = config.enableAuth === true || config.enableAuth === 'on' || config.enableAuth === 'true';
+      process.env.AUTH_ENABLED = authEnabled ? 'true' : 'false';
+      if (authEnabled) {
+        process.env.AUTH_USERNAME = config.authUsername || '';
+        process.env.AUTH_PASSWORD = config.authPassword || '';
+      }
+      
       // Recharger les exports dynamiques du module config
       try { reloadEnv(); } catch {}
       
@@ -1537,6 +1612,54 @@ app.post('/setup', csrfProtection, asyncHandler(async (req, res) => {
   }
 }));
 
+// Routes de login/logout
+app.get('/login', (req, res) => {
+  // Si déjà connecté, rediriger vers la page principale
+  if (req.session && req.session.authenticated) {
+    return res.redirect('/');
+  }
+  
+  const loginPath = path.join(process.cwd(), 'public', 'login.html');
+  const loginHTML = fs.readFileSync(loginPath, 'utf8');
+  const htmlWithCSRF = loginHTML.replace(/<!-- CSRF_TOKEN -->/g, req.session?.csrfToken || '');
+  res.send(htmlWithCSRF);
+});
+
+app.post('/login', csrfProtection, asyncHandler(async (req, res) => {
+  const { username, password } = req.body;
+  
+  // Vérifier les credentials
+  const isValidUsername = username === process.env.AUTH_USERNAME;
+  const isValidPassword = verifyPassword(password, process.env.AUTH_PASSWORD);
+  
+  if (isValidUsername && isValidPassword) {
+    // Authentification réussie
+    req.session.authenticated = true;
+    req.session.username = username;
+    
+    logger.info(`User logged in: ${username}`);
+    res.json({ success: true, message: 'Login successful' });
+  } else {
+    // Authentification échouée
+    logger.warn(`Failed login attempt for username: ${username}`);
+    res.status(401).json({ success: false, error: 'Invalid credentials' });
+  }
+}));
+
+app.get('/logout', (req, res) => {
+  if (req.session) {
+    const username = req.session.username;
+    req.session.destroy((err) => {
+      if (err) {
+        logger.error('Error destroying session:', err);
+      } else {
+        logger.info(`User logged out: ${username}`);
+      }
+    });
+  }
+  res.redirect('/login');
+});
+
 // Main page (static HTML)
 app.get('/', asyncHandler(async (req, res) => {
   // Vérifier si la configuration existe
@@ -1548,7 +1671,8 @@ app.get('/', asyncHandler(async (req, res) => {
   
   const templatePath = path.resolve('public/app.html');
   const html = await renderTemplate(templatePath, {
-    csrf_token: req.session.csrfToken || ''
+    csrf_token: req.session.csrfToken || '',
+    auth_enabled: process.env.AUTH_ENABLED === 'true'
   });
   res.send(html);
 }));

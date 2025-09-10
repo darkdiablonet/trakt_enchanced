@@ -30,6 +30,45 @@ document.addEventListener('DOMContentLoaded', () => {
   const setupForm = document.getElementById('setup-form');
   if (!setupForm) return;
 
+  // Gestion de l'affichage conditionnel des champs d'authentification
+  const enableAuthCheckbox = document.getElementById('enableAuth');
+  const authFieldsContainer = document.getElementById('authFields');
+  const authUsernameInput = document.getElementById('authUsername');
+  const authPasswordInput = document.getElementById('authPassword');
+
+  if (enableAuthCheckbox && authFieldsContainer) {
+    // État initial basé sur les valeurs pré-remplies
+    const initialAuthEnabled = authUsernameInput && authUsernameInput.value.trim() !== '';
+    if (initialAuthEnabled) {
+      enableAuthCheckbox.checked = true;
+      authFieldsContainer.classList.remove('hidden');
+      authUsernameInput.required = true;
+      authPasswordInput.required = true;
+    }
+
+    enableAuthCheckbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        authFieldsContainer.classList.remove('hidden');
+        authUsernameInput.required = true;
+        authPasswordInput.required = true;
+      } else {
+        authFieldsContainer.classList.add('hidden');
+        authUsernameInput.required = false;
+        authPasswordInput.required = false;
+        // Clear values when disabled
+        authUsernameInput.value = '';
+        authPasswordInput.value = '';
+      }
+    });
+  }
+
+  // Pré-sélectionner la langue
+  const languageSelect = document.getElementById('language');
+  const currentLanguage = '<!-- LANGUAGE -->';
+  if (languageSelect && currentLanguage && currentLanguage !== '<!-- LANGUAGE -->') {
+    languageSelect.value = currentLanguage;
+  }
+
   // Event listener pour le bouton de réinitialisation
   const retryBtn = document.getElementById('retryBtn');
   if (retryBtn) {

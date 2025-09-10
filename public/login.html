@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="login.page_title">Connexion - Trakt Enhanced</title>
+  <link rel="stylesheet" href="/assets/tailwind.css">
+  <link rel="stylesheet" href="/assets/fa/css/all.min.css">
+</head>
+<body class="loading-body overflow-y-auto">
+  <div class="container mx-auto max-w-md p-6 min-h-screen flex items-center justify-center">
+    
+    <div class="glass rounded-2xl p-8 shadow-2xl w-full">
+      <div class="text-center mb-8">
+        <div class="flex justify-center mb-4">
+          <img src="/assets/favicon.svg" alt="Trakt Enhanced" class="w-16 h-16">
+        </div>
+        <h1 class="text-2xl font-bold text-white mb-2">
+          <span data-i18n="login.title">Connexion requise</span>
+        </h1>
+        <p class="text-gray-300" data-i18n="login.subtitle">Veuillez vous connecter pour accéder à l'interface</p>
+      </div>
+
+      <div id="alert-container" class="mb-6 hidden">
+        <div id="alert" class="p-4 rounded-lg">
+          <div class="flex items-center">
+            <i id="alert-icon" class="mr-3"></i>
+            <div id="alert-message"></div>
+          </div>
+        </div>
+      </div>
+
+      <form id="login-form" method="post" action="/login">
+        <input type="hidden" name="csrf" value="<!-- CSRF_TOKEN -->">
+        
+        <div class="space-y-4">
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-300 mb-1">
+              <span data-i18n="login.username">Nom d'utilisateur</span>
+            </label>
+            <input type="text" id="username" name="username" required
+                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                   placeholder="Username">
+          </div>
+          
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-300 mb-1">
+              <span data-i18n="login.password">Mot de passe</span>
+            </label>
+            <input type="password" id="password" name="password" required
+                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                   placeholder="********">
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" 
+                class="w-full mt-6 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+          <i class="fa-solid fa-sign-in-alt mr-2"></i>
+          <span data-i18n="login.submit">Se connecter</span>
+        </button>
+      </form>
+
+      <!-- Language selector -->
+      <div class="mt-6 flex justify-center">
+        <div class="language-selector relative">
+          <button id="langToggle" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-globe"></i>
+            <span id="langToggleText">FR</span>
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+          <div id="langDropdown" class="hidden absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-36 bg-gray-800 rounded-lg border border-gray-600 shadow-xl z-50">
+            <button data-lang="fr" class="w-full px-3 py-2 text-left text-sm hover:bg-gray-700 rounded-t-lg flex items-center gap-2 text-white">
+              <span class="text-base">🇫🇷</span>
+              Français
+            </button>
+            <button data-lang="en" class="w-full px-3 py-2 text-left text-sm hover:bg-gray-700 rounded-b-lg flex items-center gap-2 text-white">
+              <span class="text-base">🇺🇸</span>
+              English
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/modules/i18n-lite.js"></script>
+  <script src="/assets/login.js" data-csrf-token="<!-- CSRF_TOKEN -->"></script>
+</body>
+</html>
