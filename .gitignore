@@ -11,3 +11,6 @@ count-lines.sh
 API_ENDPOINTS.md
 _BACKUP
 *.bak
+cookies.txt
+csrf_token.txt
+*.tmp
