@@ -98,15 +98,15 @@ export function renderTopSimple(arr) {
     return `<div class="row animate-fade-in-up" data-delay="${delay}">
       <span class="rank">${i+1}</span>
       <div class="flex-1">
-        <div class="name font-medium">${esc(it.name||'—')}</div>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div class="name font-medium mb-1 md:mb-0">${esc(it.name||'—')}</div>
+          <span class="chip chip-xs animate-count-up md:ml-4 mb-2 md:mb-0 self-start" data-delay="${delay + 800}">
+            <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString(i18n.currentLang === 'en' ? 'en-US' : 'fr-FR')} min
+          </span>
+        </div>
         <div class="bar mt-1 h-2 bg-slate-700 rounded-full overflow-hidden">
           <span class="block h-full animate-progress" data-width="${pct}" data-delay="${delay + 500}"></span>
         </div>
-      </div>
-      <div class="flex items-center gap-2 ml-4">
-        <span class="chip chip-xs animate-count-up" data-delay="${delay + 800}">
-          <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString(i18n.currentLang === 'en' ? 'en-US' : 'fr-FR')} min
-        </span>
       </div>
     </div>`;
   }).join('');
@@ -126,21 +126,23 @@ export function renderTopTitles(arr) {
     return `<div class="row animate-fade-in-up" data-delay="${delay}">
       <span class="rank">${i+1}</span>
       <div class="flex-1">
-        <div class="name font-medium text-sm">${esc(it.title||'—')}</div>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div class="name font-medium text-sm mb-1 md:mb-0">${esc(it.title||'—')}</div>
+          <div class="flex items-center gap-2 md:ml-4 mb-2 md:mb-0">
+            <span class="chip chip-xs animate-count-up" data-delay="${delay + 600}">
+              <i class="fa-solid ${icon} mr-1"></i>${typeLbl}
+            </span>
+            <span class="chip chip-xs animate-count-up" data-delay="${delay + 700}">
+              <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString(i18n.currentLang === 'en' ? 'en-US' : 'fr-FR')} min
+            </span>
+            <span class="chip chip-xs animate-count-up" data-delay="${delay + 800}">
+              <i class="fa-solid fa-play mr-1"></i>${plays}
+            </span>
+          </div>
+        </div>
         <div class="bar mt-1 h-2 bg-slate-700 rounded-full overflow-hidden">
           <span class="block h-full animate-progress" data-width="${pct}" data-delay="${delay + 400}"></span>
         </div>
-      </div>
-      <div class="flex items-center gap-2 ml-4">
-        <span class="chip chip-xs animate-count-up" data-delay="${delay + 600}">
-          <i class="fa-solid ${icon} mr-1"></i>${typeLbl}
-        </span>
-        <span class="chip chip-xs animate-count-up" data-delay="${delay + 700}">
-          <i class="fa-regular fa-clock mr-1"></i>${minutes.toLocaleString(i18n.currentLang === 'en' ? 'en-US' : 'fr-FR')} min
-        </span>
-        <span class="chip chip-xs animate-count-up" data-delay="${delay + 800}">
-          <i class="fa-solid fa-play mr-1"></i>${plays}
-        </span>
       </div>
     </div>`;
   }).join('');

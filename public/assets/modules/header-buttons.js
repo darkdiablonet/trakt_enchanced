@@ -36,7 +36,7 @@ class HeaderButtons {
   createButtons() {
     // Créer le conteneur des boutons
     const buttonsContainer = document.createElement('div');
-    buttonsContainer.className = 'ml-auto flex items-center gap-2';
+    buttonsContainer.className = 'md:ml-auto flex items-center gap-2';
 
     // Boutons à créer
     const buttons = [
@@ -69,7 +69,7 @@ class HeaderButtons {
 
     const button = document.createElement('button');
     button.id = 'langToggle';
-    button.className = 'btn btn-outline';
+    button.className = 'btn btn-outline text-xs md:text-sm px-2 md:px-3';
     button.title = 'Changer de langue';
     
     // Récupérer la langue actuelle depuis localStorage ou i18n
@@ -78,8 +78,8 @@ class HeaderButtons {
     
     button.innerHTML = `
       <i class="fa-solid fa-globe"></i>
-      <span id="langToggleText">${langDisplay}</span>
-      <i class="fa-solid fa-chevron-down ml-1 text-xs"></i>
+      <span id="langToggleText" class="hidden sm:inline">${langDisplay}</span>
+      <i class="fa-solid fa-chevron-down ml-1 text-xs hidden sm:inline"></i>
     `;
     
 
@@ -168,7 +168,7 @@ class HeaderButtons {
   createThemeButton() {
     const button = document.createElement('button');
     button.id = 'themeToggle';
-    button.className = 'btn btn-outline';
+    button.className = 'btn btn-outline text-xs md:text-sm px-2 md:px-3';
     button.title = 'Changer de thème';
     
     const icon = document.createElement('i');
@@ -219,11 +219,11 @@ class HeaderButtons {
     csrfInput.value = csrfToken;
 
     const button = document.createElement('button');
-    button.className = 'btn btn-outline';
+    button.className = 'btn btn-outline text-xs md:text-sm px-2 md:px-3';
     button.type = 'submit';
     button.innerHTML = `
       <i class="fa-solid fa-rotate-right"></i>
-      <span data-i18n="buttons.refresh">Refresh</span>
+      <span class="hidden sm:inline" data-i18n="buttons.refresh">Refresh</span>
     `;
 
     form.appendChild(csrfInput);
@@ -236,7 +236,7 @@ class HeaderButtons {
   createWidthButton() {
     const button = document.createElement('button');
     button.id = 'toggleWidth';
-    button.className = 'btn btn-outline';
+    button.className = 'btn btn-outline text-xs md:text-sm px-2 md:px-3 hidden sm:flex';
     button.title = 'Basculer pleine largeur';
     button.innerHTML = `
       <i class="fa-solid fa-arrows-left-right-to-line"></i>
@@ -256,11 +256,11 @@ class HeaderButtons {
   createFullRebuildButton() {
     const button = document.createElement('button');
     button.id = 'openFullModal';
-    button.className = 'btn btn-outline js-full-modal';
+    button.className = 'btn btn-outline js-full-modal text-xs md:text-sm px-2 md:px-3';
     button.setAttribute('data-target', 'fullModal');
     button.innerHTML = `
       <i class="fa-solid fa-bolt"></i>
-      <span>Full rebuild</span>
+      <span class="hidden sm:inline">Full rebuild</span>
     `;
     
     return button;

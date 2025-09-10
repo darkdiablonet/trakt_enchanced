@@ -16,7 +16,7 @@
 </head>
 <body class="min-h-full text-adaptive selection:bg-sky-500/40 selection:text-white">
   <header class="app-header">
-    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex flex-col md:flex-row items-center gap-2 md:gap-3">
       <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" id="app-title" title="Cliquer pour recharger les données">
         <img src="/assets/favicon.svg" alt="Trakt Enhanced" class="w-7 h-7 flex-shrink-0">
         <div>
@@ -38,7 +38,8 @@
 
   <main id="mainContainer" class="mx-auto max-w-7xl px-4 py-6">
     <div class="mb-4">
-      <div class="tabs-group">
+      <!-- Desktop: onglets normaux -->
+      <div class="tabs-group hidden md:inline-flex">
         <button id="tabBtnShows"        class="tab-btn-active" data-tab="shows">
           <i class="fa-solid fa-clapperboard mr-2"></i>Séries
         </button>
@@ -60,8 +61,43 @@
         <button id="tabBtnStats" data-tab="stats" class="tab-btn">
           <i class="fa-solid fa-chart-simple mr-2"></i>Stats
         </button>
-
       </div>
+
+      <!-- Mobile: dropdown menu -->
+      <div class="md:hidden relative">
+        <button id="mobileTabDropdown" class="w-full tabs-group justify-between">
+          <span id="mobileTabText">
+            <i class="fa-solid fa-clapperboard mr-2"></i>Séries
+          </span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        
+        <div id="mobileTabMenu" class="hidden absolute top-full left-0 w-full mt-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-300 dark:border-slate-600 shadow-xl z-50">
+          <button class="mobile-tab-option w-full px-4 py-3 text-left hover:bg-slate-200 dark:hover:bg-slate-700 rounded-t-lg flex items-center text-slate-900 dark:text-white" data-tab="shows">
+            <i class="fa-solid fa-clapperboard mr-3 w-5"></i>Séries
+          </button>
+          <button class="mobile-tab-option w-full px-4 py-3 text-left hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center text-slate-900 dark:text-white" data-tab="movies">
+            <i class="fa-solid fa-film mr-3 w-5"></i>Films
+          </button>
+          <button class="mobile-tab-option w-full px-4 py-3 text-left hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center text-slate-900 dark:text-white" data-tab="shows_unseen">
+            <i class="fa-regular fa-eye-slash mr-3 w-5"></i>Séries à voir
+          </button>
+          <button class="mobile-tab-option w-full px-4 py-3 text-left hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center text-slate-900 dark:text-white" data-tab="movies_unseen">
+            <i class="fa-regular fa-eye-slash mr-3 w-5"></i>Films à voir
+          </button>
+          <button class="mobile-tab-option w-full px-4 py-3 text-left hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center text-slate-900 dark:text-white" data-tab="playback">
+            <i class="fa-solid fa-play-circle mr-3 w-5"></i>En cours
+          </button>
+          <button class="mobile-tab-option w-full px-4 py-3 text-left hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center text-slate-900 dark:text-white" data-tab="calendar">
+            <i class="fa-solid fa-calendar-days mr-3 w-5"></i>Calendrier
+          </button>
+          <button class="mobile-tab-option w-full px-4 py-3 text-left hover:bg-slate-200 dark:hover:bg-slate-700 rounded-b-lg flex items-center text-slate-900 dark:text-white" data-tab="stats">
+            <i class="fa-solid fa-chart-simple mr-3 w-5"></i>Stats
+          </button>
+        </div>
+      </div>
+
+    </div>
     </div>
 
     <!-- Bouton filtres mobile -->
@@ -219,7 +255,7 @@
       <!-- Stats Pro — Tops -->
       <div id="proTops" class="mt-6 space-y-6">
         <!-- Top listes en grille -->
-        <div class="grid md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="card p-4">
             <div class="flex items-center gap-2 mb-3">
               <i class="fa-solid fa-masks-theater text-sky-400"></i>
@@ -260,7 +296,8 @@
 
     <section id="panelCalendar" class="hidden">
       <div class="glass rounded-xl p-4 mb-6">
-        <div class="flex items-center justify-between mb-4">
+        <!-- Desktop: header sur une ligne -->
+        <div class="hidden md:flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-sky-400"></i>
             <span id="calendarTitle" data-i18n="calendar.title">Calendrier des sorties</span>
@@ -280,6 +317,35 @@
             </button>
             <span id="calendarWeekRange" class="text-sm text-muted px-3"></span>
             <button id="calendarNextWeek" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile: header empilé -->
+        <div class="md:hidden mb-4">
+          <h2 class="text-lg font-semibold flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-calendar-days text-sky-400"></i>
+            <span id="calendarTitleMobile" data-i18n="calendar.title">Calendrier des sorties</span>
+          </h2>
+          
+          <!-- Mode toggle mobile -->
+          <div class="flex bg-white/5 rounded-lg p-1 mb-3 w-fit">
+            <button id="calendarModeReleasesMobile" class="calendar-mode-btn active px-3 py-1 text-xs rounded transition-colors">
+              <i class="fa-solid fa-rocket mr-1"></i>Sorties
+            </button>
+            <button id="calendarModeHistoryMobile" class="calendar-mode-btn px-3 py-1 text-xs rounded transition-colors">
+              <i class="fa-solid fa-history mr-1"></i>Historique
+            </button>
+          </div>
+          
+          <!-- Navigation mobile -->
+          <div class="flex items-center justify-center gap-2">
+            <button id="calendarPrevWeekMobile" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span id="calendarWeekRangeMobile" class="text-sm text-muted px-3 min-w-0 text-center"></span>
+            <button id="calendarNextWeekMobile" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
               <i class="fa-solid fa-chevron-right"></i>
             </button>
           </div>

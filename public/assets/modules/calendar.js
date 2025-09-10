@@ -8,6 +8,7 @@ import i18n from './i18n.js';
 
 let currentDate = new Date();
 let currentMode = 'releases'; // 'releases' or 'history'
+let isMobileView = false; // Vue liste pour mobile
 
 /**
  * Calcule le premier et dernier jour du mois
@@ -32,6 +33,14 @@ function getMonthBounds(date) {
 // Flag pour éviter l'initialisation multiple
 let isCalendarInitialized = false;
 
+/**
+ * Détecte si on est sur mobile
+ */
+function checkMobileView() {
+  isMobileView = window.innerWidth < 768;
+  return isMobileView;
+}
+
 export function initCalendar() {
   // Vérifier que les éléments DOM existent
   if (!document.getElementById('calendarGrid')) {
@@ -45,57 +54,96 @@ export function initCalendar() {
   
   isCalendarInitialized = true;
   
-  // Écouter les clics sur les boutons de mode
+  // Vérifier si on est sur mobile
+  checkMobileView();
+  
+  // Écouter les changements de taille de fenêtre
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      const wasMobile = isMobileView;
+      checkMobileView();
+      if (wasMobile !== isMobileView) {
+        // Recharger si on passe de mobile à desktop ou vice versa
+        loadCalendarData();
+      }
+    }, 250);
+  });
+  
+  // Écouter les clics sur les boutons de mode (desktop et mobile)
   const releasesButton = document.getElementById('calendarModeReleases');
   const historyButton = document.getElementById('calendarModeHistory');
+  const releasesButtonMobile = document.getElementById('calendarModeReleasesMobile');
+  const historyButtonMobile = document.getElementById('calendarModeHistoryMobile');
   
-  if (releasesButton && historyButton) {
-    releasesButton.addEventListener('click', () => {
-      if (currentMode !== 'releases') {
-        currentMode = 'releases';
-        updateModeButtons();
-        loadCalendarData();
-      }
-    });
-    
-    historyButton.addEventListener('click', () => {
-      if (currentMode !== 'history') {
-        currentMode = 'history';
-        updateModeButtons();
-        loadCalendarData();
-      }
-    });
+  function switchToReleases() {
+    if (currentMode !== 'releases') {
+      currentMode = 'releases';
+      updateModeButtons();
+      loadCalendarData();
+    }
   }
   
-  // Écouter les clics sur les boutons de navigation
+  function switchToHistory() {
+    if (currentMode !== 'history') {
+      currentMode = 'history';
+      updateModeButtons();
+      loadCalendarData();
+    }
+  }
+  
+  if (releasesButton && historyButton) {
+    releasesButton.addEventListener('click', switchToReleases);
+    historyButton.addEventListener('click', switchToHistory);
+  }
+  
+  if (releasesButtonMobile && historyButtonMobile) {
+    releasesButtonMobile.addEventListener('click', switchToReleases);
+    historyButtonMobile.addEventListener('click', switchToHistory);
+  }
+  
+  // Écouter les clics sur les boutons de navigation (desktop et mobile)
   const prevButton = document.getElementById('calendarPrevWeek');
   const nextButton = document.getElementById('calendarNextWeek');
+  const prevButtonMobile = document.getElementById('calendarPrevWeekMobile');
+  const nextButtonMobile = document.getElementById('calendarNextWeekMobile');
   const retryButton = document.getElementById('calendarRetry');
+  
+  function navigatePrev() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    currentDate = new Date(year, month - 1, 1);
+    loadCalendarData();
+  }
+  
+  function navigateNext() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    currentDate = new Date(year, month + 1, 1);
+    loadCalendarData();
+  }
   
   if (prevButton) {
     // Supprimer les anciens listeners avant d'en ajouter un nouveau
     prevButton.replaceWith(prevButton.cloneNode(true));
     const newPrevButton = document.getElementById('calendarPrevWeek');
-    
-    newPrevButton.addEventListener('click', () => {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      currentDate = new Date(year, month - 1, 1);
-      loadCalendarData();
-    });
+    newPrevButton.addEventListener('click', navigatePrev);
   }
   
   if (nextButton) {
     // Supprimer les anciens listeners avant d'en ajouter un nouveau
     nextButton.replaceWith(nextButton.cloneNode(true));
     const newNextButton = document.getElementById('calendarNextWeek');
-    
-    newNextButton.addEventListener('click', () => {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      currentDate = new Date(year, month + 1, 1);
-      loadCalendarData();
-    });
+    newNextButton.addEventListener('click', navigateNext);
+  }
+  
+  if (prevButtonMobile) {
+    prevButtonMobile.addEventListener('click', navigatePrev);
+  }
+  
+  if (nextButtonMobile) {
+    nextButtonMobile.addEventListener('click', navigateNext);
   }
   
   if (retryButton) {
@@ -112,11 +160,13 @@ export function initCalendar() {
 }
 
 /**
- * Met à jour les boutons de mode
+ * Met à jour les boutons de mode (desktop et mobile)
  */
 function updateModeButtons() {
   const releasesButton = document.getElementById('calendarModeReleases');
   const historyButton = document.getElementById('calendarModeHistory');
+  const releasesButtonMobile = document.getElementById('calendarModeReleasesMobile');
+  const historyButtonMobile = document.getElementById('calendarModeHistoryMobile');
   
   if (releasesButton && historyButton) {
     if (currentMode === 'releases') {
@@ -127,6 +177,16 @@ function updateModeButtons() {
       historyButton.classList.add('active');
     }
   }
+  
+  if (releasesButtonMobile && historyButtonMobile) {
+    if (currentMode === 'releases') {
+      releasesButtonMobile.classList.add('active');
+      historyButtonMobile.classList.remove('active');
+    } else {
+      releasesButtonMobile.classList.remove('active');
+      historyButtonMobile.classList.add('active');
+    }
+  }
 }
 
 /**
@@ -134,6 +194,7 @@ function updateModeButtons() {
  */
 async function loadCalendarData() {
   showLoading();
+  checkMobileView();
   
   try {
     let response, data;
@@ -155,7 +216,11 @@ async function loadCalendarData() {
       // Sauvegarder les données pour la modal
       window.currentCalendarData = data.watchings || [];
       
-      displayHistoryCalendar(data.watchings || [], daysInMonth);
+      if (isMobileView) {
+        displayHistoryCalendarList(data.watchings || []);
+      } else {
+        displayHistoryCalendar(data.watchings || [], daysInMonth);
+      }
     } else {
       // Mode sorties (ancien comportement)
       const { firstDay, daysInMonth } = getMonthBounds(currentDate);
@@ -176,7 +241,11 @@ async function loadCalendarData() {
       // Sauvegarder les données pour la modal
       window.currentCalendarData = data.calendar;
       
-      displayCalendar(data.calendar, daysInMonth);
+      if (isMobileView) {
+        displayCalendarList(data.calendar);
+      } else {
+        displayCalendar(data.calendar, daysInMonth);
+      }
     }
     
     updateMonthRange();
@@ -541,17 +610,23 @@ function displayCalendar(calendarData, daysInMonth) {
 }
 
 /**
- * Met à jour l'affichage du mois courant
+ * Met à jour l'affichage du mois courant (desktop et mobile)
  */
 function updateMonthRange() {
   const monthRangeElement = document.getElementById('calendarWeekRange');
-  if (!monthRangeElement) return;
+  const monthRangeElementMobile = document.getElementById('calendarWeekRangeMobile');
   
   const locale = i18n.currentLang === 'en' ? 'en-US' : 'fr-FR';
   const options = { month: 'long', year: 'numeric' };
-  
   const monthStr = currentDate.toLocaleDateString(locale, options);
-  monthRangeElement.textContent = monthStr;
+  
+  if (monthRangeElement) {
+    monthRangeElement.textContent = monthStr;
+  }
+  
+  if (monthRangeElementMobile) {
+    monthRangeElementMobile.textContent = monthStr;
+  }
 }
 
 /**
@@ -769,6 +844,288 @@ function showAllEpisodes(element, dateKey) {
     fullModal.classList.remove('hidden');
   }
 };
+
+/**
+ * Affiche le calendrier historique en vue liste (mobile)
+ */
+function displayHistoryCalendarList(watchingsData) {
+  const loading = document.getElementById('calendarLoading');
+  const error = document.getElementById('calendarError');
+  const grid = document.getElementById('calendarGrid');
+  
+  if (loading) loading.classList.add('hidden');
+  if (error) error.classList.add('hidden');
+  if (grid) grid.classList.remove('hidden');
+  
+  if (!grid) return;
+  
+  // Organiser les données par date
+  const dataByDate = {};
+  if (watchingsData && Array.isArray(watchingsData)) {
+    watchingsData.forEach(watching => {
+      const dateKey = watching.watched_at ? watching.watched_at.slice(0, 10) : '';
+      if (dateKey) {
+        if (!dataByDate[dateKey]) {
+          dataByDate[dateKey] = [];
+        }
+        dataByDate[dateKey].push(watching);
+      }
+    });
+  }
+  
+  // Trier les dates
+  const sortedDates = Object.keys(dataByDate).sort((a, b) => b.localeCompare(a));
+  
+  // Classes pour la vue liste
+  grid.className = `space-y-2 w-full`;
+  
+  let listHTML = '';
+  const today = new Date().toLocaleDateString('sv-SE');
+  const locale = i18n.currentLang === 'en' ? 'en-US' : 'fr-FR';
+  
+  if (sortedDates.length === 0) {
+    listHTML = `
+      <div class="text-center text-muted p-8">
+        ${i18n.currentLang === 'en' ? 'No viewings this month' : 'Aucun visionnage ce mois'}
+      </div>
+    `;
+  } else {
+    sortedDates.forEach(dateKey => {
+      const dayWatchings = dataByDate[dateKey];
+      const date = new Date(dateKey + 'T12:00:00');
+      const isToday = dateKey === today;
+      
+      const formattedDate = date.toLocaleDateString(locale, { 
+        weekday: 'short', 
+        day: 'numeric',
+        month: 'short'
+      });
+      
+      // Carte pour chaque jour
+      listHTML += `
+        <div class="bg-white/5 rounded-lg p-3 ${isToday ? 'ring-1 ring-green-500' : ''}">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-semibold ${isToday ? 'text-green-400' : ''}">
+              ${formattedDate}
+              ${isToday ? `<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}</span>` : ''}
+            </div>
+            <div class="text-sm text-muted">
+              ${dayWatchings.length} ${dayWatchings.length === 1 ? 'vu' : 'vus'}
+            </div>
+          </div>
+          <div class="space-y-2">
+      `;
+      
+      // Afficher jusqu'à 3 visionnages
+      const maxToShow = 3;
+      dayWatchings.slice(0, maxToShow).forEach(watching => {
+        const showTitle = watching.show || 'Inconnu';
+        const watchTime = watching.watched_at ? new Date(watching.watched_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const posterImg = watching.poster ? posterURL(watching.poster) : '/assets/placeholder-poster.svg';
+        
+        let mediaInfo = '';
+        if (watching.type === 'movie') {
+          mediaInfo = `Film${watching.year ? ` • ${watching.year}` : ''}`;
+        } else {
+          mediaInfo = `S${String(watching.season_number || 0).padStart(2, '0')}E${String(watching.episode_number || 0).padStart(2, '0')}`;
+        }
+        
+        listHTML += `
+          <div class="flex items-start gap-2 p-2 bg-white/5 rounded">
+            <img src="${posterImg}" 
+                 alt="${showTitle}" 
+                 class="w-10 h-14 object-cover rounded flex-shrink-0"
+                 loading="lazy"
+                 onerror="this.src='/assets/placeholder-poster.svg'">
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">${showTitle}</div>
+              <div class="text-xs text-muted">${mediaInfo} • ${watchTime}</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      // Bouton "Voir plus" si nécessaire
+      if (dayWatchings.length > maxToShow) {
+        const remainingCount = dayWatchings.length - maxToShow;
+        listHTML += `
+          <button class="w-full text-center text-xs text-muted hover:text-white py-1 calendar-expand-history" 
+                  data-day="${dateKey}"
+                  data-total="${dayWatchings.length}">
+            +${remainingCount} autre${remainingCount > 1 ? 's' : ''}
+          </button>
+        `;
+      }
+      
+      listHTML += `
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  grid.innerHTML = listHTML;
+  
+  // Centrer sur la date du jour sur mobile
+  setTimeout(() => {
+    const todayCard = grid.querySelector('.ring-1.ring-green-500');
+    if (todayCard) {
+      todayCard.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }, 100);
+  
+  // Attacher les event listeners
+  grid.querySelectorAll('.calendar-expand-history').forEach(expandBtn => {
+    expandBtn.addEventListener('click', () => {
+      const dateKey = expandBtn.dataset.day;
+      showAllWatchings(expandBtn, dateKey);
+    });
+  });
+}
+
+/**
+ * Affiche le calendrier des sorties en vue liste (mobile)
+ */
+function displayCalendarList(calendarData) {
+  const loading = document.getElementById('calendarLoading');
+  const error = document.getElementById('calendarError');
+  const grid = document.getElementById('calendarGrid');
+  
+  if (loading) loading.classList.add('hidden');
+  if (error) error.classList.add('hidden');
+  if (grid) grid.classList.remove('hidden');
+  
+  if (!grid) return;
+  
+  // Organiser les données par date
+  const dataByDate = {};
+  if (calendarData && Array.isArray(calendarData)) {
+    calendarData.forEach(entry => {
+      const dateKey = entry.first_aired ? entry.first_aired.slice(0, 10) : '';
+      if (dateKey) {
+        if (!dataByDate[dateKey]) {
+          dataByDate[dateKey] = [];
+        }
+        dataByDate[dateKey].push(entry);
+      }
+    });
+  }
+  
+  // Trier les dates
+  const sortedDates = Object.keys(dataByDate).sort();
+  
+  // Classes pour la vue liste
+  grid.className = `space-y-2 w-full`;
+  
+  let listHTML = '';
+  const today = new Date().toLocaleDateString('sv-SE');
+  const locale = i18n.currentLang === 'en' ? 'en-US' : 'fr-FR';
+  
+  if (sortedDates.length === 0) {
+    listHTML = `
+      <div class="text-center text-muted p-8">
+        ${i18n.currentLang === 'en' ? 'No releases this month' : 'Aucune sortie ce mois'}
+      </div>
+    `;
+  } else {
+    sortedDates.forEach(dateKey => {
+      const dayEntries = dataByDate[dateKey];
+      const date = new Date(dateKey + 'T12:00:00');
+      const isToday = dateKey === today;
+      
+      // Calculer si c'est une date passée
+      const todayDate = new Date();
+      const daysDiff = Math.floor((todayDate - date) / (1000 * 60 * 60 * 24));
+      const isPast = daysDiff > 0;
+      
+      const formattedDate = date.toLocaleDateString(locale, { 
+        weekday: 'short', 
+        day: 'numeric',
+        month: 'short'
+      });
+      
+      // Carte pour chaque jour
+      listHTML += `
+        <div class="bg-white/5 rounded-lg p-3 ${isToday ? 'ring-1 ring-green-500' : isPast ? 'opacity-50' : ''}">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-semibold ${isToday ? 'text-green-400' : isPast ? 'text-gray-500' : ''}">
+              ${formattedDate}
+              ${isToday ? `<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">${i18n.currentLang === 'en' ? 'Today' : "Aujourd'hui"}</span>` : ''}
+            </div>
+            <div class="text-sm text-muted">
+              ${dayEntries.length} ${dayEntries.length === 1 ? 'épisode' : 'épisodes'}
+            </div>
+          </div>
+          <div class="space-y-2">
+      `;
+      
+      // Afficher jusqu'à 3 épisodes
+      const maxToShow = 3;
+      dayEntries.slice(0, maxToShow).forEach(entry => {
+        const showTitle = entry.show ? entry.show.title : 'Inconnu';
+        const episodeInfo = entry.episode ? `S${String(entry.episode.season || 0).padStart(2, '0')}E${String(entry.episode.number || 0).padStart(2, '0')}` : '';
+        const episodeTitle = entry.episode ? entry.episode.title : '';
+        const posterImg = entry.show && entry.show.poster ? posterURL(entry.show.poster) : '/assets/placeholder-poster.svg';
+        
+        listHTML += `
+          <div class="flex items-start gap-2 p-2 bg-white/5 rounded">
+            <img src="${posterImg}" 
+                 alt="${showTitle}" 
+                 class="w-10 h-14 object-cover rounded flex-shrink-0"
+                 loading="lazy"
+                 onerror="this.src='/assets/placeholder-poster.svg'">
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm truncate">${showTitle}</div>
+              <div class="text-xs text-muted">${episodeInfo}</div>
+              ${episodeTitle ? `<div class="text-xs text-muted truncate">${episodeTitle}</div>` : ''}
+            </div>
+          </div>
+        `;
+      });
+      
+      // Bouton "Voir plus" si nécessaire
+      if (dayEntries.length > maxToShow) {
+        const remainingCount = dayEntries.length - maxToShow;
+        listHTML += `
+          <button class="w-full text-center text-xs text-muted hover:text-white py-1 calendar-expand" 
+                  data-day="${dateKey}"
+                  data-total="${dayEntries.length}">
+            +${remainingCount} autre${remainingCount > 1 ? 's' : ''}
+          </button>
+        `;
+      }
+      
+      listHTML += `
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  grid.innerHTML = listHTML;
+  
+  // Centrer sur la date du jour sur mobile
+  setTimeout(() => {
+    const todayCard = grid.querySelector('.ring-1.ring-green-500');
+    if (todayCard) {
+      todayCard.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }, 100);
+  
+  // Attacher les event listeners
+  grid.querySelectorAll('.calendar-expand').forEach(expandBtn => {
+    expandBtn.addEventListener('click', () => {
+      const dateKey = expandBtn.dataset.day;
+      showAllEpisodes(expandBtn, dateKey);
+    });
+  });
+}
 
 /**
  * Réinitialise le calendrier à la date actuelle

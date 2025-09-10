@@ -18,6 +18,9 @@ import { applyWidth } from './modules/utils.js';
 import { renderCurrent } from './modules/rendering.js';
 import { setTab } from './modules/tabs.js';
 import { loadData } from './modules/data.js';
+
+// Modules UI
+import './modules/mobile-tabs.js';
 import { lazyManager, initializeLazyLoading, fallbackImageLoading } from './modules/lazy-loading.js';
 import { animationManager, initializeAnimations } from './modules/animations.js';
 
