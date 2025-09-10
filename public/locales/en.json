@@ -34,7 +34,8 @@
     "full_rebuild": "Full rebuild",
     "close": "Close",
     "launch": "Launch",
-    "filters": "Filters"
+    "filters": "Filters",
+    "logout": "Logout"
   },
   "theme": {
     "auto": "Auto",
@@ -204,7 +205,25 @@
     "config_error": "Configuration error",
     "connection_error": "Server connection error",
     "csrf_active": "Active ✓",
-    "csrf_missing": "Missing ⚠"
+    "csrf_missing": "Missing ⚠",
+    "new_feature": "NEW",
+    "enable_auth": "Protect access with login/password",
+    "auth_description": "Secure your instance with authentication. Recommended for public installations.",
+    "auth_username": "Username *",
+    "auth_password": "Password *",
+    "auth_password_hint": "This password will be required to access the interface"
+  },
+  "login": {
+    "page_title": "Login - Trakt Enhanced",
+    "title": "Login required",
+    "subtitle": "Please login to access the interface",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "authenticating": "Authenticating...",
+    "success": "Login successful! Redirecting...",
+    "invalid_credentials": "Invalid username or password",
+    "connection_error": "Server connection error"
   },
   "loading": {
     "page_title": "Initial loading - Trakt Enhanced",

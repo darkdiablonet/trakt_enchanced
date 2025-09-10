@@ -67,7 +67,7 @@
               
               <div>
                 <label for="port" class="block text-sm font-medium text-gray-300 mb-1">Port</label>
-                <input type="number" id="port" name="port" value="30009" min="1000" max="65535"
+                <input type="number" id="port" name="port" value="<!-- PORT -->" min="1000" max="65535"
                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400">
               </div>
             </div>
@@ -95,20 +95,20 @@
                 <label for="traktClientId" class="block text-sm font-medium text-gray-300 mb-1">Trakt Client ID *</label>
                 <input type="text" id="traktClientId" name="traktClientId" required
                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400" 
-                       placeholder="Votre Client ID Trakt">
+                       placeholder="Votre Client ID Trakt" value="<!-- TRAKTCLIENTID -->">
               </div>
               <div>
                 <label for="traktClientSecret" class="block text-sm font-medium text-gray-300 mb-1">Trakt Client Secret *</label>
                 <input type="password" id="traktClientSecret" name="traktClientSecret" required
                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
-                       placeholder="Votre Client Secret Trakt">
+                       placeholder="Votre Client Secret Trakt" value="<!-- TRAKTCLIENTSECRET -->">
               </div>
               <div>
                 <label for="oauthRedirectUri" class="block text-sm font-medium text-gray-300 mb-1">OAuth Redirect URI *</label>
                 <input type="url" id="oauthRedirectUri" name="oauthRedirectUri" required
                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
                        placeholder="https://votresite.com/auth/callback"
-                       value="http://localhost:30009/auth/callback">
+                       value="<!-- OAUTHREDIRECTURI -->">
                 <div class="mt-2 p-2 bg-amber-900/30 border border-amber-600/50 rounded-md">
                   <p class="text-xs text-amber-300 flex items-center" id="oauth-redirect-warning">
                     <i class="fa-solid fa-exclamation-triangle mr-2 text-amber-400"></i>
@@ -143,7 +143,7 @@
                 <label for="tmdbApiKey" class="block text-sm font-medium text-gray-300 mb-1">TMDB API Key *</label>
                 <input type="password" id="tmdbApiKey" name="tmdbApiKey" required
                        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
-                       placeholder="Votre clé API TMDB">
+                       placeholder="Votre clé API TMDB" value="<!-- TMDBAPIKEY -->">
               </div>
               
               <div>
@@ -162,6 +162,57 @@
                 <i class="fa-solid fa-shield-alt mr-2 text-red-400"></i>
                 Sécurité
               </h3>
+              
+              <!-- Protection par authentification - NOUVELLE FONCTIONNALITÉ -->
+              <div class="space-y-4">
+                <div class="bg-gradient-to-r from-sky-900/30 to-blue-900/30 border border-sky-500/50 rounded-lg p-4 relative">
+                  <!-- Badge "NOUVEAU" -->
+                  <div class="absolute -top-2 -right-2 bg-sky-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                    <span data-i18n="setup.new_feature">NOUVEAU</span>
+                  </div>
+                  
+                  <div class="flex items-start space-x-3">
+                    <div class="flex items-center">
+                      <input type="checkbox" id="enableAuth" name="enableAuth" 
+                             class="w-5 h-5 text-sky-600 bg-gray-800 border-gray-600 rounded focus:ring-sky-500 focus:ring-2 mt-0.5">
+                    </div>
+                    <div class="flex-1">
+                      <label for="enableAuth" class="block">
+                        <div class="text-base font-semibold text-white mb-1">
+                          <i class="fa-solid fa-lock mr-2 text-sky-400"></i>
+                          <span data-i18n="setup.enable_auth">Protéger l'accès par login/mot de passe</span>
+                        </div>
+                        <p class="text-sm text-gray-400">
+                          <span data-i18n="setup.auth_description">Sécurisez votre instance avec une authentification. Recommandé pour les installations publiques.</span>
+                        </p>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div id="authFields" class="hidden space-y-4 ml-6">
+                  <div>
+                    <label for="authUsername" class="block text-sm font-medium text-gray-300 mb-1">
+                      <span data-i18n="setup.auth_username">Nom d'utilisateur *</span>
+                    </label>
+                    <input type="text" id="authUsername" name="authUsername"
+                           class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                           placeholder="admin" value="<!-- AUTHUSERNAME -->">
+                  </div>
+                  
+                  <div>
+                    <label for="authPassword" class="block text-sm font-medium text-gray-300 mb-1">
+                      <span data-i18n="setup.auth_password">Mot de passe *</span>
+                    </label>
+                    <input type="password" id="authPassword" name="authPassword"
+                           class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-sky-400"
+                           placeholder="********">
+                    <p class="text-xs text-gray-400 mt-1" data-i18n="setup.auth_password_hint">
+                      Ce mot de passe sera requis pour accéder à l'interface
+                    </p>
+                  </div>
+                </div>
+              </div>
               
               <div>
                 <label for="fullRebuildPassword" class="block text-sm font-medium text-gray-300 mb-1">Mot de passe rebuild *</label>

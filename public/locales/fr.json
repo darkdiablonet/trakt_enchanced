@@ -34,7 +34,8 @@
     "full_rebuild": "Full rebuild",
     "close": "Fermer",
     "launch": "Lancer",
-    "filters": "Filtres"
+    "filters": "Filtres",
+    "logout": "Déconnexion"
   },
   "theme": {
     "auto": "Automatique",
@@ -203,7 +204,25 @@
     "config_error": "Erreur lors de la configuration",
     "connection_error": "Erreur de connexion au serveur",
     "csrf_active": "Active ✓",
-    "csrf_missing": "Manquant ⚠"
+    "csrf_missing": "Manquant ⚠",
+    "new_feature": "NOUVEAU",
+    "enable_auth": "Protéger l'accès par login/mot de passe",
+    "auth_description": "Sécurisez votre instance avec une authentification. Recommandé pour les installations publiques.",
+    "auth_username": "Nom d'utilisateur *",
+    "auth_password": "Mot de passe *",
+    "auth_password_hint": "Ce mot de passe sera requis pour accéder à l'interface"
+  },
+  "login": {
+    "page_title": "Connexion - Trakt Enhanced",
+    "title": "Connexion requise",
+    "subtitle": "Veuillez vous connecter pour accéder à l'interface",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "authenticating": "Authentification...",
+    "success": "Connexion réussie ! Redirection...",
+    "invalid_credentials": "Nom d'utilisateur ou mot de passe incorrect",
+    "connection_error": "Erreur de connexion au serveur"
   },
   "loading": {
     "page_title": "Chargement initial - Trakt Enhanced",

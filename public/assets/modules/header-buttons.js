@@ -46,6 +46,11 @@ class HeaderButtons {
       this.createWidthButton(),
       this.createFullRebuildButton()
     ];
+    
+    // Ajouter le bouton logout si l'authentification est activée
+    if (this.isAuthEnabled()) {
+      buttons.push(this.createLogoutButton());
+    }
 
     // Ajouter tous les boutons
     buttons.forEach(button => {
@@ -264,6 +269,24 @@ class HeaderButtons {
     `;
     
     return button;
+  }
+
+  createLogoutButton() {
+    const link = document.createElement('a');
+    link.href = '/logout';
+    link.className = 'btn btn-outline text-xs md:text-sm px-2 md:px-3 text-red-400 hover:text-red-300';
+    link.innerHTML = `
+      <i class="fa-solid fa-sign-out-alt"></i>
+      <span class="hidden sm:inline" data-i18n="buttons.logout">Logout</span>
+    `;
+    
+    return link;
+  }
+
+  isAuthEnabled() {
+    // Vérifier si l'authentification est activée via une meta ou un data attribute
+    // On peut ajouter cette info dans le HTML généré par le serveur
+    return document.querySelector('meta[name="auth-enabled"]')?.content === 'true';
   }
 
   cycleTheme() {
