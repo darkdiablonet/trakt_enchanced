@@ -816,7 +816,7 @@ app.get('/api/history', requireAuth, performanceMiddleware('history'), asyncHand
       start_at = null,    // ISO 8601 date-time
       end_at = null,      // ISO 8601 date-time  
       page = 1,           // Page number
-      limit = 10          // Results per page (max 100)
+      limit = 100          // Results per page (max 100)
     } = req.query;
     
     // Call the Trakt API using the dedicated function
