@@ -147,14 +147,15 @@ function renderPlaybackCard(item) {
   // Badge pour épisode ou progress
   let badgeInfo = '';
   if (!isMovie) {
-    badgeInfo = `S${item.episode?.season || '?'}E${item.episode?.number || '?'}`;
+    badgeInfo = `S${String(item.episode?.season || '?').padStart(2, '0')}E${String(item.episode?.number || '?').padStart(2, '0')}`;
     if (episodeTitle) {
       badgeInfo += `: ${episodeTitle}`;
     }
   }
 
+  // Utiliser une structure unique qui s'adapte via CSS
   return `
-    <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
+    <article class="card playback-card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow">
       <div class="poster-wrap mb-3">
         <div class="poster lazy-bg" data-bg-src="${poster}"></div>
         
@@ -163,9 +164,9 @@ function renderPlaybackCard(item) {
           <span class="text-sky-300">${progressPercent}%</span>
         </div>
         
-        <!-- Bouton supprimer en overlay -->
+        <!-- Bouton supprimer en overlay (caché sur mobile) -->
         <button 
-          class="ov-btn"
+          class="ov-btn playback-remove-btn"
           data-remove-playback="${item.id}" 
           title="Supprimer de la liste"
         >
@@ -174,42 +175,54 @@ function renderPlaybackCard(item) {
         </button>
       </div>
       
-      <h3 class="text-base font-semibold leading-tight line-clamp-2">${escapeAttr(title || 'Titre inconnu')}</h3>
-      
-      ${badgeInfo ? `
-        <p class="text-sm text-muted mt-1 line-clamp-1">${escapeAttr(badgeInfo)}</p>
-      ` : ''}
-      
-      <!-- Barre de progression -->
-      <div class="mt-3 relative h-2 bg-black/30 rounded-full overflow-hidden">
-        <div 
-          class="playback-progress-fill absolute top-0 left-0 h-full bg-gradient-to-r from-sky-500 to-blue-600 rounded-full transition-all duration-300"
-          data-progress="${progressPercent}"
-        ></div>
-      </div>
-      
-      <div class="mt-2 flex items-center gap-2 text-sm">
-        <span class="chip">
-          <i class="fa-regular fa-calendar mr-1"></i>${year || '—'}
-        </span>
-        ${item.paused_at ? `
-          <span class="chip chip--warn">
-            <i class="fa-solid fa-pause mr-1"></i>${i18n.t('playback.paused')}
-          </span>
-        ` : `
+      <div class="playback-content">
+        <h3 class="text-base font-semibold leading-tight line-clamp-2">${escapeAttr(title || 'Titre inconnu')}</h3>
+        
+        ${badgeInfo ? `
+          <p class="text-sm text-muted mt-1 line-clamp-1">${escapeAttr(badgeInfo)}</p>
+        ` : ''}
+        
+        <!-- Ligne 1: Barre de progression + bouton play/pause aligné à droite -->
+        <div class="mt-2 flex items-center gap-2">
+          <div class="flex-1 relative h-2 bg-black/30 rounded-full overflow-hidden">
+            <div 
+              class="playback-progress-fill absolute top-0 left-0 h-full bg-gradient-to-r from-sky-500 to-blue-600 rounded-full transition-all duration-300"
+              data-progress="${progressPercent}"
+            ></div>
+          </div>
+          ${item.paused_at ? `
+            <span class="chip chip--warn ml-2">
+              <i class="fa-solid fa-pause mr-1"></i>${i18n.t('playback.paused')}
+            </span>
+          ` : `
+            <span class="chip ml-2">
+              <i class="fa-solid fa-play mr-1"></i>${i18n.t('playback.playing')}
+            </span>
+          `}
+        </div>
+        
+        <!-- Ligne 2: Année + Trakt URL -->
+        <div class="mt-2 flex items-center gap-2 text-sm">
           <span class="chip">
-            <i class="fa-solid fa-play mr-1"></i>${i18n.t('playback.playing')}
+            <i class="fa-regular fa-calendar mr-1"></i>${year || '—'}
           </span>
-        `}
+          <a class="chip" href="${traktUrl}" target="_blank">
+            <i class="fa-solid fa-link mr-1"></i>Trakt
+          </a>
+        </div>
+        
+        <!-- Ligne 3: Bouton supprimer aligné à droite -->
+        <div class="mt-2 flex justify-end">
+          <button 
+            class="chip mobile-synopsis-btn playback-remove-mobile"
+            data-remove-playback="${item.id}" 
+            title="Supprimer de la liste"
+          >
+            <i class="fa-solid fa-trash mr-1"></i>Supprimer
+          </button>
+        </div>
       </div>
-      
-      <div class="mt-2 flex items-center gap-2 text-sm">
-        <a class="chip" href="${traktUrl}" target="_blank">
-          <i class="fa-solid fa-link mr-1"></i>Trakt
-        </a>
-      </div>
-    </article>
-  `;
+    </article>`;
 }
 
 async function removePlaybackItem(id) {

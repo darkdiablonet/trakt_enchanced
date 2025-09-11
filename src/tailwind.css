@@ -272,10 +272,21 @@
   }
   .grid-default{ display:grid; grid-template-columns:repeat(auto-fill, minmax(var(--card-w), 1fr)); gap:1rem; }
   
+  /* Par défaut, cacher le bouton supprimer mobile sur desktop */
+  .playback-remove-mobile {
+    display: none;
+  }
+  
   /* Layout horizontal pour mobile avec position absolute */
   @media (max-width: 640px) {
     /* Container principal en colonnes */
     .grid-default {
+      display: block !important;
+      padding: 0 0.5rem;
+    }
+    
+    /* Conteneur playback spécifique */
+    #playbackContainer {
       display: block !important;
       padding: 0 0.5rem;
     }
@@ -363,6 +374,178 @@
     
     .mx-auto {
       max-width: 100% !important;
+    }
+    
+    /* Layout spécifique pour les cartes playback (onglet En cours) */
+    .playback-card {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 0.75rem !important;
+    }
+    
+    .playback-card .poster-wrap {
+      width: 80px !important;
+      min-width: 80px !important;
+      margin-bottom: 0 !important;
+    }
+    
+    .playback-content {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+    
+    /* Cacher le bouton supprimer desktop sur mobile */
+    .playback-remove-btn {
+      display: none !important;
+    }
+    
+    /* Afficher le bouton supprimer mobile */
+    .playback-remove-mobile {
+      display: inline-flex !important;
+    }
+    
+    /* Stats Pro - layout mobile optimisé */
+    #proSummary {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 0.5rem !important;
+    }
+    
+    #proSummary .glass {
+      padding: 0.5rem !important;
+    }
+    
+    #proSummary .text-2xl {
+      font-size: 1.25rem !important;
+    }
+    
+    /* Container graphiques avec overflow contrôlé */
+    #graphContainer {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Charts responsive sur mobile */
+    #proCharts .glass {
+      padding: 0.75rem !important;
+    }
+    
+    #proCharts canvas {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    
+    /* Tables responsive avec scroll horizontal */
+    .min-w-\[280px\] {
+      min-width: 250px !important;
+    }
+    
+    /* Container avec scroll pour les tables */
+    .topcard, .toplist {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Layout des graphiques sur mobile - forcer en colonne avec sélecteurs très spécifiques */
+    #proCharts > div.grid,
+    #proCharts .grid,
+    .grid.gap-6.grid-cols-1.md\\:grid-cols-3 {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    
+    #proCharts .card {
+      margin-bottom: 1.5rem !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    #proTops > div.grid,
+    #proTops .grid {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    
+    #proTops .card {
+      display: flex !important;
+      flex-direction: column !important;
+      margin-bottom: 1.5rem !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+    }
+    
+    /* Listes tops - contenu interne */
+    #proTops .card > div,
+    #proTops .card ul,
+    #proTops .card li {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+    }
+    
+    #proTops .card li {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 0.5rem 0 !important;
+      white-space: nowrap !important;
+    }
+    
+    #proTops .card li .text-sm {
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      flex: 1 !important;
+      margin-right: 0.5rem !important;
+    }
+    
+    /* Forcer chaque card de graphique en largeur complète */
+    #proCharts .card,
+    .grid .card {
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-bottom: 1.5rem !important;
+    }
+
+    /* Headers des graphiques - structure verticale forcée */
+    .chart-header {
+      display: block !important;
+      width: 100% !important;
+      margin-bottom: 1rem !important;
+      order: -1 !important;
+    }
+    
+    .chart-header .flex {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      width: 100% !important;
+      margin-bottom: 0.5rem !important;
+    }
+    
+    .chart-header h4 {
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      color: #e2e8f0 !important;
+    }
+    
+    .chart-header .text-xs {
+      display: block !important;
+      color: #64748b !important;
+      font-size: 0.75rem !important;
+      margin-bottom: 0.75rem !important;
+    }
+    
+    /* Canvas responsive forcé */
+    #proCharts canvas,
+    #proChartHours,
+    #proChartWeek, 
+    #proChartMonths {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
     }
   }
   .app-header{ position:sticky; top:0; z-index:20; border-bottom:1px solid var(--border-secondary); background: var(--bg-glass); backdrop-filter:blur(6px); }

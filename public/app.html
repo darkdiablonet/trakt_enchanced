@@ -229,25 +229,32 @@
         <!-- Graphiques -->
         <div class="grid gap-6 grid-cols-1 md:grid-cols-3">
           <div class="card p-4">
-            <div class="flex items-center gap-2 mb-3">
-              <i class="fa-solid fa-clock text-sky-400"></i>
-              <h4 class="font-semibold text-sm" data-i18n="stats.hours">Hours</h4>
-              <span class="text-xs text-disabled" data-i18n="stats.timezone">Europe/Paris</span>
+            <div class="chart-header">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-clock text-sky-400"></i>
+                <h4 class="font-semibold text-sm" data-i18n="stats.hours">Hours</h4>
+              </div>
+              <span class="text-xs text-disabled block mb-3" data-i18n="stats.timezone">Europe/Paris</span>
             </div>
             <canvas id="proChartHours"></canvas>
           </div>
           <div class="card p-4">
-            <div class="flex items-center gap-2 mb-3">
-              <i class="fa-solid fa-calendar-week text-sky-400"></i>
-              <h4 class="font-semibold text-sm" data-i18n="stats.weekdays">Weekdays</h4>
-              <span class="text-xs text-disabled" data-i18n="stats.weekdays_short">M→S</span>
+            <div class="chart-header">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-calendar-week text-sky-400"></i>
+                <h4 class="font-semibold text-sm" data-i18n="stats.weekdays">Weekdays</h4>
+              </div>
+              <span class="text-xs text-disabled block mb-3" data-i18n="stats.weekdays_short">M→S</span>
             </div>
             <canvas id="proChartWeek"></canvas>
           </div>
           <div class="card p-4">
-            <div class="flex items-center gap-2 mb-3">
-              <i class="fa-solid fa-chart-line text-sky-400"></i>
-              <h4 class="font-semibold text-sm" data-i18n="stats.evolution_months">Monthly evolution</h4>
+            <div class="chart-header">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-chart-line text-sky-400"></i>
+                <h4 class="font-semibold text-sm" data-i18n="stats.evolution_months">Monthly evolution</h4>
+              </div>
+              <span class="text-xs text-disabled block mb-3"></span>
             </div>
             <canvas id="proChartMonths"></canvas>
           </div>

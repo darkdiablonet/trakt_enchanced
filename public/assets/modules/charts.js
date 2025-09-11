@@ -10,7 +10,7 @@ import i18n from './i18n.js';
 const defaultConfig = {
   responsive: true,
   maintainAspectRatio: true,
-  aspectRatio: 2.5,
+  aspectRatio: window.innerWidth <= 640 ? 1.8 : 2.5, // Ratio plus compact sur mobile
   animation: false,
   plugins: {
     legend: {
