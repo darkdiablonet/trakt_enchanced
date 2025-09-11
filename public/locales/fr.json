@@ -35,7 +35,8 @@
     "close": "Fermer",
     "launch": "Lancer",
     "filters": "Filtres",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "search": "Rechercher"
   },
   "theme": {
     "auto": "Automatique",
@@ -43,8 +44,27 @@
     "dark": "Sombre"
   },
   "search": {
-    "placeholder": "Titre… (Ctrl+/)",
-    "label": "Rechercher"
+    "placeholder": "Rechercher un film ou une série...",
+    "label": "Rechercher",
+    "searching": "Recherche en cours...",
+    "error": "Erreur lors de la recherche",
+    "no_results": "Aucun résultat trouvé",
+    "try_different": "Essayez avec des mots-clés différents",
+    "movies": "Films",
+    "tv_shows": "Séries TV",
+    "add_to_history": "Ajouter",
+    "add_to_history_title": "Ajouter à l'historique",
+    "watched_at": "Date et heure de visionnage",
+    "watched_at_help": "Choisissez quand vous avez regardé ce contenu",
+    "confirm_add": "Ajouter à l'historique",
+    "select_date_error": "Veuillez sélectionner une date et heure",
+    "adding": "Ajout en cours...",
+    "added_success": "Ajouté à l'historique",
+    "add_error": "Erreur"
+  },
+  "actions": {
+    "remove_from_history": "Retirer de l'historique",
+    "confirm_remove_from_history": "Êtes-vous sûr de vouloir retirer ce film de votre historique ?"
   },
   "sort": {
     "label": "Tri",

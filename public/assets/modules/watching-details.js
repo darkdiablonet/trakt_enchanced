@@ -84,9 +84,10 @@ function formatWatchingDateTime(watchedAt) {
 /**
  * Génère le HTML pour les détails de visionnage d'un film
  * @param {Object} movieData - Données du film
+ * @param {string} traktId - ID Trakt du film
  * @returns {string} HTML des détails
  */
-function generateMovieDetailsHTML(movieData) {
+function generateMovieDetailsHTML(movieData, traktId) {
   if (!movieData.watchings || movieData.watchings.length === 0) {
     return `<div class="text-center text-muted py-8">${i18n.t('calendar.no_viewings_found')}</div>`;
   }
@@ -95,14 +96,21 @@ function generateMovieDetailsHTML(movieData) {
     const datetime = formatWatchingDateTime(watching.watched_at);
     
     return `
-      <div class="p-3 bg-white/5 rounded-lg">
+      <div class="p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-play text-green-400"></i>
             <span class="text-sm font-medium">${i18n.t('watched')}</span>
           </div>
-          <div class="text-xs text-muted">
-            🗓️ ${datetime}
+          <div class="flex items-center gap-2">
+            <div class="text-xs text-muted">
+              🗓️ ${datetime}
+            </div>
+            <button class="js-unmark-movie text-red-400 hover:text-red-300 transition-colors" 
+                    data-trakt-id="${traktId}"
+                    title="${i18n.t('actions.remove_from_history') || 'Retirer de l\'historique'}">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -158,7 +166,7 @@ function generateShowDetailsHTML(showData, traktId) {
  */
 function showWatchingDetailsModal(title, kind, data, traktId) {
   const detailsHTML = kind === 'movie' 
-    ? generateMovieDetailsHTML(data)
+    ? generateMovieDetailsHTML(data, traktId)
     : generateShowDetailsHTML(data, traktId);
   
   const kindLabel = kind === 'movie' ? i18n.t('movie') : i18n.t('show');
@@ -226,6 +234,84 @@ function showWatchingDetailsModal(title, kind, data, traktId) {
 }
 
 /**
+ * Gestionnaire de clic pour retirer un film de l'historique
+ * @param {Event} event - Événement de clic
+ */
+async function handleUnmarkMovieClick(event) {
+  const button = event.target.closest('.js-unmark-movie');
+  
+  if (!button) return;
+  
+  event.preventDefault();
+  event.stopPropagation();
+  
+  const traktId = button.getAttribute('data-trakt-id');
+  
+  if (!traktId) return;
+  
+  // Confirmation avant suppression
+  if (!confirm(i18n.t('actions.confirm_remove_from_history') || 'Êtes-vous sûr de vouloir retirer ce film de votre historique ?')) {
+    return;
+  }
+  
+  // Récupérer le token CSRF
+  let csrfToken = '';
+  const existingCsrf = document.querySelector('input[name="csrf"]');
+  if (existingCsrf && existingCsrf.value !== '<!-- CSRF_TOKEN -->') {
+    csrfToken = existingCsrf.value;
+  } else {
+    // Fallback: essayer une meta tag
+    const metaCsrf = document.querySelector('meta[name="csrf-token"]');
+    if (metaCsrf) {
+      csrfToken = metaCsrf.getAttribute('content');
+    }
+  }
+  
+  // Effet visuel sur le bouton cliqué
+  button.style.opacity = '0.5';
+  button.disabled = true;
+  
+  try {
+    const response = await fetch('/api/unmark-movie-watched', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken
+      },
+      body: JSON.stringify({ trakt_id: traktId })
+    });
+    
+    const result = await response.json();
+    
+    if (result.ok) {
+      // Fermer la modal et rafraîchir si nécessaire
+      const modal = document.getElementById('watching-details-modal');
+      modal?.remove();
+      
+      // Invalider le cache et rafraîchir la page
+      if (window.location.pathname === '/') {
+        window.location.reload();
+      }
+    } else {
+      console.error('Erreur lors de la suppression:', result.error);
+      alert(result.error || 'Erreur lors de la suppression du film');
+      
+      // Restaurer le bouton en cas d'erreur
+      button.style.opacity = '';
+      button.disabled = false;
+    }
+    
+  } catch (err) {
+    console.error('Erreur lors de la suppression du film:', err);
+    alert('Erreur lors de la suppression du film');
+    
+    // Restaurer le bouton en cas d'erreur
+    button.style.opacity = '';
+    button.disabled = false;
+  }
+}
+
+/**
  * Gestionnaire de clic sur les metrics des cartes
  * @param {Event} event - Événement de clic
  */
@@ -272,6 +358,7 @@ async function handleWatchingDetailsClick(event) {
 export function initWatchingDetails() {
   // Délégation d'événement sur le document
   document.addEventListener('click', handleWatchingDetailsClick);
+  document.addEventListener('click', handleUnmarkMovieClick);
   
 }
 

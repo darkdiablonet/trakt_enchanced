@@ -93,7 +93,21 @@ class SetupI18n {
       `;
     }
 
+    // Translate all elements with data-i18n attribute
+    this.translateDataI18nElements();
+
     console.log('[SetupI18n] Page translated');
+  }
+
+  translateDataI18nElements() {
+    const elements = document.querySelectorAll('[data-i18n]');
+    elements.forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      if (key) {
+        const translation = this.i18n.t(key);
+        element.textContent = translation;
+      }
+    });
   }
 
   translateSection(originalText, key, iconClass) {

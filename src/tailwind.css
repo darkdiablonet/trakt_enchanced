@@ -550,6 +550,54 @@
   }
   .app-header{ position:sticky; top:0; z-index:20; border-bottom:1px solid var(--border-secondary); background: var(--bg-glass); backdrop-filter:blur(6px); }
   .filters{ position:sticky; top:68px; z-index:10; }
+  
+  /* Search Bar Styles */
+  .search-bar {
+    background: var(--bg-glass);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+  }
+  
+  .search-results {
+    background: var(--bg-glass);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border-secondary);
+    border-radius: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: #64748b transparent;
+  }
+  
+  .search-results::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .search-results::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .search-results::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 3px;
+  }
+  
+  .search-results::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
+  .search-result-item {
+    transition: all 0.2s ease;
+  }
+  
+  .search-result-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Search input icon positioning */
+  #searchBar .fa-search {
+    pointer-events: none;
+    opacity: 0.5;
+  }
   .tabs-group{ display:inline-flex; flex-wrap:wrap; gap:.25rem; padding:.25rem; border-radius:12px; border:1px solid var(--border-secondary); background: var(--bg-glass); }
   .tabs-group button{ 
     padding:.5rem 1rem; 

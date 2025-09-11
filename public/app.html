@@ -31,6 +31,20 @@
     </div>
   </header>
 
+  <!-- Search Bar (Collapsible) -->
+  <div id="searchBar" class="search-bar hidden mx-auto max-w-7xl px-4 py-3 border-b border-slate-700/50">
+    <div class="relative">
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="Search for a movie or TV show..." 
+        class="w-full px-4 py-2 bg-slate-800/80 border border-slate-600 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+        autocomplete="off"
+      >
+    </div>
+    <div id="searchResults" class="search-results hidden mt-3 space-y-2 max-h-96 overflow-y-auto"></div>
+  </div>
+
   <!-- Real-time Watching Progress Bar -->
   <div id="watching-progress" class="hidden mx-auto max-w-7xl px-4 py-2"></div>
 

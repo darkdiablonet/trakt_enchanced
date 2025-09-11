@@ -35,7 +35,8 @@
     "close": "Close",
     "launch": "Launch",
     "filters": "Filters",
-    "logout": "Logout"
+    "logout": "Logout",
+    "search": "Search"
   },
   "theme": {
     "auto": "Auto",
@@ -43,8 +44,27 @@
     "dark": "Dark"
   },
   "search": {
-    "placeholder": "Title… (Ctrl+/)",
-    "label": "Search"
+    "placeholder": "Search for a movie or TV show...",
+    "label": "Search",
+    "searching": "Searching...",
+    "error": "Search error",
+    "no_results": "No results found",
+    "try_different": "Try different keywords",
+    "movies": "Movies",
+    "tv_shows": "TV Shows",
+    "add_to_history": "Add",
+    "add_to_history_title": "Add to history",
+    "watched_at": "Watch date and time",
+    "watched_at_help": "Choose when you watched this content",
+    "confirm_add": "Add to history",
+    "select_date_error": "Please select a date and time",
+    "adding": "Adding...",
+    "added_success": "Added to history",
+    "add_error": "Error"
+  },
+  "actions": {
+    "remove_from_history": "Remove from history",
+    "confirm_remove_from_history": "Are you sure you want to remove this movie from your history?"
   },
   "sort": {
     "label": "Sort",

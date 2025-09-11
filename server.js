@@ -18,7 +18,7 @@ import { serverI18n } from './lib/i18n.js';
 import { requireAuth, checkAuth } from './lib/authMiddleware.js';
 
 import { DATA_DIR, IMG_DIR, SESSIONS_DIR, PORT, FULL_REBUILD_PASSWORD, TITLE, reloadEnv, OAUTH_REDIRECT_URI } from './lib/config.js';
-import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken, getOAuthAuthorizeUrl, exchangeCodeForToken } from './lib/trakt.js';
+import { saveToken, deviceToken, deviceCode, headers as traktHeaders, loadToken, userStats, markEpisodeWatched, removeEpisodeFromHistory, markMovieWatched, removeMovieFromHistory, hasValidCredentials, get, del, getLastActivities, getHistory, ensureValidToken, getOAuthAuthorizeUrl, exchangeCodeForToken, addToHistory } from './lib/trakt.js';
 // Ancien système de cache global supprimé - utilisation du cache granulaire uniquement
 import { buildPageDataGranular, getOrBuildShowCard, updateSpecificCard } from './lib/pageDataNew.js';
 import { makeRefresher, loadDeviceCode, saveDeviceCode, clearDeviceCode, getPublicHost, jsonLoad } from './lib/util.js';
@@ -35,6 +35,7 @@ import { verifyPassword } from './lib/auth.js';
 import { addProgressConnection, sendProgress, sendCompletion } from './lib/progressTracker.js';
 import { startActivityMonitor, stopActivityMonitor, getMonitorStatus, setBroadcastFunction } from './lib/activityMonitor.js';
 import { getRateLimitStats } from './lib/apiRateLimiter.js';
+import { tmdbSearch } from './lib/tmdb.js';
 
 dotenv.config();
 
@@ -1030,6 +1031,45 @@ app.post('/api/unmark-watched', requireAuth, csrfProtection, asyncHandler(async 
   }
 }));
 
+// Endpoint pour retirer un film de l'historique
+app.post('/api/unmark-movie-watched', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
+  const { trakt_id } = req.body;
+  
+  if (!trakt_id) {
+    return res.status(400).json({ ok: false, error: 'Missing required field: trakt_id' });
+  }
+  
+  try {
+    const tok = await loadToken();
+    if (!tok?.access_token) {
+      return res.status(401).json({ ok: false, error: 'No Trakt token available' });
+    }
+    
+    const result = await removeMovieFromHistory({ trakt_id });
+    
+    if (result?.deleted?.movies > 0) {
+      logger.info('Movie removed from history', { trakt_id });
+      
+      // Mise à jour granulaire de la carte spécifique uniquement
+      const tok = await loadToken();
+      const headers = traktHeaders(tok.access_token);
+      const updatedCard = await updateSpecificCard('movie', trakt_id, headers);
+      
+      return res.json({ 
+        ok: true, 
+        message: 'Movie removed from history successfully',
+        updatedCard: updatedCard
+      });
+    } else {
+      logger.warn('Failed to remove movie from history', { trakt_id, result });
+      return res.json({ ok: false, error: 'Failed to remove movie from history' });
+    }
+  } catch (error) {
+    logger.error('Error removing movie from history', { error: error.message, trakt_id });
+    return res.status(500).json({ ok: false, error: 'Internal server error' });
+  }
+}));
+
 // Endpoint pour récupérer les shows/movies watched
 app.get('/api/watched/:type', requireAuth, asyncHandler(async (req, res) => {
   const { type } = req.params;
@@ -1502,6 +1542,96 @@ app.get('/api/live-events', requireAuth, (req, res) => {
   
   req.on('close', () => clearInterval(heartbeat));
 });
+
+// API: Search movies via TheMovieDB
+app.get('/api/search/movies', performanceMiddleware('searchMovies'), asyncHandler(async (req, res) => {
+  const { q, lang } = req.query;
+  
+  if (!q || q.trim().length < 2) {
+    return res.status(400).json({ error: 'Query must be at least 2 characters long' });
+  }
+
+  try {
+    const searchResults = await tmdbSearch('movie', q.trim(), null, lang);
+    
+    if (!searchResults) {
+      return res.status(503).json({ error: 'TheMovieDB service unavailable' });
+    }
+
+    res.json(searchResults);
+  } catch (error) {
+    console.error('Movie search error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}));
+
+// API: Search TV shows via TheMovieDB  
+app.get('/api/search/tv', performanceMiddleware('searchTV'), asyncHandler(async (req, res) => {
+  const { q, lang } = req.query;
+  
+  if (!q || q.trim().length < 2) {
+    return res.status(400).json({ error: 'Query must be at least 2 characters long' });
+  }
+
+  try {
+    const searchResults = await tmdbSearch('tv', q.trim(), null, lang);
+    
+    if (!searchResults) {
+      return res.status(503).json({ error: 'TheMovieDB service unavailable' });
+    }
+
+    res.json(searchResults);
+  } catch (error) {
+    console.error('TV search error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}));
+
+// API: Add movie/show to Trakt history
+app.post('/api/add-to-history', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
+  const { type, title, year, tmdb_id, watched_at } = req.body;
+  
+  if (!type || !title || !watched_at) {
+    return res.status(400).json({ error: 'Missing required fields: type, title, watched_at' });
+  }
+  
+  if (!['movie', 'show'].includes(type)) {
+    return res.status(400).json({ error: 'Type must be "movie" or "show"' });
+  }
+  
+  try {
+    const result = await addToHistory({
+      type,
+      title,
+      year,
+      tmdb_id,
+      watched_at
+    });
+    
+    // Check if addition was successful
+    const added = type === 'movie' ? result.added?.movies : result.added?.shows;
+    if (added && added > 0) {
+      res.json({ 
+        success: true, 
+        message: `Successfully added ${title} to history`,
+        result: result
+      });
+    } else {
+      // Item might already be in history or other issue
+      res.json({ 
+        success: false, 
+        message: `Item may already be in history or could not be added`,
+        result: result
+      });
+    }
+    
+  } catch (error) {
+    console.error('[API] Add to history error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to add item to history' 
+    });
+  }
+}));
 
 // API pour vérifier s'il y a des changements récents (fallback pour SSE)
 app.get('/api/live-status', requireAuth, (req, res) => {

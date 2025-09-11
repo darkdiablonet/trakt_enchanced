@@ -127,6 +127,12 @@ class UITranslations {
     if (searchInput) {
       searchInput.placeholder = i18n.t('search.placeholder');
     }
+    
+    // Also handle the new search input
+    const newSearchInput = document.getElementById('searchInput');
+    if (newSearchInput) {
+      newSearchInput.placeholder = i18n.t('search.placeholder');
+    }
   }
 
   translateLabels() {

@@ -40,6 +40,7 @@ class HeaderButtons {
 
     // Boutons à créer
     const buttons = [
+      this.createSearchButton(),
       this.createLanguageSelector(),
       this.createThemeButton(),
       this.createRefreshButton(),
@@ -66,6 +67,55 @@ class HeaderButtons {
       this.updateButtonTexts();
       this.updateLanguageDisplay();
     });
+  }
+
+  createSearchButton() {
+    const button = document.createElement('button');
+    button.id = 'searchToggleButton';
+    button.className = 'btn btn-outline text-xs md:text-sm px-2 md:px-3';
+    button.title = 'Rechercher un film ou une série';
+    button.innerHTML = `
+      <i class="fa-solid fa-search"></i>
+      <span class="hidden sm:inline" data-i18n="buttons.search">Search</span>
+    `;
+
+    // Événement pour ouvrir/fermer la barre de recherche
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleSearchBar();
+    });
+
+    return button;
+  }
+
+  toggleSearchBar() {
+    const searchBar = document.getElementById('searchBar');
+    if (!searchBar) return;
+
+    const isHidden = searchBar.classList.contains('hidden');
+    
+    if (isHidden) {
+      // Ouvrir la barre de recherche
+      searchBar.classList.remove('hidden');
+      // Focus sur l'input après une courte délai pour l'animation
+      setTimeout(() => {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.focus();
+      }, 150);
+    } else {
+      // Fermer la barre de recherche
+      searchBar.classList.add('hidden');
+      // Nettoyer les résultats
+      const searchResults = document.getElementById('searchResults');
+      if (searchResults) {
+        searchResults.classList.add('hidden');
+        searchResults.innerHTML = '';
+      }
+      // Vider l'input
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.value = '';
+    }
   }
 
   createLanguageSelector() {
@@ -334,5 +384,8 @@ class HeaderButtons {
 
 // Créer l'instance
 const headerButtons = new HeaderButtons();
+
+// Exposer globalement pour le module search
+window.headerButtons = headerButtons;
 
 export default headerButtons;
