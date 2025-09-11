@@ -1033,7 +1033,7 @@ app.post('/api/unmark-watched', requireAuth, csrfProtection, asyncHandler(async 
 
 // Endpoint pour retirer un film de l'historique
 app.post('/api/unmark-movie-watched', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
-  const { trakt_id } = req.body;
+  const { trakt_id, history_id } = req.body;
   
   if (!trakt_id) {
     return res.status(400).json({ ok: false, error: 'Missing required field: trakt_id' });
@@ -1045,7 +1045,7 @@ app.post('/api/unmark-movie-watched', requireAuth, csrfProtection, asyncHandler(
       return res.status(401).json({ ok: false, error: 'No Trakt token available' });
     }
     
-    const result = await removeMovieFromHistory({ trakt_id });
+    const result = await removeMovieFromHistory({ trakt_id, history_id });
     
     if (result?.deleted?.movies > 0) {
       logger.info('Movie removed from history', { trakt_id });

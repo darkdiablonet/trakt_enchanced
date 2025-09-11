@@ -108,6 +108,7 @@ function generateMovieDetailsHTML(movieData, traktId) {
             </div>
             <button class="js-unmark-movie text-red-400 hover:text-red-300 transition-colors" 
                     data-trakt-id="${traktId}"
+                    data-history-id="${watching.history_id || ''}"
                     title="${i18n.t('actions.remove_from_history') || 'Retirer de l\'historique'}">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
@@ -246,6 +247,7 @@ async function handleUnmarkMovieClick(event) {
   event.stopPropagation();
   
   const traktId = button.getAttribute('data-trakt-id');
+  const historyId = button.getAttribute('data-history-id');
   
   if (!traktId) return;
   
@@ -278,7 +280,10 @@ async function handleUnmarkMovieClick(event) {
         'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken
       },
-      body: JSON.stringify({ trakt_id: traktId })
+      body: JSON.stringify({ 
+        trakt_id: traktId,
+        history_id: historyId || null 
+      })
     });
     
     const result = await response.json();
