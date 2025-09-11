@@ -52,11 +52,21 @@ export function card(r, kind) {
     metrics = `<button class="chip chip-clickable js-show-watchings" data-trakt-id="${traktId}" data-movie-title="${title}" data-kind="movie" title="${i18n.t('cards.view_details')}"><i class="fa-solid fa-play mr-1"></i>${r.plays||0}</button>`;
   }
 
-  return `
-  <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow" data-prefetch="${escapeAttr(url)}">
-    <div class="poster-wrap mb-3">
-    <div class="poster lazy-bg" data-bg-src="${poster}"></div>
-    <button class="ov-btn js-ov"
+  // Détection mobile
+  const isMobile = window.innerWidth <= 640;
+  
+  if (isMobile) {
+    // Layout mobile horizontal
+    const nextButton = next ? `<button class="badge-next js-mark-watched mobile-next-btn" 
+        data-trakt-id="${escapeAttr(r.next_episode_data?.trakt_id || '')}"
+        data-season="${escapeAttr(r.next_episode_data?.season || '')}"
+        data-number="${escapeAttr(r.next_episode_data?.number || '')}"
+        data-show-title="${escapeAttr(title)}"
+        title="${i18n.t('cards.click_to_mark_watched')}">
+        <i class="fa-solid fa-forward-step"></i><span>${next}</span>
+      </button>` : '';
+
+    const synopsisButton = `<button class="ov-btn js-ov mobile-synopsis-btn"
       data-title="${title}"
       data-year="${escapeAttr(y)}"
       data-overview="${ov}"
@@ -66,26 +76,63 @@ export function card(r, kind) {
       data-kind="${escapeAttr(kind)}"
       title="${i18n.t('overview.synopsis_tooltip')}">
       <i class="fa-solid fa-circle-info"></i><span>${i18n.t('overview.synopsis')}</span>
-    </button>
-    ${ next ? `<button class="badge-next js-mark-watched" 
-        data-trakt-id="${escapeAttr(r.next_episode_data?.trakt_id || '')}"
-        data-season="${escapeAttr(r.next_episode_data?.season || '')}"
-        data-number="${escapeAttr(r.next_episode_data?.number || '')}"
-        data-show-title="${escapeAttr(title)}"
-        title="${i18n.t('cards.click_to_mark_watched')}">
-        <i class="fa-solid fa-forward-step"></i><span>${next}</span>
-      </button>` : '' }
-    </div>
-    <h3 class="text-base font-semibold leading-tight line-clamp-2">${title}</h3>
-    <div class="mt-2 flex items-center gap-2 text-sm">
-    <span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
-    ${metrics}
-    </div>
-    <div class="mt-2 flex items-center gap-2 text-sm">
-    <a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
-    ${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
-    </div>
-  </article>`;
+    </button>`;
+
+    return `
+    <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow" data-prefetch="${escapeAttr(url)}">
+      <div class="poster-wrap mb-3">
+        <div class="poster lazy-bg" data-bg-src="${poster}"></div>
+      </div>
+      <div class="mobile-content">
+        <h3 class="text-base font-semibold leading-tight line-clamp-2">${title}${nextButton}</h3>
+        <div class="mt-2 flex items-center gap-2 text-sm">
+          <span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
+          ${metrics}
+        </div>
+        <div class="mt-2 flex items-center gap-2 text-sm">
+          <a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
+          ${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
+          ${synopsisButton}
+        </div>
+      </div>
+    </article>`;
+  } else {
+    // Layout desktop normal
+    return `
+    <article class="card p-3 hover:shadow-xl hover:shadow-sky-900/10 transition-shadow" data-prefetch="${escapeAttr(url)}">
+      <div class="poster-wrap mb-3">
+      <div class="poster lazy-bg" data-bg-src="${poster}"></div>
+      <button class="ov-btn js-ov"
+        data-title="${title}"
+        data-year="${escapeAttr(y)}"
+        data-overview="${ov}"
+        data-poster="${escapeAttr(poster)}"
+        data-trakt="${escapeAttr(url)}"
+        data-tmdb="${escapeAttr(tmdburl)}"
+        data-kind="${escapeAttr(kind)}"
+        title="${i18n.t('overview.synopsis_tooltip')}">
+        <i class="fa-solid fa-circle-info"></i><span>${i18n.t('overview.synopsis')}</span>
+      </button>
+      ${ next ? `<button class="badge-next js-mark-watched" 
+          data-trakt-id="${escapeAttr(r.next_episode_data?.trakt_id || '')}"
+          data-season="${escapeAttr(r.next_episode_data?.season || '')}"
+          data-number="${escapeAttr(r.next_episode_data?.number || '')}"
+          data-show-title="${escapeAttr(title)}"
+          title="${i18n.t('cards.click_to_mark_watched')}">
+          <i class="fa-solid fa-forward-step"></i><span>${next}</span>
+        </button>` : '' }
+      </div>
+      <h3 class="text-base font-semibold leading-tight line-clamp-2">${title}</h3>
+      <div class="mt-2 flex items-center gap-2 text-sm">
+      <span class="chip"><i class="fa-regular fa-calendar mr-1"></i>${y}</span>
+      ${metrics}
+      </div>
+      <div class="mt-2 flex items-center gap-2 text-sm">
+      <a class="chip" href="${url}" target="_blank"><i class="fa-solid fa-link mr-1"></i>Trakt</a>
+      ${tmdburl ? `<a class="chip" href="${tmdburl}" target="_blank"><i class="fa-solid fa-clapperboard mr-1"></i>TMDB</a>` : ''}
+      </div>
+    </article>`;
+  }
 }
 
 export function renderTopSimple(arr) {
