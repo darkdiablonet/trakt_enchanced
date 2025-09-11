@@ -184,6 +184,16 @@ class LiveUpdatesManager {
         this.updateCard(data.cardType, data.traktId, data.card);
         break;
         
+      case 'invalidate-watching-cache':
+        logger.liveUpdates(`🗑️ INVALIDATE WATCHING CACHE: ${data.card?.kind} ${data.traktId}`);
+        this.invalidateWatchingCache(data.traktId, data.card?.kind);
+        break;
+        
+      case 'invalidate-all-watching-cache':
+        logger.liveUpdates(`🧹 INVALIDATE ALL WATCHING CACHES: ${data.card?.reason || 'unknown reason'}`);
+        this.invalidateAllWatchingCaches();
+        break;
+        
       default:
         logger.liveUpdatesWarn('❓ Unknown event type:', data.type);
     }
@@ -434,6 +444,44 @@ class LiveUpdatesManager {
     }
     
     this.showConnectionStatus(false);
+  }
+
+  /**
+   * Invalide le cache watching details côté frontend
+   */
+  invalidateWatchingCache(traktId, kind) {
+    try {
+      // Importer dynamiquement le module watching-details pour éviter les dépendances circulaires
+      import('./watching-details.js').then(module => {
+        if (module.invalidateWatchingCache) {
+          module.invalidateWatchingCache(traktId, kind);
+          logger.liveUpdates(`✅ Frontend watching cache invalidated for ${kind} ${traktId}`);
+        }
+      }).catch(err => {
+        logger.liveUpdatesWarn('Failed to invalidate watching cache:', err);
+      });
+    } catch (error) {
+      logger.liveUpdatesWarn('Error invalidating watching cache:', error);
+    }
+  }
+
+  /**
+   * Invalide tous les caches watching details côté frontend
+   */
+  invalidateAllWatchingCaches() {
+    try {
+      // Importer dynamiquement le module watching-details pour éviter les dépendances circulaires
+      import('./watching-details.js').then(module => {
+        if (module.clearWatchingCache) {
+          module.clearWatchingCache();
+          logger.liveUpdates(`✅ All frontend watching caches invalidated`);
+        }
+      }).catch(err => {
+        logger.liveUpdatesWarn('Failed to invalidate all watching caches:', err);
+      });
+    } catch (error) {
+      logger.liveUpdatesWarn('Error invalidating all watching caches:', error);
+    }
   }
 }
 

@@ -82,6 +82,43 @@ function broadcastCardUpdate(type, traktId, cardData) {
   console.log(`[SSE/WS] Broadcasted ${type} ${traktId} update to ${liveClients.size} SSE + ${wss?.clients?.size || 0} WS clients`);
 }
 
+// Fonction générique pour broadcaster tous types d'événements
+function broadcastEvent(eventType, traktId, data) {
+  const eventData = {
+    type: eventType,
+    traktId: traktId,
+    card: data,
+    timestamp: Date.now()
+  };
+  
+  const message = `data: ${JSON.stringify(eventData)}\n\n`;
+  
+  liveClients.forEach(client => {
+    try {
+      client.write(message);
+    } catch (error) {
+      console.warn('[SSE] Client disconnected, removing from list');
+      liveClients.delete(client);
+    }
+  });
+  
+  // Broadcast via WebSocket si disponible
+  try {
+    if (wss) {
+      const json = JSON.stringify(eventData);
+      wss.clients.forEach(ws => {
+        if (ws.readyState === ws.OPEN) {
+          ws.send(json);
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('[WS] Broadcast error:', e.message);
+  }
+  
+  console.log(`[SSE/WS] Broadcasted ${eventType} for ${traktId} to ${liveClients.size} SSE + ${wss?.clients?.size || 0} WS clients`);
+}
+
 // Invalider TOUS les caches globaux (les 3 fichiers de merde qui restent)
 async function invalidateGlobalCaches() {
   const globalCacheFiles = [
@@ -671,6 +708,39 @@ app.post('/api/monitor/:action', requireAuth, performanceMiddleware('monitorCont
   } catch (error) {
     logger.error('Error controlling monitor', { error: error.message });
     res.status(500).json({ ok: false, err: 'monitor_control_error', message: error.message });
+  }
+}));
+
+// API: Force cache refresh check
+app.post('/api/force-cache-check', requireAuth, csrfProtection, asyncHandler(async (req, res) => {
+  try {
+    const { traktId, kind } = req.body;
+    
+    if (!traktId || !kind) {
+      return res.status(400).json({ ok: false, error: 'Missing traktId or kind' });
+    }
+    
+    // Invalider le cache watching details backend
+    const { invalidateWatchingCache } = await import('./lib/watchingDetails.js');
+    invalidateWatchingCache(traktId, kind);
+    
+    // Invalider la carte spécifique et récupérer les nouvelles données
+    const tok = await loadToken();
+    const headers = traktHeaders(tok.access_token);
+    const updatedCard = await updateSpecificCard(kind === 'movie' ? 'movie' : 'show', traktId, headers);
+    
+    // Broadcaster l'invalidation du cache watching details au frontend
+    broadcastEvent('invalidate-watching-cache', traktId, { kind });
+    
+    res.json({ 
+      ok: true, 
+      message: 'Cache invalidated and refreshed',
+      updatedCard: updatedCard
+    });
+    
+  } catch (error) {
+    logger.error('Error forcing cache check', { error: error.message });
+    res.status(500).json({ ok: false, error: error.message });
   }
 }));
 
@@ -1869,9 +1939,9 @@ const server = app.listen(PORT, () => {
   const JITTER = Math.floor(Math.random() * 5000); // petit jitter optionnel
   refresher.schedule({ intervalMs: EVERY, initialDelayMs: JITTER });
 
-  // Configure broadcast function for activity monitor
-  setBroadcastFunction(broadcastCardUpdate);
-  console.log('[monitor] Broadcast function configured for external change detection');
+  // Configure broadcast functions for activity monitor
+  setBroadcastFunction(broadcastCardUpdate, broadcastEvent);
+  console.log('[monitor] Broadcast functions configured for external change detection');
   
   // Start activity monitor (5 minutes par défaut, configurable via env)
   if (hasValidCredentials()) {

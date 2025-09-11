@@ -293,6 +293,9 @@ async function handleUnmarkMovieClick(event) {
       const modal = document.getElementById('watching-details-modal');
       modal?.remove();
       
+      // Invalider le cache watching details localement
+      invalidateWatchingCache(traktId, 'movie');
+      
       // Invalider le cache et rafraîchir la page
       if (window.location.pathname === '/') {
         window.location.reload();
