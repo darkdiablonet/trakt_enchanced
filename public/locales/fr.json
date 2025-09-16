@@ -36,7 +36,10 @@
     "launch": "Lancer",
     "filters": "Filtres",
     "logout": "Déconnexion",
-    "search": "Rechercher"
+    "search": "Rechercher",
+    "remove": "Supprimer",
+    "remove_from_list": "Supprimer de la liste",
+    "confirm_remove_playback": "Supprimer cet élément de la liste de lecture ?"
   },
   "theme": {
     "auto": "Automatique",
@@ -149,7 +152,9 @@
     "retry": "Réessayer",
     "no_episodes": "Aucun épisode prévu",
     "prev_week": "Semaine précédente",
-    "next_week": "Semaine suivante"
+    "next_week": "Semaine suivante",
+    "releases": "Sorties",
+    "history": "Historique"
   },
   "modals": {
     "full_rebuild": {

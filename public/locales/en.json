@@ -36,7 +36,10 @@
     "launch": "Launch",
     "filters": "Filters",
     "logout": "Logout",
-    "search": "Search"
+    "search": "Search",
+    "remove": "Remove",
+    "remove_from_list": "Remove from list",
+    "confirm_remove_playback": "Remove this item from the playback list?"
   },
   "theme": {
     "auto": "Auto",
@@ -150,7 +153,9 @@
     "retry": "Retry",
     "no_episodes": "No episodes scheduled",
     "prev_week": "Previous week",
-    "next_week": "Next week"
+    "next_week": "Next week",
+    "releases": "Releases",
+    "history": "History"
   },
   "modals": {
     "full_rebuild": {

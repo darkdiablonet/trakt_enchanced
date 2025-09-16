@@ -327,10 +327,10 @@
           <div class="flex items-center gap-2">
             <!-- Toggle mode calendrier -->
             <div class="flex bg-white/5 rounded-lg p-1 mr-3">
-              <button id="calendarModeReleases" class="calendar-mode-btn active px-3 py-1 text-xs rounded transition-colors">
+              <button id="calendarModeReleases" class="calendar-mode-btn active px-3 py-1 text-xs rounded transition-colors" data-i18n="calendar.releases">
                 <i class="fa-solid fa-rocket mr-1"></i>Sorties
               </button>
-              <button id="calendarModeHistory" class="calendar-mode-btn px-3 py-1 text-xs rounded transition-colors">
+              <button id="calendarModeHistory" class="calendar-mode-btn px-3 py-1 text-xs rounded transition-colors" data-i18n="calendar.history">
                 <i class="fa-solid fa-history mr-1"></i>Historique
               </button>
             </div>
@@ -353,10 +353,10 @@
           
           <!-- Mode toggle mobile -->
           <div class="flex bg-white/5 rounded-lg p-1 mb-3 w-fit">
-            <button id="calendarModeReleasesMobile" class="calendar-mode-btn active px-3 py-1 text-xs rounded transition-colors">
+            <button id="calendarModeReleasesMobile" class="calendar-mode-btn active px-3 py-1 text-xs rounded transition-colors" data-i18n="calendar.releases">
               <i class="fa-solid fa-rocket mr-1"></i>Sorties
             </button>
-            <button id="calendarModeHistoryMobile" class="calendar-mode-btn px-3 py-1 text-xs rounded transition-colors">
+            <button id="calendarModeHistoryMobile" class="calendar-mode-btn px-3 py-1 text-xs rounded transition-colors" data-i18n="calendar.history">
               <i class="fa-solid fa-history mr-1"></i>Historique
             </button>
           </div>
@@ -403,15 +403,15 @@
       <div class="glass rounded-xl border border-white/10 p-5">
         <div class="flex items-start justify-between">
           <h3 id="fullModal-title" class="text-lg font-semibold">Full rebuild</h3>
-          <button id="closeFullModal" class="btn text-xs" aria-label="Fermer la modale de full rebuild"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Fermer</span></button>
+          <button id="closeFullModal" class="btn text-xs" aria-label="Fermer la modale de full rebuild"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span data-i18n="buttons.close">Fermer</span></button>
         </div>
         <p id="fullModal-desc" class="text-muted text-sm mt-2" data-i18n="fullrebuild.description">Entrez le mot de passe pour lancer un full rebuild du cache master Trakt.</p>
         <form method="post" action="/full_rebuild" class="mt-4 space-y-3">
           <input type="hidden" name="csrf" value="<!-- CSRF_TOKEN -->">
-          <label for="fullRebuildPwd" class="block text-xs uppercase tracking-wide text-muted">Mot de passe</label>
+          <label for="fullRebuildPwd" class="block text-xs uppercase tracking-wide text-muted" data-i18n="modals.full_rebuild.password">Mot de passe</label>
           <input id="fullRebuildPwd" type="password" name="pwd" required class="w-full rounded-lg bg-slate-950/60 border border-slate-700 px-3 py-2" aria-describedby="fullModal-desc">
           <div class="flex justify-end gap-2">
-            <button type="submit" class="btn"><i class="fa-solid fa-bolt"></i><span>Lancer</span></button>
+            <button type="submit" class="btn"><i class="fa-solid fa-bolt"></i><span data-i18n="buttons.launch">Lancer</span></button>
           </div>
         </form>
       </div>

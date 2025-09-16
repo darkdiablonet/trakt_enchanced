@@ -71,7 +71,14 @@ class UITranslations {
     elements.forEach(element => {
       const key = element.getAttribute('data-i18n');
       if (key) {
-        element.textContent = i18n.t(key);
+        // Special handling for buttons with icons (calendar mode buttons)
+        if (element.tagName === 'BUTTON' && element.querySelector('i')) {
+          const icon = element.querySelector('i');
+          const iconHtml = icon ? icon.outerHTML : '';
+          element.innerHTML = `${iconHtml}${i18n.t(key)}`;
+        } else {
+          element.textContent = i18n.t(key);
+        }
       }
     });
   }

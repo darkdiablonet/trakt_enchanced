@@ -88,7 +88,7 @@ export async function loadPlayback() {
         e.preventDefault();
         e.stopPropagation();
         const id = btn.dataset.removePlayback;
-        if (confirm('Supprimer cet élément de la liste de lecture ?')) {
+        if (confirm(i18n.t('buttons.confirm_remove_playback'))) {
           await removePlaybackItem(id);
           loadPlayback(); // Recharger la liste
         }
@@ -168,10 +168,10 @@ function renderPlaybackCard(item) {
         <button 
           class="ov-btn playback-remove-btn"
           data-remove-playback="${item.id}" 
-          title="Supprimer de la liste"
+          title="${i18n.t('buttons.remove_from_list')}"
         >
           <i class="fa-solid fa-trash"></i>
-          <span>Supprimer</span>
+          <span>${i18n.t('buttons.remove')}</span>
         </button>
       </div>
       
@@ -216,9 +216,9 @@ function renderPlaybackCard(item) {
           <button 
             class="chip mobile-synopsis-btn playback-remove-mobile"
             data-remove-playback="${item.id}" 
-            title="Supprimer de la liste"
+            title="${i18n.t('buttons.remove_from_list')}"
           >
-            <i class="fa-solid fa-trash mr-1"></i>Supprimer
+            <i class="fa-solid fa-trash mr-1"></i>${i18n.t('buttons.remove')}
           </button>
         </div>
       </div>
